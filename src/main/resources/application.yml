@@ -1,0 +1,32 @@
+server:
+  name: deposition-curation
+  port: 80
+
+logging:
+  level:
+    org:
+      springframework: DEBUG
+
+quartz:
+  scheduler:
+    active: false
+    instanceName: curationSchedulerJobSchedulerCluster
+    environment-config: quartz/environment-config.yaml
+    mongodb-pool-size: 10
+
+gwas-curation:
+  auth:
+    enabled: false
+    cert: aap.der
+    auto-curator-service-account: auto-curator-service@ebi.ac.uk
+    curators:
+      auth-mechanism: JWT_DOMAIN
+      jwt-domains: self.GWAS_Curator
+
+spring:
+  profiles:
+    active: dev
+
+comms:
+  messaging:
+    enabled: false

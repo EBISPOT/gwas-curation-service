@@ -1,0 +1,17 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+      uri: localhost:27017
+
+gwas-curation:
+  db: gwas-deposition-dev
+  auth:
+    curators:
+      auth-mechanism: EMAIL_WHITELISTING
+
+quartz:
+  scheduler:
+    dbName: gwas-deposition-dev

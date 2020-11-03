@@ -1,0 +1,14 @@
+spring:
+  data:
+    mongodb:
+      uri: snoopy.ebi.ac.uk:27017
+
+quartz:
+  scheduler:
+    dbName: gwas-deposition-test
+
+gwas-curation:
+  db: gwas-deposition-test
+  auth:
+    curators:
+      auth-mechanism: EMAIL_WHITELISTING
