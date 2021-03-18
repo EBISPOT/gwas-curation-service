@@ -16,6 +16,15 @@ import java.security.PublicKey;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 @Component
 public class JwtUtils {
 
@@ -47,7 +56,17 @@ public class JwtUtils {
             }
         }
     }
-    
+
+    public UsernamePasswordAuthenticationToken getAuthFromJwtToken(String token) {
+        Claims claims = Jwts.parser().setSigningKey(verifyingKey).parseClaimsJws(token).getBody();
+        Map authData = mapper.convertValue(claims.get("authentication"), Map.class);
+        List<String> roles = mapper.convertValue(claims.get("domain"), List.class);
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
+        return new UsernamePasswordAuthenticationToken(
+                authData.get("principal"), authData.get("credentials"), authorities);
+    }
+
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(verifyingKey).parseClaimsJws(token).getBody().getSubject();
     }
@@ -70,7 +89,6 @@ public class JwtUtils {
 
         return false;
     }
-
 
 
 }
