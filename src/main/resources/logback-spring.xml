@@ -5,6 +5,15 @@
     <springProfile name="dev">
         <property resource="logging-dev.properties"/>
 
+        <appender name="Console"
+                  class="ch.qos.logback.core.ConsoleAppender">
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <Pattern>
+                    %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+                </Pattern>
+            </layout>
+        </appender>
+
         <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
                 <!-- rollover daily -->
@@ -22,6 +31,7 @@
 
         <logger name="uk.ac.ebi.spot.gwas" level="INFO">
             <appender-ref ref="ROLLING"/>
+            <appender-ref ref="Console"/>
         </logger>
         <!--
                 <logger name="org.springframework" level="DEBUG">
