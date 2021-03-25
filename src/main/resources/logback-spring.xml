@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <property scope="context" name="serviceName" value="curation-service"/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+
+    <springProfile name="local">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+                <charset>utf8</charset>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
 
     <springProfile name="dev">
         <property resource="logging-dev.properties"/>
@@ -33,11 +48,6 @@
             <appender-ref ref="ROLLING"/>
             <appender-ref ref="Console"/>
         </logger>
-        <!--
-                <logger name="org.springframework" level="DEBUG">
-                    <appender-ref ref="ROLLING"/>
-                </logger>
-        -->
 
         <root level="OFF">
         </root>
@@ -141,11 +151,11 @@
         <logger name="uk.ac.ebi.spot.gwas" level="INFO">
             <appender-ref ref="ROLLING"/>
         </logger>
-<!--
-        <logger name="org.springframework" level="DEBUG">
-            <appender-ref ref="ROLLING"/>
-        </logger>
--->
+        <!--
+                <logger name="org.springframework" level="DEBUG">
+                    <appender-ref ref="ROLLING"/>
+                </logger>
+        -->
 
         <root level="OFF">
         </root>

@@ -1,0 +1,21 @@
+#===========================================COMPULSORY PROGRAM ARGUMENTS======================================#
+mongo-server:
+#===========================================COMPULSORY PROGRAM ARGUMENTS======================================#
+
+server:
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+      uri: ${mongo-server}
+
+gwas-curation:
+  db: gwas-deposition-dev
+  auth:
+    curators:
+      auth-mechanism: EMAIL_WHITELISTING
+
+quartz:
+  scheduler:
+    dbName: gwas-deposition-dev
