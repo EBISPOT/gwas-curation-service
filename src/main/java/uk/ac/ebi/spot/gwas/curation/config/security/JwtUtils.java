@@ -1,4 +1,4 @@
-package uk.ac.ebi.spot.gwas.curation.config.jwt;
+package uk.ac.ebi.spot.gwas.curation.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.*;
@@ -16,7 +16,6 @@ import java.security.PublicKey;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -57,18 +56,8 @@ public class JwtUtils {
         }
     }
 
-    public UsernamePasswordAuthenticationToken getAuthFromJwtToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(verifyingKey).parseClaimsJws(token).getBody();
-        Map authData = mapper.convertValue(claims.get("authentication"), Map.class);
-        List<String> roles = mapper.convertValue(claims.get("domain"), List.class);
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
-        return new UsernamePasswordAuthenticationToken(
-                authData.get("principal"), authData.get("credentials"), authorities);
-    }
-
-    public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(verifyingKey).parseClaimsJws(token).getBody().getSubject();
+    public Claims getClaims(String token) {
+        return Jwts.parser().setSigningKey(verifyingKey).parseClaimsJws(token).getBody();
     }
 
     public boolean validateJwtToken(String authToken) {

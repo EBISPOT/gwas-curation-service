@@ -1,4 +1,4 @@
-package uk.ac.ebi.spot.gwas.curation.config.jwt;
+package uk.ac.ebi.spot.gwas.curation.config.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
