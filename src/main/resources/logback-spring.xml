@@ -12,9 +12,13 @@
             </encoder>
         </appender>
 
-        <root level="INFO">
+        <logger name="uk.ac.ebi.spot.gwas" level="INFO">
             <appender-ref ref="CONSOLE"/>
-        </root>
+        </logger>
+
+        <logger name="org.springframework" level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
     </springProfile>
 
     <springProfile name="dev">

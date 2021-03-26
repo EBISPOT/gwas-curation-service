@@ -1,6 +1,7 @@
-#===========================================COMPULSORY PROGRAM ARGUMENTS======================================#
+#===============COMPULSORY PROGRAM ARGUMENTS=====#
 mongo-server:
-#===========================================COMPULSORY PROGRAM ARGUMENTS======================================#
+auth-enable:
+#===============COMPULSORY PROGRAM ARGUMENTS=====#
 
 server:
   port: 8080
@@ -11,8 +12,9 @@ spring:
       uri: ${mongo-server}
 
 gwas-curation:
-  db: gwas-deposition-dev
+  db: gwas-deposition-local
   auth:
+    enabled: ${auth-enable}
     curators:
       auth-mechanism: EMAIL_WHITELISTING
 

@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,8 +30,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+        this.setHeaders(response);
         try {
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
@@ -52,11 +55,22 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         return null;
     }
 
-    public UsernamePasswordAuthenticationToken getAuthFromJwtToken(Claims claims) {
-        AapPayload aapPayload = mapper.convertValue(claims, new TypeReference<AapPayload>(){});
+    private UsernamePasswordAuthenticationToken getAuthFromJwtToken(Claims claims) {
+        AapPayload aapPayload = mapper.convertValue(claims, new TypeReference<AapPayload>() {
+        });
         List<String> roles = aapPayload.convertAapDomainsToSpringSecurityRoles();
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
         return new UsernamePasswordAuthenticationToken("", null, authorities);
     }
+
+    private void setHeaders(HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Max-Age", "3600");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+        response.setHeader("Access-Control-Allow-Headers", "authorization, content-type, xsrf-token");
+        response.addHeader("Access-Control-Expose-Headers", "xsrf-token");
+    }
+
 }
