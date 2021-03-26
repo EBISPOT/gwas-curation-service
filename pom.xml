@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>uk.ac.ebi.spot.gwasdepo</groupId>
-    <artifactId>gwasdepo-curation-service</artifactId>
+    <artifactId>gwas-curation-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -58,6 +58,10 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${user.dir}</outputDirectory>
+                    <finalName>gwas-curation-service</finalName>
+                </configuration>
             </plugin>
         </plugins>
     </build>
