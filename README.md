@@ -2,13 +2,7 @@
 <img src="https://pbs.twimg.com/profile_images/569859677714804736/8Vra2SA9_400x400.jpeg" alt="WAS logo" width="100" height="100" />  
   
 ## GWAS Curation Service  
-This is the new GWAS Curation Back End Microservice created to provide features for   
-supporting the curation of GWAS metadata and summary statistics files   
-searchable and downloadable from the  NHGRI-EBI GWAS Catalog. It provides   
-secure endpoints for accessing the GWAS databases in order to   
-change, edit, annotate and curate user submitted metadata and summary statistics.   
-This software runs alongside other components of the GWAS Deposition Microservices   
-system such as the Template service and GWAS Deposition Service e.t.c as shown below:  
+This is the new GWAS Curation Back End Microservice created to provide features for supporting the curation of GWAS metadata and summary statistics files searchable and downloadable from the  NHGRI-EBI GWAS Catalog. It provides secure endpoints for accessing the GWAS databases in order to change, edit, annotate and curate user submitted metadata and summary statistics. This software runs alongside other components of the GWAS Deposition Microservices system such as the Template service and GWAS Deposition Service e.t.c as shown below:  
   
 ## Service Interactions  
 
