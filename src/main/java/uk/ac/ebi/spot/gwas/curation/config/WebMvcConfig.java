@@ -16,7 +16,8 @@ import java.util.concurrent.Executor;
 public class WebMvcConfig {
 
     @Configuration
-    @ConditionalOnExpression("!'${spring.profiles.active}'.equals('dev') && !'${spring.profiles.active}'.equals('test')")
+    //@ConditionalOnExpression("!'${spring.profiles.active}'.equals('dev') && !'${spring.profiles.active}'.equals('test')")
+    @ConditionalOnExpression("!'${spring.profiles.active}'.equals('test')")
     public static class SandboxWebMvcConfig implements WebMvcConfigurer {
 
         @Bean
