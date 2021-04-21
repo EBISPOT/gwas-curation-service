@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -35,7 +36,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         this.setHeaders(response);
         try {
-            String jwt = parseJwt(request);
+            String jwt = CurationUtil.parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 UsernamePasswordAuthenticationToken authentication = this.getAuthFromJwtToken(jwtUtils.getClaims(jwt));
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -47,13 +48,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String parseJwt(HttpServletRequest request) {
-        String headerAuth = request.getHeader("Authorization");
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            return headerAuth.substring(7, headerAuth.length());
-        }
-        return null;
-    }
+
 
     private UsernamePasswordAuthenticationToken getAuthFromJwtToken(Claims claims) {
         AapPayload aapPayload = mapper.convertValue(claims, new TypeReference<AapPayload>() {

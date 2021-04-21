@@ -22,6 +22,7 @@ import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.constants.IDPConstants;
 import uk.ac.ebi.spot.gwas.curation.service.EditFileUploadService;
 import uk.ac.ebi.spot.gwas.curation.service.impl.EditFileUploadServiceImpl;
+import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.curation.util.HeadersUtil;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.dto.FileUploadDto;
@@ -65,7 +66,7 @@ public class EditFileUploadController {
                                                   @PathVariable String submissionId,
                                                   HttpServletRequest request) throws IOException {
 
-        String jwtToken = HeadersUtil.extractJWT(request);
+        String jwtToken = CurationUtil.parseJwt(request);
         ResponseEntity<Resource<FileUploadDto>> fileUploadDtoResource = editFileUploadService.uploadEditFIle(jwtToken, submissionId, file );
 
        return fileUploadDtoResource.getBody();

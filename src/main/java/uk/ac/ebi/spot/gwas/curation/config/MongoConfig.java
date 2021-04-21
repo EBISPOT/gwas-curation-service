@@ -3,6 +3,12 @@ package uk.ac.ebi.spot.gwas.curation.config;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.ServerAddress;
+import org.javers.core.Javers;
+import org.javers.core.JaversBuilder;
+import org.javers.repository.mongo.MongoRepository;
+import org.javers.spring.auditable.AuthorProvider;
+import org.javers.spring.auditable.EmptyPropertiesProvider;
+import org.javers.spring.auditable.aspect.springdata.JaversSpringDataAuditableRepositoryAspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +17,7 @@ import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import uk.ac.ebi.spot.gwas.curation.util.SimpleAuthorProvider;
 import uk.ac.ebi.spot.gwas.deposition.config.SystemConfigProperties;
 
 import java.util.ArrayList;
@@ -50,6 +57,24 @@ public class MongoConfig {
             }
             return new MongoClient(servers);
         }
+
+        @Bean
+        public Javers javers() {
+            MongoRepository mongoRepository = new MongoRepository(mongoClient().getDatabase(getDatabaseName()));
+            return JaversBuilder.javers().registerJaversRepository(mongoRepository).build();
+        }
+
+        @Bean
+        public JaversSpringDataAuditableRepositoryAspect javersSpringDataAuditableAspect() {
+            return new JaversSpringDataAuditableRepositoryAspect(javers(), provideJaversAuthor(),
+                    new EmptyPropertiesProvider());
+        }
+
+        @Bean
+        public AuthorProvider provideJaversAuthor(){
+            return new SimpleAuthorProvider();
+        }
+
     }
 
     @Configuration
@@ -79,6 +104,24 @@ public class MongoConfig {
             String mongoUri = systemConfigProperties.getMongoUri();
             return new MongoClient(new MongoClientURI("mongodb://" + mongoUri));
         }
+
+        @Bean
+        public Javers javers() {
+            MongoRepository mongoRepository = new MongoRepository(mongoClient().getDatabase(getDatabaseName()));
+            return JaversBuilder.javers().registerJaversRepository(mongoRepository).build();
+        }
+
+        @Bean
+        public JaversSpringDataAuditableRepositoryAspect javersSpringDataAuditableAspect() {
+            return new JaversSpringDataAuditableRepositoryAspect(javers(), provideJaversAuthor(),
+                    new EmptyPropertiesProvider());
+        }
+
+        @Bean
+        public AuthorProvider provideJaversAuthor(){
+            return new SimpleAuthorProvider();
+        }
+
     }
 
     @Configuration
