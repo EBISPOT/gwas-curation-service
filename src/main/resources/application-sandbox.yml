@@ -32,3 +32,8 @@ gwas-curation:
 
 email:
   enabled: false
+
+
+gwas-deposition-service:
+  fileupload:
+    endpoint : http://193.62.54.159/backend/v1/submissions/
