@@ -30,7 +30,9 @@ public class ExceptionHandlerAdvice {
     }
 
     @ExceptionHandler(FileProcessingException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public void handleFileProcessingException() {
+    public ResponseEntity<String> handleFileProcessingException(FileProcessingException ex) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>uk.ac.ebi.spot.gwasdepo</groupId>
-    <artifactId>gwasdepo-curation-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>gwas-curation-service</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>GWAS Deposition App Curation Service</name>
@@ -14,7 +14,7 @@
     <parent>
         <groupId>uk.ac.ebi.spot.gwasdepo</groupId>
         <artifactId>gwasdepo-master</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.3</version>
     </parent>
 
     <properties>
@@ -58,6 +58,10 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${user.dir}</outputDirectory>
+                    <finalName>gwas-curation-service</finalName>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -108,6 +112,14 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-hateoas</artifactId>
+        </dependency>
+      <dependency>
+            <groupId>org.springframework.hateoas</groupId>
+            <artifactId>spring-hateoas</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
@@ -130,6 +142,10 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -168,6 +184,12 @@
             <artifactId>spring-test</artifactId>
             <version>5.1.8.RELEASE</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.javers</groupId>
+            <artifactId>javers-spring-mongo</artifactId>
+            <version>5.0.0</version>
         </dependency>
     </dependencies>
 
