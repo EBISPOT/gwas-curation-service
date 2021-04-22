@@ -12,6 +12,6 @@ spec:
     http:
       paths:
       - path: {{.Values.ingress.path}}
-        curation:
+        backend:
           serviceName: {{.Values.service.name}}
           servicePort: {{.Values.service.port}}
