@@ -67,6 +67,7 @@ public class EditFileUploadController {
                                                   HttpServletRequest request) throws IOException {
 
         String jwtToken = CurationUtil.parseJwt(request);
+        log.info("Jwt token ->"+jwtToken);
         ResponseEntity<Resource<FileUploadDto>> fileUploadDtoResource = editFileUploadService.uploadEditFIle(jwtToken, submissionId, file );
 
        return fileUploadDtoResource.getBody();
