@@ -58,10 +58,10 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
+                <!--<configuration>
                     <outputDirectory>${user.dir}</outputDirectory>
                     <finalName>gwas-curation-service</finalName>
-                </configuration>
+                </configuration>-->
             </plugin>
         </plugins>
     </build>
