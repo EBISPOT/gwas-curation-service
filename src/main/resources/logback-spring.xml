@@ -161,7 +161,7 @@
                 </logger>
         -->
 
-        <root level="OFF">
+        <root level="INFO">
         </root>
     </springProfile>
 </configuration>

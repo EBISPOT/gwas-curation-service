@@ -56,6 +56,7 @@ public class EditFileUploadServiceImpl implements EditFileUploadService {
             body.add("file", fileEntity);
             HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(body, headers);
             String endpoint = restInteractionConfig.getDepositionServiceUrl() + submissionId + DepositionCurationConstants.API_EDIT_UPLOADS;
+            log.info("Rest Template call "+endpoint);
             ResponseEntity<Resource<FileUploadDto>> fileUploadDtoResource = restTemplate.exchange(endpoint,
                     HttpMethod.POST, httpEntity, new ParameterizedTypeReference<Resource<FileUploadDto>>() {
                     });
