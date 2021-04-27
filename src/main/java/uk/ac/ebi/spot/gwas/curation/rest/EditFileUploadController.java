@@ -21,11 +21,17 @@ import uk.ac.ebi.spot.gwas.curation.config.RestInteractionConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.constants.IDPConstants;
 import uk.ac.ebi.spot.gwas.curation.service.EditFileUploadService;
+import uk.ac.ebi.spot.gwas.curation.service.JWTService;
+import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
+import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.service.impl.EditFileUploadServiceImpl;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.curation.util.HeadersUtil;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
+import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
+import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.FileUploadDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.SubmissionDto;
 import uk.ac.ebi.spot.gwas.deposition.rest.RestRequestUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,6 +57,15 @@ public class EditFileUploadController {
 
     @Autowired
     EditFileUploadService editFileUploadService;
+
+    @Autowired
+    JWTService jwtService;
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    SubmissionService submissionService;
     /*
      * POST /v1/submissions/{submissionId}/edituploads
      */
@@ -72,4 +87,19 @@ public class EditFileUploadController {
 
        return fileUploadDtoResource.getBody();
     }
+
+
+    @PutMapping(value = "/{submissionId}" + DepositionCurationConstants.API_SUBMISSIONS_LOCK,
+            produces = MediaTypes.HAL_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public Resource<SubmissionDto> lockSubmission(@RequestParam String lockStatus, @PathVariable String submissionId, HttpServletRequest request) {
+
+
+        String jwtToken = CurationUtil.parseJwt(request);
+        log.info("Jwt token ->"+jwtToken);
+        ResponseEntity<Resource<SubmissionDto>> submissionDtoResource = editFileUploadService.lockSubmission(jwtToken, lockStatus , submissionId );
+        return submissionDtoResource.getBody();
+
+    }
+
 }

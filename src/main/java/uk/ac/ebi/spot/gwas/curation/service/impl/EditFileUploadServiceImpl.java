@@ -13,10 +13,14 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriBuilder;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 import uk.ac.ebi.spot.gwas.curation.config.RestInteractionConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.service.EditFileUploadService;
 import uk.ac.ebi.spot.gwas.deposition.dto.FileUploadDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.SubmissionDto;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 
 import java.io.IOException;
@@ -67,5 +71,21 @@ public class EditFileUploadServiceImpl implements EditFileUploadService {
         throw new FileProcessingException("Unable to store file: " + file.getOriginalFilename());
 
     }
+
+
+    public ResponseEntity<Resource<SubmissionDto>> lockSubmission(String jwtToken, String lockStatus, String submissionId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<String> httpEntity = new HttpEntity<>(null, headers);
+        String endpoint = restInteractionConfig.getDepositionServiceUrl() +  restInteractionConfig.getSubmissionEndpoint()+submissionId + DepositionCurationConstants.API_SUBMISSIONS_LOCK;
+        UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(endpoint).queryParam("lockStatus", lockStatus).build();
+        log.info("The Lock URL is"+uriComponents.toUriString());
+        ResponseEntity<Resource<SubmissionDto>> resourceSubmission = restTemplate.exchange(uriComponents.toUriString(),HttpMethod.PUT, httpEntity, new ParameterizedTypeReference<Resource<SubmissionDto>>() {
+        });
+        return resourceSubmission;
+
+    }
+
 
 }
