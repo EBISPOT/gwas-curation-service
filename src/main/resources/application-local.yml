@@ -24,4 +24,7 @@ quartz:
 
 gwas-deposition-service:
   fileupload:
-    endpoint : http://193.62.54.159/backend/v1/submissions/
+    #endpoint : http://193.62.54.159/backend/v1/submissions/
+    url: http://193.62.54.159/backend
+    endpoints:
+      submission: /v1/submissions/

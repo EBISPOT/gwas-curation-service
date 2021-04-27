@@ -36,4 +36,7 @@ email:
 
 gwas-deposition-service:
   fileupload:
-    endpoint : http://gwas-deposition-backend:8080/v1/submissions/
+    #endpoint : http://gwas-deposition-backend:8080/v1/submissions/
+    url: http://gwas-deposition-backend:8080
+    endpoints:
+      submission: /v1/submissions/
