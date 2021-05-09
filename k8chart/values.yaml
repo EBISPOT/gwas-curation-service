@@ -5,14 +5,14 @@
 replicaCount: 1
 
 image:
-  repository: ebispot/gwas-curation-service
+  repository: ebispot/gwas-curation-service-sajo-testing
   tag: latest
   pullPolicy: Always
   containerPort: 8080
   logMountPath: "/var/log/gwas"
   env:
     envName: "sandbox"
-    logFileName: "curation-service"
+    logFileName: "curation-service-sajo-testing"
     xms: "-Xms1024m"
     xmx: "-Xmx1024m"
     dbUser: ""
@@ -26,7 +26,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 service:
-  name: gwas-curation-service
+  name: gwas-curation-service-sajo-testing
   type: NodePort
   port: 8080
 
