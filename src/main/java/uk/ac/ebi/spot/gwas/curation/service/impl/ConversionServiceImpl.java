@@ -1,11 +1,9 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
-import javafx.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.service.ConversionService;
-import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.javers.ElementChange;
 import uk.ac.ebi.spot.gwas.deposition.javers.JaversChangeWrapper;
 
