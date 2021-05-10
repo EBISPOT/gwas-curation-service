@@ -46,10 +46,10 @@ k8Namespace: default
 resources:
   limits:
     cpu: 250m
-    memory: 5120Mi
+    memory: 2560Mi
   requests:
     cpu: 100m
-    memory: 4096Mi
+    memory: 2048Mi
 
 nodeSelector: {}
 
