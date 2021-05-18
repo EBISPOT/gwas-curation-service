@@ -13,8 +13,8 @@ image:
   env:
     envName: "sandbox"
     logFileName: "curation-service"
-    xms: "-Xms1024m"
-    xmx: "-Xmx1024m"
+    xms: "-Xms4096m"
+    xmx: "-Xmx4096m"
     dbUser: ""
     secretsName: ""
     secretsKey: ""

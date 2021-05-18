@@ -27,7 +27,10 @@ gwas-deposition-service:
   fileupload:
     endpoints:
       submission: /v1/submissions/
+
+
+gwas-curation-service:
+  url: http://localhost:8080
   javers:
-    url: http://193.62.54.159/backend-sajo-testing
     endpoints:
-      javers-submission: /v1/javers/
+      javers-submission: /v1/javers
