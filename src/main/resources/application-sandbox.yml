@@ -40,3 +40,9 @@ gwas-deposition-service:
     url: http://gwas-deposition-backend:8080
     endpoints:
       submission: /v1/submissions/
+
+gwas-curation-service:
+  url: http://localhost:8080
+  javers:
+    endpoints:
+      javers-submission: /v1/javers

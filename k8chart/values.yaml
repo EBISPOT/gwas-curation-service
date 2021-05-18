@@ -5,14 +5,14 @@
 replicaCount: 1
 
 image:
-  repository: ebispot/gwas-curation-service-sajo-testing
+  repository: ebispot/gwas-curation-service
   tag: latest
   pullPolicy: Always
   containerPort: 8080
   logMountPath: "/var/log/gwas"
   env:
     envName: "sandbox"
-    logFileName: "curation-service-sajo-testing"
+    logFileName: "curation-service"
     xms: "-Xms1024m"
     xmx: "-Xmx1024m"
     dbUser: ""
@@ -26,7 +26,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 service:
-  name: gwas-curation-service-sajo-testing
+  name: gwas-curation-service
   type: NodePort
   port: 8080
 
@@ -37,7 +37,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
 
   host: chart-example.local
-  path: "/curation-sajo-testing(/|$)(.*)"
+  path: "/curation(/|$)(.*)"
 
   tls: []
 
@@ -46,7 +46,7 @@ k8Namespace: default
 resources:
   limits:
     cpu: 250m
-    memory: 4096Mi
+    memory: 5120Mi
   requests:
     cpu: 100m
     memory: 4096Mi
