@@ -34,12 +34,19 @@ email:
   enabled: false
 
 
-gwas-deposition-service:
-  fileupload:
+#gwas-deposition-service:
+ # fileupload:
     #endpoint : http://gwas-deposition-backend:8080/v1/submissions/
-    url: http://gwas-deposition-backend:8080
+    #url: http://gwas-deposition-backend:8080
+    #endpoints:
+    #  submission: /v1/submissions/
+
+gwas-deposition-service:
+  url: http://gwas-deposition-backend:8080
+  fileupload:
     endpoints:
       submission: /v1/submissions/
+
 
 gwas-curation-service:
   url: http://localhost:8080
