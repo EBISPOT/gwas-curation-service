@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.spot.gwas.deposition.exception.AuthorizationException;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
+import uk.ac.ebi.spot.gwas.deposition.exception.NoVersionSummaryException;
 
 @ControllerAdvice(annotations = RestController.class)
 public class ExceptionHandlerAdvice {
@@ -31,6 +32,20 @@ public class ExceptionHandlerAdvice {
 
     @ExceptionHandler(FileProcessingException.class)
     public ResponseEntity<String> handleFileProcessingException(FileProcessingException ex) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(NoVersionSummaryException.class)
+    public ResponseEntity<String> handleNoVersionSummaryException(NoVersionSummaryException ex) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception ex) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);

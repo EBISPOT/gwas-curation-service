@@ -9,6 +9,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.Association;
 import uk.ac.ebi.spot.gwas.deposition.domain.FileUpload;
 import uk.ac.ebi.spot.gwas.deposition.domain.Sample;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
+import uk.ac.ebi.spot.gwas.deposition.exception.NoVersionSummaryException;
 import uk.ac.ebi.spot.gwas.deposition.javers.*;
 
 import java.util.*;
@@ -78,6 +79,12 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
     public List<VersionSummary> filterStudiesFromJavers(Optional<Map<Double, List<JaversChangeWrapper>>> javersChangeWrapperList) {
         Map<Double, List<JaversChangeWrapper>> versionMap = javersChangeWrapperList.orElse(null);
         log.info("versionMap ****"+versionMap);
+        if(versionMap != null && !versionMap.isEmpty()){
+            if(versionMap.size() < 2 ){
+                throw new NoVersionSummaryException("No Version Stats are available currently for this submission," +
+                            " Please upload the edited Template file");
+            }
+        }
         List<VersionSummary> summaries = new ArrayList<>();
         Set<Double> keys = versionMap.keySet();
         log.info("keys ****"+keys);

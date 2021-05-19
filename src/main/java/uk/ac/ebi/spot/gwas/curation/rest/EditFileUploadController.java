@@ -78,6 +78,7 @@ public class EditFileUploadController {
      */
     @PutMapping(value = "/{submissionId}" + DepositionCurationConstants.API_SUBMISSIONS_LOCK,
             produces = MediaTypes.HAL_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     public Resource<SubmissionDto> lockSubmission(@RequestParam String lockStatus, @PathVariable String submissionId, HttpServletRequest request) {
 

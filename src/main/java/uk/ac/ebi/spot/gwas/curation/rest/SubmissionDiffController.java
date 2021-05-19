@@ -1,4 +1,4 @@
-package uk.ac.ebi.spot.gwas.deposition.rest.controllers;
+package uk.ac.ebi.spot.gwas.curation.rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 
@@ -37,18 +38,21 @@ public class SubmissionDiffController {
             value = "/{submissionId}" + DepositionCurationConstants.API_SUBMISSION_VERSION,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public List<VersionSummary> diffVersionSubmissions(@PathVariable String submissionId, HttpServletRequest request) {
         String jwtToken = CurationUtil.parseJwt(request);
+        List<VersionSummary> summaries = null;
         ResponseEntity<List<JaversChangeWrapper>> responseEntity = submissionDiffService.diffVersionsSubmission(submissionId, jwtToken );
-        Optional<Map<Double, List<JaversChangeWrapper>>> convertedEntityOptional = conversionService.filterJaversResponse(responseEntity.getBody());
-        List<VersionSummary> summaries = conversionService.filterStudiesFromJavers(convertedEntityOptional);
-        List<FileUpload> fileUploads = conversionService.filterJaversResponseForFiles(responseEntity.getBody()).get();
-        List<VersionSummary> versionSummaries = conversionService.mapFilesToVersionSummary(summaries, fileUploads);
-
-        return versionSummaries;
+        List<JaversChangeWrapper> changeList = responseEntity.getBody();
+        if(changeList != null && !changeList.isEmpty()) {
+            Optional<Map<Double, List<JaversChangeWrapper>>> convertedEntityOptional = conversionService.filterJaversResponse(changeList);
+            summaries = conversionService.filterStudiesFromJavers(convertedEntityOptional);
+            Optional<List<FileUpload>> fileUploadsOptional = conversionService.filterJaversResponseForFiles(responseEntity.getBody());
+            summaries = fileUploadsOptional.isPresent()?conversionService.mapFilesToVersionSummary(summaries, fileUploadsOptional.get()):null;
+        }
+        return summaries;
 
 
     }
