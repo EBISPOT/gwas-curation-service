@@ -42,7 +42,7 @@ email:
     #  submission: /v1/submissions/
 
 gwas-deposition-service:
-  url: http://193.62.54.159/backend-sajo-testing
+  url: http://193.62.54.159/backend
   fileupload:
     endpoints:
       submission: /v1/submissions/
