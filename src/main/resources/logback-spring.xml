@@ -165,11 +165,11 @@
             <appender-ref ref="ROLLING"/>
             <appender-ref ref="Console"/>
         </logger>
-        <!--
+
                 <logger name="org.springframework" level="DEBUG">
-                    <appender-ref ref="ROLLING"/>
+                    <appender-ref ref="Console"/>
                 </logger>
-        -->
+
 
         <root level="INFO">
         </root>
