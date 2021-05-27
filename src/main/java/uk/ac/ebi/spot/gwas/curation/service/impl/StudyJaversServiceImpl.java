@@ -55,17 +55,13 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 versionDiffStats.setEdited(studyChanges.stream()
                         .map(javersCommonService::mapChangetoVersionStats)
                         .collect(Collectors.toList()));
-            removeGCSTFromEdited(versionDiffStats.getEdited());
+
         }
         return versionDiffStats;
 
     }
 
-    private void removeGCSTFromEdited(List<DiffPropertyObject> diffObjs) {
-        List<DiffPropertyObject> objToBeRemoved = diffObjs.stream().filter(obj -> obj.getProperty().equals("accession"))
-                .collect(Collectors.toList());
-        objToBeRemoved.forEach((obj) -> diffObjs.remove(obj));
-    }
+
 
     public List<ValueChangeWrapper> diffStudies(StudyDto dto1, StudyDto dto2) {
         Javers javers = JaversBuilder.javers().build();
