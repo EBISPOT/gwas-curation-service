@@ -1,17 +1,26 @@
+server:
+  name: deposition-curation
+  port: 80
+
 spring:
   data:
     mongodb:
       uri: snoopy.ebi.ac.uk:27017
-
-quartz:
-  scheduler:
-    dbName: gwas-deposition-test
+  profiles:
+          active: test
 
 gwas-curation:
-  db: gwas-deposition-test
   auth:
+    enabled: false
+    cert: aap.der
+    auto-curator-service-account: auto-curator-service@ebi.ac.uk
     curators:
-      auth-mechanism: EMAIL_WHITELISTING
+      auth-mechanism: JWT_DOMAIN
+      jwt-domains: self.GWAS_Curator
+
+
+
+
 
 gwas-deposition-service:
   url: http://193.62.54.159/backend-sajo-testing

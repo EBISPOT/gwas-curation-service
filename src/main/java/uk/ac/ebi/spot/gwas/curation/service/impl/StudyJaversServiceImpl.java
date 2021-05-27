@@ -15,10 +15,7 @@ import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
 import uk.ac.ebi.spot.gwas.curation.service.StudyJaversService;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
-import uk.ac.ebi.spot.gwas.deposition.javers.AddedRemoved;
-import uk.ac.ebi.spot.gwas.deposition.javers.ElementChange;
-import uk.ac.ebi.spot.gwas.deposition.javers.ValueChangeWrapper;
-import uk.ac.ebi.spot.gwas.deposition.javers.VersionDiffStats;
+import uk.ac.ebi.spot.gwas.deposition.javers.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -58,9 +55,16 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 versionDiffStats.setEdited(studyChanges.stream()
                         .map(javersCommonService::mapChangetoVersionStats)
                         .collect(Collectors.toList()));
+            removeGCSTFromEdited(versionDiffStats.getEdited());
         }
         return versionDiffStats;
 
+    }
+
+    private void removeGCSTFromEdited(List<DiffPropertyObject> diffObjs) {
+        List<DiffPropertyObject> objToBeRemoved = diffObjs.stream().filter(obj -> obj.getProperty().equals("accession"))
+                .collect(Collectors.toList());
+        objToBeRemoved.forEach((obj) -> diffObjs.remove(obj));
     }
 
     public List<ValueChangeWrapper> diffStudies(StudyDto dto1, StudyDto dto2) {
@@ -93,7 +97,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .collect(Collectors.toList());
 
         String studyTagsRemoved = studiesRemoved.stream()
-                .map(study -> study.getStudyTag())
+                .map(Study::getStudyTag)
                 .collect(Collectors.joining(","));
 
         List<Study> studiesAdded = newStudies.stream()
@@ -101,7 +105,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .collect(Collectors.toList());
 
         String studyTagsAdded = studiesAdded.stream()
-                .map(study -> study.getStudyTag())
+                .map(Study::getStudyTag)
                 .collect(Collectors.joining(","));
 
 
@@ -148,14 +152,14 @@ public class StudyJaversServiceImpl implements StudyJaversService {
     public AddedRemoved getReportedEfoVersionStats(List<Study> prevStudies, List<Study> newStudies) {
         List<String> newEfoTraits = newStudies.stream()
                 .map(Study::getEfoTrait)
-                .flatMap((efos) -> Arrays.asList(efos.split("|")).stream())
-                .map(efo -> efo.trim())
+                .flatMap((efos) -> Arrays.stream(efos.split("|")))
+                .map(String::trim)
                 .collect(Collectors.toList());
 
         List<String> prevEfoTraits = prevStudies.stream()
                 .map(Study::getEfoTrait)
-                .flatMap((efos) -> Arrays.asList(efos.split("|")).stream())
-                .map(efo -> efo.trim())
+                .flatMap((efos) -> Arrays.stream(efos.split("|")))
+                .map(String::trim)
                 .collect(Collectors.toList());
 
        /* List<Study> efoRemoved = prevStudies.stream()
@@ -163,8 +167,8 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .collect(Collectors.toList());*/
 
         List<String> efoRemoved = prevStudies.stream()
-                .flatMap(study -> Arrays.asList(study.getEfoTrait().split("|")).stream())
-                .map(efo -> efo.trim())
+                .flatMap(study -> Arrays.stream(study.getEfoTrait().split("|")))
+                .map(String::trim)
                 .filter(efo -> !newEfoTraits.contains(efo))
                 .collect(Collectors.toList());
 
@@ -173,8 +177,9 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .filter((study) -> !prevEfoTraits.contains(study.getTrait()))
                 .collect(Collectors.toList());*/
         List<String> efoAdded = newStudies.stream()
-                .flatMap(study -> Arrays.asList(study.getEfoTrait().split("|")).stream())
-                .map(efo -> efo.trim())
+                .flatMap(study -> Arrays.
+                        stream(study.getEfoTrait().split("|")))
+                .map(String::trim)
                 .filter(efo -> !prevEfoTraits.contains(efo))
                 .collect(Collectors.toList());
 
