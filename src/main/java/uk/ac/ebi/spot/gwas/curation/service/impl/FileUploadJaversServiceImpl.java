@@ -10,7 +10,7 @@ import uk.ac.ebi.spot.gwas.deposition.javers.ElementChange;
 @Service
 public class FileUploadJaversServiceImpl implements FileUploadJaversService {
 
-    @Autowired
+        @Autowired
     FileUploadsService fileUploadsService;
 
     public FileUpload getFileUploadDetails(String fileId){

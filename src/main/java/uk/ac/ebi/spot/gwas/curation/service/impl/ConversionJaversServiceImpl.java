@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Service
 public class ConversionJaversServiceImpl implements ConversionJaversService {
 
-    private static final Logger log = LoggerFactory.getLogger(ConversionServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(ConversionJaversServiceImpl.class);
 
     @Autowired
     private AssociationJaversService associationJaversService;
