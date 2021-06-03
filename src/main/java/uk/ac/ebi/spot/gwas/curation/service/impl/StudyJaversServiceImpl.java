@@ -148,14 +148,16 @@ public class StudyJaversServiceImpl implements StudyJaversService {
     public AddedRemoved getReportedEfoVersionStats(List<Study> prevStudies, List<Study> newStudies) {
         List<String> newEfoTraits = newStudies.stream()
                 .map(Study::getEfoTrait)
-                .flatMap((efos) -> Arrays.stream(efos.split("|")))
+                .flatMap((efos) -> Arrays.stream(efos.split("\\|")))
                 .map(String::trim)
+                .distinct()
                 .collect(Collectors.toList());
 
         List<String> prevEfoTraits = prevStudies.stream()
                 .map(Study::getEfoTrait)
-                .flatMap((efos) -> Arrays.stream(efos.split("|")))
+                .flatMap((efos) -> Arrays.stream(efos.split("\\|")))
                 .map(String::trim)
+                .distinct()
                 .collect(Collectors.toList());
 
        /* List<Study> efoRemoved = prevStudies.stream()
@@ -163,9 +165,10 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .collect(Collectors.toList());*/
 
         List<String> efoRemoved = prevStudies.stream()
-                .flatMap(study -> Arrays.stream(study.getEfoTrait().split("|")))
+                .flatMap(study -> Arrays.stream(study.getEfoTrait().split("\\|")))
                 .map(String::trim)
                 .filter(efo -> !newEfoTraits.contains(efo))
+                .distinct()
                 .collect(Collectors.toList());
 
 
@@ -173,10 +176,10 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .filter((study) -> !prevEfoTraits.contains(study.getTrait()))
                 .collect(Collectors.toList());*/
         List<String> efoAdded = newStudies.stream()
-                .flatMap(study -> Arrays.
-                        stream(study.getEfoTrait().split("|")))
+                .flatMap(study -> Arrays.stream(study.getEfoTrait().split("\\|")))
                 .map(String::trim)
                 .filter(efo -> !prevEfoTraits.contains(efo))
+                .distinct()
                 .collect(Collectors.toList());
 
         log.info("newEfoTraits****" + newEfoTraits);
