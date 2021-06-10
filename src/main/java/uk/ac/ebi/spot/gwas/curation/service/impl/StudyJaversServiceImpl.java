@@ -121,6 +121,9 @@ public class StudyJaversServiceImpl implements StudyJaversService {
     }
 
     public AddedRemoved getReportedTraitVersionStats(List<Study> prevStudies, List<Study> newStudies) {
+
+        log.info("Inside getReportedTraitVersionStats()");
+
         List<String> newReportedTraits = newStudies.stream()
                 .map(Study::getTrait)
                 .collect(Collectors.toList());
@@ -137,6 +140,11 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .filter((study) -> !prevReportedTraits.contains(study.getTrait()))
                 .collect(Collectors.toList());
 
+        log.info("newReportedTraits****"+newReportedTraits);
+        log.info("prevReportedTraits****"+prevReportedTraits);
+        log.info("traitsRemoved****"+traitsRemoved);
+        log.info("traitsAdded****"+traitsAdded);
+
         AddedRemoved addedRemoved = new AddedRemoved();
         addedRemoved.setAdded(traitsAdded.size());
         addedRemoved.setRemoved(traitsRemoved.size());
@@ -146,6 +154,8 @@ public class StudyJaversServiceImpl implements StudyJaversService {
 
 
     public AddedRemoved getReportedEfoVersionStats(List<Study> prevStudies, List<Study> newStudies) {
+
+        log.info("Inside getReportedEfoVersionStats()");
         List<String> newEfoTraits = newStudies.stream()
                 .map(Study::getEfoTrait)
                 .flatMap((efos) -> Arrays.stream(efos.split("\\|")))
