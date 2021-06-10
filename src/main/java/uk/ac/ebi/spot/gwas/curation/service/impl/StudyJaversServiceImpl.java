@@ -158,7 +158,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
         log.info("Inside getReportedEfoVersionStats()");
         List<String> newEfoTraits = newStudies.stream()
                 .map(Study::getEfoTrait)
-                .filter((efo) -> !efo.isEmpty())
+                .filter((efo) -> efo!=null && !efo.isEmpty())
                 .flatMap((efos) -> Arrays.stream(efos.split("\\|")))
                 .map(String::trim)
                 .distinct()
@@ -168,7 +168,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
 
         List<String> prevEfoTraits = prevStudies.stream()
                 .map(Study::getEfoTrait)
-                .filter((efo) -> !efo.isEmpty())
+                .filter((efo) -> efo!=null && !efo.isEmpty())
                 .flatMap((efos) -> Arrays.stream(efos.split("\\|")))
                 .map(String::trim)
                 .distinct()
@@ -181,7 +181,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
 
         List<String> efoRemoved = prevStudies.stream()
                 .map(Study::getEfoTrait)
-                .filter((efo) -> !efo.isEmpty())
+                .filter((efo) -> efo!=null && !efo.isEmpty())
                 .flatMap(efos -> Arrays.stream(efos.split("\\|")))
                 .map(String::trim)
                 .filter(efo -> !newEfoTraits.contains(efo))
@@ -194,7 +194,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .collect(Collectors.toList());*/
         List<String> efoAdded = newStudies.stream()
                 .map(Study::getEfoTrait)
-                .filter((efo) -> !efo.isEmpty())
+                .filter((efo) -> efo!=null && !efo.isEmpty())
                 .flatMap(efos -> Arrays.stream(efos.split("\\|")))
                 .map(String::trim)
                 .filter(efo -> !prevEfoTraits.contains(efo))
