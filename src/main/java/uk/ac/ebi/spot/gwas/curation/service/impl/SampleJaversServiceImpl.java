@@ -105,10 +105,10 @@ public class SampleJaversServiceImpl implements SampleJaversService {
                         sample.getAncestryCategory()))
                 .collect(Collectors.toList());
 
-        log.info("newAscnsTags****"+newSamplesTags);
-        log.info("prevAscnsTags****"+prevSamplesTags);
-        log.info("asscnsRemoved****"+samplesRemoved);
-        log.info("asscnsAdded****"+samplesAdded);
+        log.info("newSamplesTags****"+newSamplesTags);
+        log.info("prevSamplesTags****"+prevSamplesTags);
+        log.info("samplesRemoved****"+samplesRemoved);
+        log.info("samplesAdded****"+samplesAdded);
 
         AddedRemoved addedRemoved = new AddedRemoved();
         addedRemoved.setAdded(samplesAdded.size());

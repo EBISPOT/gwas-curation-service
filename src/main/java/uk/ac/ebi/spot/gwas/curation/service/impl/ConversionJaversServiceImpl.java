@@ -264,7 +264,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
         List<String> studyTagsList = Arrays.asList(studyTagsAdded);
 
         newStudyMap.forEach((tag, studyList) -> {
-            if(studyTagsList.contains(tag)) {
+            if(studyTagsList != null && studyTagsList.contains(tag)) {
                 log.info("Studies added newly");
                 log.info("Studies added ->"+tag);
                 VersionDiffStats newversionDiffStats = new VersionDiffStats();
