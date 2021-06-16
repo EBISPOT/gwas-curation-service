@@ -49,7 +49,7 @@ public class AssociationJaversServiceImpl implements AssociationJaversService {
                     .collect(Collectors.toList());
             AssociationDto prevAsscnsDto = AssociationDtoAssembler.assemble(asscn);
             if (!newAsscnsDto.isEmpty()) {
-                List<ValueChangeWrapper> valChanges = diffAssociations(newAsscnsDto.get(0), prevAsscnsDto);
+                List<ValueChangeWrapper> valChanges = diffAssociations(prevAsscnsDto, newAsscnsDto.get(0));
                 if(!valChanges.isEmpty()) {
                     VersionDiffStats versionDiffStats = new VersionDiffStats();
                     versionDiffStats.setEntity(asscn.getVariantId());
