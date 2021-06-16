@@ -50,7 +50,7 @@ public class SampleJaversServiceImpl implements SampleJaversService {
                     .collect(Collectors.toList());
             SampleDto prevSampleDto = SampleDtoAssembler.assemble(sample);
             if (!newSamplesDto.isEmpty()) {
-                List<ValueChangeWrapper> valChanges = diffSamples(newSamplesDto.get(0), prevSampleDto);
+                List<ValueChangeWrapper> valChanges = diffSamples(prevSampleDto, newSamplesDto.get(0));
                 if(!valChanges.isEmpty()) {
                     VersionDiffStats versionDiffStats = new VersionDiffStats();
                     versionDiffStats.setEntity(sample.getStage()+"|"+sample.getAncestryCategory());
