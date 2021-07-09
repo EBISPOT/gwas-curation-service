@@ -38,6 +38,7 @@ public class Application implements WebMvcConfigurer {
     }
 
     public static void main(String[] args) throws UnknownHostException {
+        log.info("Inside Curation Application");
         String hostAddress = InetAddress.getLocalHost().getHostAddress();
         String logFileName = System.getenv(GeneralCommon.LOG_FILE_NAME);
         System.setProperty("log.file.name", logFileName + "-" + hostAddress);

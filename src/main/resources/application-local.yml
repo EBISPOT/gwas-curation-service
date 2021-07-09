@@ -23,5 +23,14 @@ quartz:
     dbName: gwas-deposition-dev
 
 gwas-deposition-service:
+  url: http://193.62.54.159/backend-sajo-testing
   fileupload:
-    endpoint : http://193.62.54.159/backend/v1/submissions/
+    endpoints:
+      submission: /v1/submissions/
+
+
+gwas-curation-service:
+  url: http://localhost:8080
+  javers:
+    endpoints:
+      javers-submission: /v1/javers

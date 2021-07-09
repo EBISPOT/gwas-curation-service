@@ -7,8 +7,8 @@ RUN if [ ! -d /var/log/gwas/ ];then mkdir /var/log/gwas/;fi
 RUN chown -R gwas-curation-service:gwas-curation-service /var/log/gwas
 
 # Move project artifact
-ADD target/gwasdepo-curation-service-*.jar /home/gwas-curation-service/
+ADD target/gwas-curation-service-*.jar /home/gwas-curation-service/
 USER gwas-curation-service
 
 # Launch application server
-ENTRYPOINT exec $JAVA_HOME/bin/java $XMX $XMS -jar -Dspring.profiles.active=$ENVIRONMENT /home/gwas-curation-service/gwasdepo-curation-service-*.jar
+ENTRYPOINT exec $JAVA_HOME/bin/java $XMX $XMS -jar -Dspring.profiles.active=$ENVIRONMENT /home/gwas-curation-service/gwas-curation-service-*.jar

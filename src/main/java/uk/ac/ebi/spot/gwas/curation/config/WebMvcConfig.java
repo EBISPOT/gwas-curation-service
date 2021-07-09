@@ -43,7 +43,7 @@ public class WebMvcConfig {
         @Override
         public void addCorsMappings(CorsRegistry registry) {
             registry.addMapping("/**")
-                    .allowedOrigins("http://localhost:80")
+                    .allowedOrigins("*")
                     .allowedMethods("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH", "FETCH")
                     .allowCredentials(true)
                     .allowedHeaders("*", "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials");
