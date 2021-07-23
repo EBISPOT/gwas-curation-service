@@ -26,7 +26,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 service:
-  name: gwas-curation-service
+  name: gwas-curation-traits-service
   type: NodePort
   port: 8080
 
@@ -37,7 +37,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
 
   host: chart-example.local
-  path: "/curation(/|$)(.*)"
+  path: "/curation-traits(/|$)(.*)"
 
   tls: []
 

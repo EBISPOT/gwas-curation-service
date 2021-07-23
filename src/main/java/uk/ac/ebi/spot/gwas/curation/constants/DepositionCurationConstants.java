@@ -9,5 +9,6 @@ public class DepositionCurationConstants {
     public static final String API_SUBMISSION_VERSION = "/versions";
     public static final String API_JAVERS = "/javers";
     public static final String API_JAVERS_CHANGES = "/changes";
+    public static final String API_DISEASE_TRAITS = "/reported-traits";
 
 }
