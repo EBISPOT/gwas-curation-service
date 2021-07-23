@@ -1,11 +1,14 @@
 package uk.ac.ebi.spot.gwas.curation.rest.dto;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.spot.gwas.curation.rest.DiseaseTraitController;
+import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
+import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 
 import java.util.ArrayList;
@@ -14,11 +17,16 @@ import java.util.List;
 @Component
 public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait, Resource<DiseaseTraitDto>> {
 
+    @Autowired
+    UserService userService;
+
     public Resource<DiseaseTraitDto> toResource(DiseaseTrait diseaseTrait) {
         DiseaseTraitDto diseaseTraitDTO = DiseaseTraitDto.builder()
                 .id(diseaseTrait.getId())
                 .trait(diseaseTrait.getTrait())
                 .studies(diseaseTrait.getStudyIds())
+                .created(ProvenanceDtoAssembler.assemble(diseaseTrait.getCreated(),
+                        userService.getUser(diseaseTrait.getCreated().getUserId())))
                 .build();
         final ControllerLinkBuilder controllerLinkBuilder = ControllerLinkBuilder.linkTo(
                 ControllerLinkBuilder.methodOn(DiseaseTraitController.class).getDiseaseTrait(diseaseTrait.getId()));
