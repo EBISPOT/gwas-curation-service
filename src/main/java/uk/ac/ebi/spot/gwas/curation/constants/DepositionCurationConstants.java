@@ -10,5 +10,6 @@ public class DepositionCurationConstants {
     public static final String API_JAVERS = "/javers";
     public static final String API_JAVERS_CHANGES = "/changes";
     public static final String API_DISEASE_TRAITS = "/reported-traits";
-
+    public static final String PARAM_TRAIT = "trait";
+    public static final String PARAM_STUDY_ID = "studyId";
 }

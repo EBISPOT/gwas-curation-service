@@ -1,24 +1,21 @@
-package uk.ac.ebi.spot.gwas.curation.rest.dto;
+package uk.ac.ebi.spot.gwas.curation.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.rest.DiseaseTraitController;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.ProvenanceDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
-import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@Component
-public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait, Resource<DiseaseTraitDto>> {
+@Service
+public class DiseaseTraitAssemblyService implements ResourceAssembler<DiseaseTrait, Resource<DiseaseTraitDto>> {
 
     @Autowired
     UserService userService;
@@ -26,6 +23,7 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
 
+    @Override
     public Resource<DiseaseTraitDto> toResource(DiseaseTrait diseaseTrait) {
         DiseaseTraitDto diseaseTraitDTO = DiseaseTraitDto.builder()
                 .diseaseTraitId(diseaseTrait.getId())
@@ -42,31 +40,6 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
         return resource;
     }
 
-    public static List<DiseaseTraitDto> assemble(List<DiseaseTrait> diseaseTraits) {
-
-        List<DiseaseTraitDto> diseaseTraitDTOS = new ArrayList<>();
-        diseaseTraits.forEach(diseaseTrait -> {
-            DiseaseTraitDto diseaseTraitDTO = DiseaseTraitDto.builder()
-                    .diseaseTraitId(diseaseTrait.getId())
-                    .trait(diseaseTrait.getTrait())
-                    .build();
-            diseaseTraitDTOS.add(diseaseTraitDTO);
-        });
-        return diseaseTraitDTOS;
-    }
-
-    public static DiseaseTrait disassemble(DiseaseTraitDto diseaseTraitDTO) {
-        DiseaseTrait diseaseTrait = new DiseaseTrait();
-        diseaseTrait.setTrait(diseaseTraitDTO.getTrait());
-        return diseaseTrait;
-    }
 
 
 }
-
-
-
-
-
-
-

@@ -1,6 +1,11 @@
 package uk.ac.ebi.spot.gwas.curation.util;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import uk.ac.ebi.spot.gwas.deposition.domain.Association;
+import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Sample;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.javers.CommitMetadata;
@@ -9,6 +14,7 @@ import uk.ac.ebi.spot.gwas.deposition.javers.GlobalId;
 import uk.ac.ebi.spot.gwas.deposition.javers.JaversChangeWrapper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -864,6 +870,83 @@ public class TestUtil {
         sample1.setCountryRecruitement("Kazakhstan | Uzbekistan");
         return sample1;
     }
+
+    public static DiseaseTrait mockDiseaseTrait() {
+        DiseaseTrait diseaseTrait = new DiseaseTrait();
+        diseaseTrait.setId("1cbced6789");
+        diseaseTrait.setTrait("wg rh intensity-contrast paracentral");
+        String[] studyIds = {"study1","study2","study3"};
+        diseaseTrait.setStudyIds(Arrays.asList(studyIds));
+        return diseaseTrait;
+    }
+
+    public static Page<DiseaseTrait> mockDiseaseTraits() {
+
+        List<DiseaseTrait> traits = new ArrayList<>();
+        DiseaseTrait diseaseTrait = new DiseaseTrait();
+        diseaseTrait.setId("1cbced6789");
+        diseaseTrait.setTrait("wg rh intensity-contrast paracentral");
+        String[] studyIds = {"study1","study2","study3"};
+        diseaseTrait.setStudyIds(Arrays.asList(studyIds));
+
+        DiseaseTrait diseaseTrai1 = new DiseaseTrait();
+        diseaseTrai1.setId("1bcde5432");
+        diseaseTrai1.setTrait("wg rh intensity-contrast precuneus");
+        String[] studyIds1 = {"study1","study2","study3"};
+        diseaseTrai1.setStudyIds(Arrays.asList(studyIds));
+
+        DiseaseTrait diseaseTrait2 = new DiseaseTrait();
+        diseaseTrait2.setId("3ghif5432");
+        diseaseTrait2.setTrait("wg rh intensity-contrast rostralmiddlefrontal");
+        String[] studyIds2 = {"study1","study2","study3"};
+        diseaseTrait2.setStudyIds(Arrays.asList(studyIds));
+
+        traits.add(diseaseTrait);
+        traits.add(diseaseTrai1);
+        traits.add(diseaseTrait2);
+
+        Pageable pageable = new PageRequest(0 , 10);
+
+        Page<DiseaseTrait> traitPage = new PageImpl<>(traits, pageable,  traits.size());
+
+        return traitPage;
+    }
+
+    public static Page<DiseaseTrait> mockDiseaseTraitByStudyId() {
+        List<DiseaseTrait> traits = new ArrayList<>();
+        DiseaseTrait diseaseTrait = new DiseaseTrait();
+        diseaseTrait.setId("1cbced6789");
+        diseaseTrait.setTrait("wg rh intensity-contrast paracentral");
+        String[] studyIds = {"study1","study2","study3"};
+        diseaseTrait.setStudyIds(Arrays.asList(studyIds));
+
+        DiseaseTrait diseaseTrai1 = new DiseaseTrait();
+        diseaseTrai1.setId("1bcde5432");
+        diseaseTrai1.setTrait("wg rh intensity-contrast precuneus");
+        String[] studyIds1 = {"study1","study2","study3"};
+        diseaseTrai1.setStudyIds(Arrays.asList(studyIds));
+        traits.add(diseaseTrait);
+        traits.add(diseaseTrai1);
+
+        Pageable pageable = new PageRequest(0 , 10);
+        Page<DiseaseTrait> traitPage = new PageImpl<>(traits, pageable,  traits.size());
+        return traitPage;
+    }
+
+    public static Page<DiseaseTrait> mockDiseaseTraitByTrait() {
+        List<DiseaseTrait> traits = new ArrayList<>();
+        DiseaseTrait diseaseTrait = new DiseaseTrait();
+        diseaseTrait.setId("1cbced6789");
+        diseaseTrait.setTrait("wg rh intensity-contrast paracentral");
+        String[] studyIds = {"study1","study2","study3"};
+        diseaseTrait.setStudyIds(Arrays.asList(studyIds));
+
+        traits.add(diseaseTrait);
+        Pageable pageable = new PageRequest(0 , 10);
+        Page<DiseaseTrait> traitPage = new PageImpl<>(traits, pageable,  traits.size());
+        return traitPage;
+    }
+
 
 
 }
