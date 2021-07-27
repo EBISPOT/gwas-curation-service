@@ -80,6 +80,8 @@ public class DiseaseTraitController {
         }
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public PagedResources<DiseaseTraitDto> getDiseaseTraits(PagedResourcesAssembler assembler,
                                                             @RequestParam(value = DepositionCurationConstants.PARAM_TRAIT,
                                                                     required = false) String trait,
