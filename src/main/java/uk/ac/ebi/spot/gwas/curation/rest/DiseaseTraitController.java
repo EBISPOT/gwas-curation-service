@@ -102,7 +102,7 @@ public class DiseaseTraitController {
                         .methodOn(DiseaseTraitController.class).getDiseaseTraits(assembler, trait, studyId, pageable));
         log.info(" lb is {}",lb);
         log.info(" Proxy prefix is {}",depositionCurationConfig.getProxy_prefix());
-       return assembler.toResource(pagedDiseaseTraits, diseaseTraitAssemblyService,
+       return assembler.toResource(pagedDiseaseTraits, diseaseTraitDtoAssembler,
                new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
     }
 }

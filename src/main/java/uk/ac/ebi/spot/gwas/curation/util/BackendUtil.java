@@ -3,13 +3,7 @@ package uk.ac.ebi.spot.gwas.curation.util;
 import org.springframework.data.rest.webmvc.support.BaseUriLinkBuilder;
 import org.springframework.hateoas.LinkBuilder;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import uk.ac.ebi.spot.gwas.deposition.domain.Author;
-import uk.ac.ebi.spot.gwas.deposition.domain.Study;
-
 import java.net.URI;
-import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.List;
 
 
 
