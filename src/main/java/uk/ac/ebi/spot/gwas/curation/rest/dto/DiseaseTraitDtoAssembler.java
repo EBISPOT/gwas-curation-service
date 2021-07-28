@@ -37,6 +37,8 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
                 .studies(diseaseTrait.getStudyIds())
                 .created(ProvenanceDtoAssembler.assemble(diseaseTrait.getCreated(),
                         userService.getUser(diseaseTrait.getCreated().getUserId())))
+                .updated(diseaseTrait.getUpdated() != null ? ProvenanceDtoAssembler.assemble(diseaseTrait.getUpdated(),
+                        userService.getUser(diseaseTrait.getUpdated().getUserId())) : null)
                 .build();
         log.info("DiseaseTraitDtoAssembler Buider->"+diseaseTraitDTO);
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
@@ -65,6 +67,7 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
     public static DiseaseTrait disassemble(DiseaseTraitDto diseaseTraitDTO) {
         DiseaseTrait diseaseTrait = new DiseaseTrait();
         diseaseTrait.setTrait(diseaseTraitDTO.getTrait());
+        diseaseTrait.setStudyIds(diseaseTraitDTO.getStudies());
         return diseaseTrait;
     }
 
