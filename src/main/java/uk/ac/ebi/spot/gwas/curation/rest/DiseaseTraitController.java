@@ -1,6 +1,8 @@
 package uk.ac.ebi.spot.gwas.curation.rest;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +41,7 @@ import java.util.Optional;
 @RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_DISEASE_TRAITS)
 public class DiseaseTraitController {
 
+    private static final Logger log = LoggerFactory.getLogger(DiseaseTraitController.class);
     @Autowired
     DiseaseTraitService diseaseTraitService;
 
@@ -89,11 +92,16 @@ public class DiseaseTraitController {
                                                                     required = false) String studyId,
                                                             @SortDefault(sort = "trait", direction = Sort.Direction.DESC)
                                                             @PageableDefault(size = 10, page = 0) Pageable pageable) {
-
-
+        log.info("Params passed  trait- {}  studyId - {} pageNumber - {} - pagesize- {} ",trait, studyId,
+                pageable.getPageNumber(), pageable.getPageSize());
        Page<DiseaseTrait> pagedDiseaseTraits =  diseaseTraitService.getDiseaseTraits( trait, studyId, pageable);
+
+       log.info(" Size of Page is {}",pagedDiseaseTraits.getSize());
+        log.info(" Content of Page is {}",pagedDiseaseTraits.getContent());
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
                         .methodOn(DiseaseTraitController.class).getDiseaseTraits(assembler, trait, studyId, pageable));
+        log.info(" lb is {}",lb);
+        log.info(" Proxy prefix is {}",depositionCurationConfig.getProxy_prefix());
        return assembler.toResource(pagedDiseaseTraits, diseaseTraitAssemblyService,
                new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
     }
