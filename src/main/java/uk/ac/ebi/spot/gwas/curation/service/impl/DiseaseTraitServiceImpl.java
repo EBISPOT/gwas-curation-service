@@ -54,10 +54,10 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
             Optional.ofNullable(diseaseTraitDto.getTrait()).ifPresent(trait -> diseaseTrait.setTrait(diseaseTraitDto.getTrait()));
             diseaseTrait.setTrait(diseaseTraitDto.getTrait());
             List<String> studies = diseaseTrait.getStudyIds();
-            diseaseTraitDto.getStudies().forEach(studyID -> {
+            Optional.ofNullable(diseaseTraitDto.getStudies()).ifPresent(studys -> studys.forEach(studyID -> {
                 if (!studies.contains(studyID))
                     studies.add(studyID);
-            });
+            }));
             diseaseTrait.setUpdated(new Provenance(DateTime.now(), user.getId()));
             return diseaseTraitRepository.save(diseaseTrait);
         } else {
