@@ -74,10 +74,7 @@ public class DiseaseTraitController {
     @PutMapping(value = "/{traitId}",produces = MediaType.APPLICATION_JSON_VALUE)
     public Resource<DiseaseTraitDto> updateDiseaseTraits(@PathVariable String traitId,@Valid @RequestBody DiseaseTraitDto diseaseTraitDto, HttpServletRequest request) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        DiseaseTrait diseaseTrait = DiseaseTraitDtoAssembler.disassemble(diseaseTraitDto);
-        diseaseTrait.setId(traitId);
-        diseaseTrait.setUpdated(new Provenance(DateTime.now(), user.getId()));
-        DiseaseTrait diseaseTraitUpdated = diseaseTraitService.createDiseaseTrait(diseaseTrait);
+        DiseaseTrait diseaseTraitUpdated = diseaseTraitService.saveDiseaseTrait(traitId, diseaseTraitDto, user);
         return diseaseTraitDtoAssembler.toResource(diseaseTraitUpdated);
     }
 

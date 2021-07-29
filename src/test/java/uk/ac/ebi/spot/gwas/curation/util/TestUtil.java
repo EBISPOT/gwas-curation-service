@@ -1,13 +1,12 @@
 package uk.ac.ebi.spot.gwas.curation.util;
 
+import com.google.common.collect.ImmutableList;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import uk.ac.ebi.spot.gwas.deposition.domain.Association;
-import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
-import uk.ac.ebi.spot.gwas.deposition.domain.Sample;
-import uk.ac.ebi.spot.gwas.deposition.domain.Study;
+import uk.ac.ebi.spot.gwas.deposition.domain.*;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.javers.CommitMetadata;
 import uk.ac.ebi.spot.gwas.deposition.javers.ElementChange;
 import uk.ac.ebi.spot.gwas.deposition.javers.GlobalId;
@@ -880,6 +879,16 @@ public class TestUtil {
         return diseaseTrait;
     }
 
+    public static DiseaseTraitDto mockDiseaseTraitDto() {
+        DiseaseTraitDto diseaseTraitDto = DiseaseTraitDto.builder()
+                .trait("1cbced6789")
+                .trait("wg rh intensity-contrast paracentral")
+                .studies(ImmutableList.of("study1","study2","study3"))
+                .build();
+
+        return diseaseTraitDto;
+    }
+
     public static Page<DiseaseTrait> mockDiseaseTraits() {
 
         List<DiseaseTrait> traits = new ArrayList<>();
@@ -945,6 +954,17 @@ public class TestUtil {
         Pageable pageable = new PageRequest(0 , 10);
         Page<DiseaseTrait> traitPage = new PageImpl<>(traits, pageable,  traits.size());
         return traitPage;
+    }
+
+    public static User mockUserDetails() {
+        User user = new User();
+        user.setName("test");
+        user.setEmail("test@testmail.com");
+        user.setNickname("test");
+        user.setUserReference("test");
+        user.setId("1234");
+        user.setDomains(ImmutableList.of("curator"));
+        return user;
     }
 
 

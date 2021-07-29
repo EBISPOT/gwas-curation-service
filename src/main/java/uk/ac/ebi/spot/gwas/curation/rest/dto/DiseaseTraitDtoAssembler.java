@@ -18,6 +18,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait, Resource<DiseaseTraitDto>> {
@@ -66,8 +67,8 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
 
     public static DiseaseTrait disassemble(DiseaseTraitDto diseaseTraitDTO) {
         DiseaseTrait diseaseTrait = new DiseaseTrait();
-        diseaseTrait.setTrait(diseaseTraitDTO.getTrait());
-        diseaseTrait.setStudyIds(diseaseTraitDTO.getStudies());
+        Optional.ofNullable(diseaseTraitDTO.getTrait()).ifPresent(trait -> diseaseTrait.setTrait(diseaseTraitDTO.getTrait()));
+        Optional.ofNullable(diseaseTraitDTO.getStudies()).ifPresent(studies -> diseaseTrait.setStudyIds(diseaseTraitDTO.getStudies()));
         return diseaseTrait;
     }
 

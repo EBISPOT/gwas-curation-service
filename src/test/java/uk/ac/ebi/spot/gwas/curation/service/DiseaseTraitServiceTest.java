@@ -14,6 +14,8 @@ import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.service.impl.DiseaseTraitServiceImpl;
 import uk.ac.ebi.spot.gwas.curation.util.TestUtil;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
+import uk.ac.ebi.spot.gwas.deposition.domain.User;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 
 import java.util.Optional;
 
@@ -31,6 +33,8 @@ public class DiseaseTraitServiceTest {
     @Autowired
     DiseaseTraitRepository diseaseTraitRepository;
 
+    User user;
+
     @Before
     public void setup() {
         when(diseaseTraitRepository.findById(any())).thenReturn(Optional.of(TestUtil.mockDiseaseTrait()));
@@ -38,6 +42,9 @@ public class DiseaseTraitServiceTest {
         when(diseaseTraitRepository.findByStudyIdsContains(any(),any())).thenReturn(TestUtil.mockDiseaseTraitByStudyId());
         when(diseaseTraitRepository.findByTrait(any(),any())).thenReturn(TestUtil.mockDiseaseTraitByTrait());
         when(diseaseTraitRepository.findAll()).thenReturn(TestUtil.mockDiseaseTraits().getContent());
+        when(diseaseTraitRepository.save(any())).thenReturn(TestUtil.mockDiseaseTrait());
+        user = TestUtil.mockUserDetails();
+
     }
 
 
@@ -55,5 +62,13 @@ public class DiseaseTraitServiceTest {
       diseaseTraitService.getDiseaseTraits(null,"study1", pageable);
       diseaseTraitService.getDiseaseTraits(null, null ,pageable);
       assertNotNull(traitPage);
+  }
+
+
+  @Test
+  public void testSaveDiseaseTrait() {
+      DiseaseTraitDto diseaseTraitDto = TestUtil.mockDiseaseTraitDto();
+      DiseaseTrait diseaseTrait = diseaseTraitService.saveDiseaseTrait("1234", diseaseTraitDto, user );
+      assertNotNull(diseaseTrait);
   }
 }
