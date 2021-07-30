@@ -36,8 +36,8 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
                 .diseaseTraitId(diseaseTrait.getId())
                 .trait(diseaseTrait.getTrait())
                 .studies(diseaseTrait.getStudyIds())
-                .created(ProvenanceDtoAssembler.assemble(diseaseTrait.getCreated(),
-                        userService.getUser(diseaseTrait.getCreated().getUserId())))
+                .created(diseaseTrait.getCreated() != null ? ProvenanceDtoAssembler.assemble(diseaseTrait.getCreated(),
+                        userService.getUser(diseaseTrait.getCreated().getUserId())) : null)
                 .updated(diseaseTrait.getUpdated() != null ? ProvenanceDtoAssembler.assemble(diseaseTrait.getUpdated(),
                         userService.getUser(diseaseTrait.getUpdated().getUserId())) : null)
                 .build();
