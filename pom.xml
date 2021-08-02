@@ -195,6 +195,13 @@
             <artifactId>javers-spring-mongo</artifactId>
             <version>5.0.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.java-json-tools</groupId>
+            <artifactId>json-patch</artifactId>
+            <version>1.13</version>
+        </dependency>
+
     </dependencies>
 
 </project>

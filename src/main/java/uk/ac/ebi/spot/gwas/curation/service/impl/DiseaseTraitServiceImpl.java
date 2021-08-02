@@ -32,6 +32,12 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         return diseaseTraitInserted;
     }
 
+    public DiseaseTrait updateDiseaseTrait(DiseaseTrait diseaseTrait) {
+
+        DiseaseTrait diseaseTraitUpdated = diseaseTraitRepository.save(diseaseTrait);
+        return diseaseTraitUpdated;
+    }
+
     public Optional<DiseaseTrait> getDiseaseTrait(String traitId) {
         return diseaseTraitRepository.findById(traitId);
     }
@@ -52,7 +58,6 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         if (optDiseaseTrait.isPresent()) {
             DiseaseTrait diseaseTrait = optDiseaseTrait.get();
             Optional.ofNullable(diseaseTraitDto.getTrait()).ifPresent(trait -> diseaseTrait.setTrait(diseaseTraitDto.getTrait()));
-            diseaseTrait.setTrait(diseaseTraitDto.getTrait());
             List<String> studies = diseaseTrait.getStudyIds();
             Optional.ofNullable(diseaseTraitDto.getStudies()).ifPresent(studys -> studys.forEach(studyID -> {
                 if (!studies.contains(studyID))

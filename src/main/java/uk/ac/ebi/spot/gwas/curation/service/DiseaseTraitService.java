@@ -14,6 +14,8 @@ public interface DiseaseTraitService {
 
     public DiseaseTrait saveDiseaseTrait(String traitId, DiseaseTraitDto diseaseTraitDto, User user);
 
+    public DiseaseTrait updateDiseaseTrait(DiseaseTrait diseaseTrait);
+
     public Optional<DiseaseTrait> getDiseaseTrait(String traitId);
 
     public Page<DiseaseTrait> getDiseaseTraits(String trait, String studyId, Pageable page);

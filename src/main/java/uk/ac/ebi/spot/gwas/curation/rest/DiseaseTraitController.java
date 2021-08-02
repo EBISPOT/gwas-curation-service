@@ -1,5 +1,10 @@
 package uk.ac.ebi.spot.gwas.curation.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.rest.webmvc.json.patch.JsonPatchPatchConverter;
+import org.springframework.data.web.JsonPath;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.SortDefault;
@@ -78,17 +85,37 @@ public class DiseaseTraitController {
         return diseaseTraitDtoAssembler.toResource(diseaseTraitUpdated);
     }
 
+
+
+
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{traitId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Resource<DiseaseTraitDto> getDiseaseTrait(@PathVariable String traitId) {
         Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitId);
-        if(optionalDiseaseTrait.isPresent()){
+        if(optionalDiseaseTrait.isPresent()) {
             DiseaseTrait diseaseTrait = optionalDiseaseTrait.get();
            return diseaseTraitDtoAssembler.toResource(diseaseTrait);
         }
         else{
             throw new EntityNotFoundException("Disease Trait not found"+ traitId);
         }
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping(value = "/{traitId}", produces = "application/json-patch+json")
+    public Resource<DiseaseTraitDto> patchDiseaseTrait(@PathVariable String traitId, @RequestBody JsonPatch jsonPatch, HttpServletRequest request)
+            throws JsonPatchException, JsonProcessingException {
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
+        Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitId);
+        if(optionalDiseaseTrait.isPresent()) {
+         DiseaseTrait diseaseTraitPatched =  applyPatchToDiseaseTrait(jsonPatch, optionalDiseaseTrait.get());
+         diseaseTraitPatched.setUpdated(new Provenance(DateTime.now(), user.getId()));
+         DiseaseTrait diseaseTraitUpdated =  diseaseTraitService.updateDiseaseTrait(diseaseTraitPatched);
+         return diseaseTraitDtoAssembler.toResource(diseaseTraitUpdated);
+        }else{
+            throw new EntityNotFoundException("Disease Trait not found"+ traitId);
+        }
+
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -112,5 +139,10 @@ public class DiseaseTraitController {
         log.info(" Proxy prefix is {}",depositionCurationConfig.getProxy_prefix());
        return assembler.toResource(pagedDiseaseTraits, diseaseTraitDtoAssembler,
                new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
+    }
+
+    public DiseaseTrait applyPatchToDiseaseTrait(JsonPatch jsonPatch, DiseaseTrait diseaseTrait ) throws JsonPatchException, JsonProcessingException {
+        JsonNode jsonPatched = jsonPatch.apply(new ObjectMapper().convertValue(diseaseTrait , JsonNode.class));
+        return new ObjectMapper().treeToValue(jsonPatched, DiseaseTrait.class );
     }
 }
