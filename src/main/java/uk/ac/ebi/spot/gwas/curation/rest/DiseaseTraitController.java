@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.ProvenanceDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.JWTService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
@@ -67,11 +68,14 @@ public class DiseaseTraitController {
     @Autowired
     DiseaseTraitAssemblyService diseaseTraitAssemblyService;
 
+    @Autowired
+    ProvenanceDtoAssembler provenanceDtoAssembler;
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Resource<DiseaseTraitDto> addDiseaseTraits(@Valid @RequestBody DiseaseTraitDto diseaseTraitDto, HttpServletRequest request) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        DiseaseTrait diseaseTrait = DiseaseTraitDtoAssembler.disassemble(diseaseTraitDto);
+        DiseaseTrait diseaseTrait = diseaseTraitDtoAssembler.disassemble(diseaseTraitDto);
         diseaseTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
         DiseaseTrait diseaseTraitInserted = diseaseTraitService.createDiseaseTrait(diseaseTrait);
         return diseaseTraitDtoAssembler.toResource(diseaseTraitInserted);
@@ -108,10 +112,13 @@ public class DiseaseTraitController {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitId);
         if(optionalDiseaseTrait.isPresent()) {
-         DiseaseTrait diseaseTraitPatched =  applyPatchToDiseaseTrait(jsonPatch, optionalDiseaseTrait.get());
-         diseaseTraitPatched.setUpdated(new Provenance(DateTime.now(), user.getId()));
-         DiseaseTrait diseaseTraitUpdated =  diseaseTraitService.updateDiseaseTrait(diseaseTraitPatched);
-         return diseaseTraitDtoAssembler.toResource(diseaseTraitUpdated);
+            DiseaseTraitDto diseaseTraitPatchedDTO =  applyPatchToDiseaseTrait(jsonPatch,
+                    diseaseTraitDtoAssembler.assemble(optionalDiseaseTrait.get()));
+            DiseaseTrait  diseaseTraitPatched = diseaseTraitDtoAssembler.disassemble(diseaseTraitPatchedDTO);
+            diseaseTraitPatched.setCreated(provenanceDtoAssembler.disassemble(diseaseTraitPatchedDTO.getCreated(), user));
+            diseaseTraitPatched.setUpdated(new Provenance(DateTime.now(), user.getId()));
+            DiseaseTrait diseaseTraitUpdated =  diseaseTraitService.updateDiseaseTrait(diseaseTraitPatched);
+            return diseaseTraitDtoAssembler.toResource(diseaseTraitUpdated);
         }else{
             throw new EntityNotFoundException("Disease Trait not found"+ traitId);
         }
@@ -141,8 +148,9 @@ public class DiseaseTraitController {
                new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
     }
 
-    public DiseaseTrait applyPatchToDiseaseTrait(JsonPatch jsonPatch, DiseaseTrait diseaseTrait ) throws JsonPatchException, JsonProcessingException {
-        JsonNode jsonPatched = jsonPatch.apply(new ObjectMapper().convertValue(diseaseTrait , JsonNode.class));
-        return new ObjectMapper().treeToValue(jsonPatched, DiseaseTrait.class );
+    public DiseaseTraitDto applyPatchToDiseaseTrait(JsonPatch jsonPatch, DiseaseTraitDto diseaseTraitDto ) throws JsonPatchException, JsonProcessingException {
+        log.info("Inside applyPatchToDiseaseTrait()");
+        JsonNode jsonPatched = jsonPatch.apply(new ObjectMapper().convertValue(diseaseTraitDto , JsonNode.class));
+        return new ObjectMapper().treeToValue(jsonPatched, DiseaseTraitDto.class );
     }
 }

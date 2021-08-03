@@ -1,11 +1,14 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
+import uk.ac.ebi.spot.gwas.curation.rest.DiseaseTraitController;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
@@ -20,6 +23,8 @@ import java.util.Optional;
 @Service
 public class DiseaseTraitServiceImpl implements DiseaseTraitService {
 
+    private static final Logger log = LoggerFactory.getLogger(DiseaseTraitServiceImpl.class);
+
     private DiseaseTraitRepository diseaseTraitRepository;
 
     public DiseaseTraitServiceImpl(DiseaseTraitRepository diseaseTraitRepository) {
@@ -33,7 +38,7 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
     }
 
     public DiseaseTrait updateDiseaseTrait(DiseaseTrait diseaseTrait) {
-
+        log.info("Inside updateDiseaseTrait()");
         DiseaseTrait diseaseTraitUpdated = diseaseTraitRepository.save(diseaseTrait);
         return diseaseTraitUpdated;
     }

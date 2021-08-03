@@ -65,8 +65,26 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
         return diseaseTraitDTOS;
     }
 
-    public static DiseaseTrait disassemble(DiseaseTraitDto diseaseTraitDTO) {
+
+    public  DiseaseTraitDto assemble(DiseaseTrait diseaseTrait) {
+
+            DiseaseTraitDto diseaseTraitDTO = DiseaseTraitDto.builder()
+                    .diseaseTraitId(diseaseTrait.getId())
+                    .trait(diseaseTrait.getTrait())
+                    .studies(diseaseTrait.getStudyIds())
+                    .created(diseaseTrait.getCreated() != null ? ProvenanceDtoAssembler.assemble(diseaseTrait.getCreated(),
+                            userService.getUser(diseaseTrait.getCreated().getUserId())) : null)
+                    .updated(diseaseTrait.getUpdated() != null ? ProvenanceDtoAssembler.assemble(diseaseTrait.getUpdated(),
+                            userService.getUser(diseaseTrait.getUpdated().getUserId())) : null)
+                    .build();
+
+
+        return diseaseTraitDTO;
+    }
+
+    public  DiseaseTrait disassemble(DiseaseTraitDto diseaseTraitDTO) {
         DiseaseTrait diseaseTrait = new DiseaseTrait();
+        Optional.ofNullable(diseaseTraitDTO.getDiseaseTraitId()).ifPresent(id -> diseaseTrait.setId(diseaseTraitDTO.getDiseaseTraitId()));
         Optional.ofNullable(diseaseTraitDTO.getTrait()).ifPresent(trait -> diseaseTrait.setTrait(diseaseTraitDTO.getTrait()));
         Optional.ofNullable(diseaseTraitDTO.getStudies()).ifPresent(studies -> diseaseTrait.setStudyIds(diseaseTraitDTO.getStudies()));
         return diseaseTrait;

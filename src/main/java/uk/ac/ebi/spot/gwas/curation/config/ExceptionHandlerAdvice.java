@@ -1,5 +1,7 @@
 package uk.ac.ebi.spot.gwas.curation.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.fge.jsonpatch.JsonPatchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -49,6 +51,23 @@ public class ExceptionHandlerAdvice {
         headers.setContentType(MediaType.TEXT_PLAIN);
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(JsonPatchException.class)
+    public ResponseEntity<String> handleJsonPatchException(JsonPatchException ex) {
+        log.error("JsonPatchException ->"+ex.getMessage(),ex);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JsonProcessingException.class)
+    public ResponseEntity<String> handleJsonProcessingException(JsonProcessingException ex) {
+        log.error("JsonProcessingException ->"+ex.getMessage(),ex);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.BAD_REQUEST);
+    }
+
 
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<String> handleMongoException(DataAccessException ex) {
