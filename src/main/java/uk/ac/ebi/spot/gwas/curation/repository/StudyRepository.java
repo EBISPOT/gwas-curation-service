@@ -12,5 +12,6 @@ import java.util.stream.Stream;
 
 public interface StudyRepository extends MongoRepository<Study, String> {
 
+    Stream<Study> readByIdIn(List<String> ids);
 
 }

@@ -14,10 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.ebi.spot.gwas.curation.service.impl.ConversionJaversServiceImpl;
-import uk.ac.ebi.spot.gwas.deposition.exception.AuthorizationException;
-import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
-import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
-import uk.ac.ebi.spot.gwas.deposition.exception.NoVersionSummaryException;
+import uk.ac.ebi.spot.gwas.deposition.exception.*;
 
 @ControllerAdvice(annotations = RestController.class)
 public class ExceptionHandlerAdvice {
@@ -32,7 +29,7 @@ public class ExceptionHandlerAdvice {
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleAuthorizationException(EntityNotFoundException e) {
+    public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException e) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         return new ResponseEntity<>(e.getMessage(), headers, HttpStatus.NOT_FOUND);
@@ -77,6 +74,13 @@ public class ExceptionHandlerAdvice {
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(CannotDeleteTraitException.class)
+    public ResponseEntity<String> handleCannotDeleteTraitException(CannotDeleteTraitException ex) {
+        log.error("CannotDeleteTraitException ->"+ex.getMessage(),ex);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex) {

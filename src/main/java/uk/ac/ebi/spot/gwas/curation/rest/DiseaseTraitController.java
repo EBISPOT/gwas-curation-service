@@ -89,6 +89,12 @@ public class DiseaseTraitController {
         return diseaseTraitDtoAssembler.toResource(diseaseTraitUpdated);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping(value = "/{traitIds}")
+    public void deleteDiseaseTraits(@PathVariable String traitIds) {
+        diseaseTraitService.deleteDiseaseTrait(traitIds);
+    }
+
 
 
 
@@ -109,6 +115,7 @@ public class DiseaseTraitController {
     @PatchMapping(value = "/{traitId}", produces = "application/json-patch+json")
     public Resource<DiseaseTraitDto> patchDiseaseTrait(@PathVariable String traitId, @RequestBody JsonPatch jsonPatch, HttpServletRequest request)
             throws JsonPatchException, JsonProcessingException {
+        log.info("Inside applyPatchToDiseaseTrait()");
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitId);
         if(optionalDiseaseTrait.isPresent()) {

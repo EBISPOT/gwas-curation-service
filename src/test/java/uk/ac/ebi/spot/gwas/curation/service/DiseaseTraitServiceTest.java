@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.spot.gwas.curation.config.DiseaseTraitConfiguration;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
+import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
 import uk.ac.ebi.spot.gwas.curation.service.impl.DiseaseTraitServiceImpl;
 import uk.ac.ebi.spot.gwas.curation.util.TestUtil;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
@@ -32,6 +33,9 @@ public class DiseaseTraitServiceTest {
 
     @Autowired
     DiseaseTraitRepository diseaseTraitRepository;
+
+    @Autowired
+    StudyRepository studyRepository;
 
     User user;
 
