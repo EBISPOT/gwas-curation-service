@@ -48,6 +48,9 @@ public class SubmissionDiffController {
         List<JaversChangeWrapper> changeList = responseEntity.getBody();
         if(changeList != null && !changeList.isEmpty()) {
             Optional<Map<Double, List<JaversChangeWrapper>>> convertedEntityOptional = conversionService.filterJaversResponse(changeList);
+            List<Double> versionMapTobeDeleted = conversionService.removeInvalidSumstatsEntries(changeList);
+            if(versionMapTobeDeleted != null && !versionMapTobeDeleted.isEmpty())
+                conversionService.removeVersionMap(convertedEntityOptional, versionMapTobeDeleted );
             summaries = conversionService.filterStudiesFromJavers(convertedEntityOptional);
             Optional<List<FileUpload>> fileUploadsOptional = conversionService.filterJaversResponseForFiles(responseEntity.getBody());
             summaries = fileUploadsOptional.isPresent()?conversionService.mapFilesToVersionSummary(summaries, fileUploadsOptional.get()):null;

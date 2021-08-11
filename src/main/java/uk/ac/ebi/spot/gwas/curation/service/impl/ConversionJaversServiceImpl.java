@@ -14,6 +14,7 @@ import uk.ac.ebi.spot.gwas.deposition.javers.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class ConversionJaversServiceImpl implements ConversionJaversService {
@@ -73,6 +74,37 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
 
 
 
+    }
+
+    /**
+     * Find indexes in Javers API for changes having sumstatsstus as Invalid
+     * & subsequent index will be for metadata submission associated with
+     * invalid sumstatst , use this index to fetch the version number which
+     * needs to be removed for invalid sumstats
+     *
+     * @param javersChangeWrapperList
+     */
+    public List<Double> removeInvalidSumstatsEntries(List<JaversChangeWrapper> javersChangeWrapperList) {
+
+      List<Integer> invalidSumstatsIndexes = IntStream.range(0, javersChangeWrapperList.size())
+                .filter(i -> ( javersChangeWrapperList.get(i).getProperty().equals("summaryStatsStatus")
+                && javersChangeWrapperList.get(i).getRight().equals("INVALID")))
+                .mapToObj(i -> i)
+                .collect(Collectors.toList());
+
+        List<Double> versionList = invalidSumstatsIndexes.stream()
+                .map(idx -> javersChangeWrapperList.get(idx+1).getCommitMetadata().getId())
+                .collect(Collectors.toList());
+
+        versionList.forEach(version  -> log.info(" Version->"+version));
+
+        return versionList;
+
+    }
+
+    public void removeVersionMap(Optional<Map<Double, List<JaversChangeWrapper>>> javersChangeWrapperMap,
+                                 List<Double> versionsTobeRemoved ) {
+        versionsTobeRemoved.forEach((version) -> javersChangeWrapperMap.get().remove(version));
     }
 
     @Override
