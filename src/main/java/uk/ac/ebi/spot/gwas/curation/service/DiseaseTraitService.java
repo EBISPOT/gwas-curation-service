@@ -5,12 +5,16 @@ import org.springframework.data.domain.Pageable;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface DiseaseTraitService {
 
     public DiseaseTrait createDiseaseTrait(DiseaseTrait diseaseTrait);
+
+    public List<TraitUploadReport> createDiseaseTrait(List<DiseaseTrait> diseaseTraits, User user);
 
     public DiseaseTrait saveDiseaseTrait(String traitId, DiseaseTraitDto diseaseTraitDto, User user);
 

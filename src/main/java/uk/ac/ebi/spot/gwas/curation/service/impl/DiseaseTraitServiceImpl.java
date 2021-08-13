@@ -4,6 +4,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 import uk.ac.ebi.spot.gwas.deposition.exception.CannotDeleteTraitException;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
@@ -43,6 +45,22 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
 
         DiseaseTrait diseaseTraitInserted = diseaseTraitRepository.insert(diseaseTrait);
         return diseaseTraitInserted;
+    }
+
+
+    public List<TraitUploadReport> createDiseaseTrait(List<DiseaseTrait> diseaseTraits,User user) {
+        List<TraitUploadReport> report = new ArrayList<>();
+        diseaseTraits.forEach(diseaseTrait -> {
+            try {
+                diseaseTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
+                diseaseTraitRepository.insert(diseaseTrait);
+                report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait successfully Inserted : "+diseaseTrait.getTrait()));
+            } catch(DataAccessException ex){
+                report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait Insertion failed as Trait already exists : "+diseaseTrait.getTrait()));
+            }
+        });
+        //DiseaseTrait diseaseTraitInserted = diseaseTraitRepository.insert(diseaseTrait);
+        return report;
     }
 
     public DiseaseTrait updateDiseaseTrait(DiseaseTrait diseaseTrait) {

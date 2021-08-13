@@ -1,5 +1,9 @@
 package uk.ac.ebi.spot.gwas.curation.rest.dto;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,14 +12,20 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.rest.DiseaseTraitController;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
+import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -88,6 +98,27 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
         Optional.ofNullable(diseaseTraitDTO.getTrait()).ifPresent(trait -> diseaseTrait.setTrait(diseaseTraitDTO.getTrait()));
         Optional.ofNullable(diseaseTraitDTO.getStudies()).ifPresent(studies -> diseaseTrait.setStudyIds(diseaseTraitDTO.getStudies()));
         return diseaseTrait;
+    }
+
+    public static List<DiseaseTrait> disassemble(MultipartFile multipartFile)  {
+        CsvMapper mapper = new CsvMapper();
+         CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
+        List<DiseaseTraitDto> diseaseTraitDtos;
+        try {
+            InputStream inputStream = multipartFile.getInputStream();
+            MappingIterator<DiseaseTraitDto> iterator = mapper.readerFor(DiseaseTraitDto.class).with(csvSchema).readValues(inputStream);
+            diseaseTraitDtos = iterator.readAll();
+        }catch (IOException ex){
+            throw new FileProcessingException("Could not read the file");
+        }
+
+        List<DiseaseTrait> diseaseTraits = new ArrayList<>();
+        diseaseTraitDtos.forEach(diseaseTraitDTO -> {
+            DiseaseTrait diseaseTrait = new DiseaseTrait();
+            diseaseTrait.setTrait(diseaseTraitDTO.getTrait());
+            diseaseTraits.add(diseaseTrait);
+        });
+        return diseaseTraits;
     }
 
 

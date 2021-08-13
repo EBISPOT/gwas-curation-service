@@ -37,6 +37,7 @@ public class ExceptionHandlerAdvice {
 
     @ExceptionHandler(FileProcessingException.class)
     public ResponseEntity<String> handleFileProcessingException(FileProcessingException ex) {
+        log.error("FileProcessingException :"+ex.getMessage(),ex);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
