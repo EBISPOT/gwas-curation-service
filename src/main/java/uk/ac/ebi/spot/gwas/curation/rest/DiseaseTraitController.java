@@ -65,8 +65,7 @@ public class DiseaseTraitController {
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
 
-    @Autowired
-    DiseaseTraitAssemblyService diseaseTraitAssemblyService;
+
 
     @Autowired
     ProvenanceDtoAssembler provenanceDtoAssembler;

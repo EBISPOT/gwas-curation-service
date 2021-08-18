@@ -1,12 +1,17 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
+import org.apache.commons.text.similarity.CosineDistance;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
@@ -15,6 +20,8 @@ import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisCacheDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 import uk.ac.ebi.spot.gwas.deposition.exception.CannotDeleteTraitException;
@@ -24,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -142,5 +150,41 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         }
     }
 
+
+    @Cacheable(value = "diseaseTraitAnalysis", key = "#analysisId")
+    public AnalysisCacheDto similaritySearch(List<AnalysisDTO> diseaseTraitAnalysisDTOS, String analysisId, double threshold) {
+        LevenshteinDistance lv = new LevenshteinDistance();
+        CosineDistance cd = new CosineDistance();
+
+        List<DiseaseTrait> diseaseTraits = diseaseTraitRepository.findAll();
+        List<AnalysisDTO> analysisReport = new ArrayList<>();
+        diseaseTraitAnalysisDTOS
+                .forEach(diseaseTraitAnalysisDTO ->
+                        diseaseTraits.forEach(diseaseTrait -> {
+                                    String trait = diseaseTrait.getTrait();
+                                    String userTerm = diseaseTraitAnalysisDTO.getUserTerm();
+
+                                    double cosineDistance = cd.apply(userTerm, trait);
+                                    double levenshteinDistance = ((double) lv.apply(userTerm, trait)) / Math.max(userTerm.length(), trait.length());
+                                    double cosineSimilarityPercent = Math.round((1 - cosineDistance) * 100);
+                                    double levenshteinSimilarityPercent = Math.round((1 - levenshteinDistance) * 100);
+                                    double chosen = Math.max(cosineSimilarityPercent, levenshteinSimilarityPercent);
+                                    if (chosen >= threshold) {
+                                        AnalysisDTO report = AnalysisDTO.builder()
+                                                .userTerm(userTerm)
+                                                .similarTerm(trait)
+                                                .degree(chosen).build();
+                                        analysisReport.add(report);
+                                    }
+                                }
+                        ));
+
+        AnalysisCacheDto analysisCacheDto = AnalysisCacheDto.builder()
+                .uniqueId(analysisId)
+                .analysisResult(analysisReport).build();
+
+        return analysisCacheDto;
+
+    }
 
 }
