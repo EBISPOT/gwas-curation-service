@@ -169,12 +169,21 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
                                     double cosineSimilarityPercent = Math.round((1 - cosineDistance) * 100);
                                     double levenshteinSimilarityPercent = Math.round((1 - levenshteinDistance) * 100);
                                     double chosen = Math.max(cosineSimilarityPercent, levenshteinSimilarityPercent);
-                                    if (chosen >= threshold) {
+                                    log.info("cosineDistance : {}",cosineDistance);
+                                    log.info("levenshteinDistance : {}",levenshteinDistance);
+                                    log.info("cosineSimilarityPercent : {}",cosineSimilarityPercent);
+                                    log.info("levenshteinSimilarityPercent : {}",levenshteinSimilarityPercent);
+                                    log.info("chosen : {}",chosen);
+                                    log.info("threshold : {}",threshold);
+
+                            if (chosen >= threshold) {
+
                                         AnalysisDTO report = AnalysisDTO.builder()
                                                 .userTerm(userTerm)
                                                 .similarTerm(trait)
                                                 .degree(chosen).build();
                                         analysisReport.add(report);
+                                        log.info("Inside Analysis Report Blick :{}",analysisReport );
                                     }
                                 }
                         ));
