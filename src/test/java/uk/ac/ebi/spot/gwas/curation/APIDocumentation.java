@@ -3,22 +3,30 @@ package uk.ac.ebi.spot.gwas.curation;
 
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.restdocs.payload.ResponseFieldsSnippet;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class APIDocumentation {
 
     @Rule
@@ -61,6 +69,17 @@ public class APIDocumentation {
                 .alwaysDo(this.restDocumentationResultHandler)
                 .build();
     }
+
+   */
+/* @Test
+    public void apiExample () throws Exception {
+        this.mockMvc.perform(get(contextPath.concat("/rest/api")).contextPath(contextPath.concat("/rest")).accept(MediaType.APPLICATION_JSON))
+                .andDo(this.restDocumentationResultHandler.document(
+                        responseFields(
+                                fieldWithPath("_links").description("<<Depo Curation>> to other resources")
+                        ),
+    }*//*
+
 
 }
 */

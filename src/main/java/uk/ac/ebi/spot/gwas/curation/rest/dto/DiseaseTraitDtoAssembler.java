@@ -14,6 +14,7 @@ import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
+import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.DiseaseTraitController;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
@@ -56,7 +57,7 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
                 ControllerLinkBuilder.methodOn(DiseaseTraitController.class).getDiseaseTrait(diseaseTrait.getId()));
         Resource<DiseaseTraitDto> resource = new Resource<>(diseaseTraitDTO);
         //resource.add(controllerLinkBuilder.withSelfRel());
-        resource.add(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).withSelfRel());
+        resource.add(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT));
 
         log.info("DiseaseTraitDtoAssembler Resource->"+resource);
         return resource;

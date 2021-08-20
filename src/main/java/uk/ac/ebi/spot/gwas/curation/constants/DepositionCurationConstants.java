@@ -13,4 +13,5 @@ public class DepositionCurationConstants {
     public static final String API_DISEASE_TRAITS_FILE_UPLOAD = "/reported-traits/fileupload";
     public static final String PARAM_TRAIT = "trait";
     public static final String PARAM_STUDY_ID = "studyId";
+    public static final String LINKS_PARENT = "parent";
 }
