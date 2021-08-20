@@ -27,6 +27,9 @@ public class DepositionCurationConfig {
     @Value("${gwas-curation.db:#{NULL}}")
     private String dbName;
 
+    @Value("${gwas-curation.proxy-prefix:#{NULL}}")
+    private String proxy_prefix;
+
     public String getDbName() {
         return dbName;
     }
@@ -50,4 +53,6 @@ public class DepositionCurationConfig {
     public List<String> getCuratorDomains() {
         return CurationUtil.sToList(curatorDomains);
     }
+
+    public String getProxy_prefix() { return proxy_prefix; }
 }
