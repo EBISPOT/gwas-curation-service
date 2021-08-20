@@ -58,7 +58,7 @@ public class DiseaseTraitFileUploadController {
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
 
-
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/uploads", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<TraitUploadReport>> uploadDiseaseTraits(@Valid FileUploadRequest fileUploadRequest, BindingResult result,
@@ -73,7 +73,7 @@ public class DiseaseTraitFileUploadController {
         return new ResponseEntity<>(traitUploadReports, HttpStatus.CREATED);
     }
 
-
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/analysis", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public Resource<AnalysisCacheDto>  similaritySearchAnalysis(@Valid FileUploadRequest fileUploadRequest, BindingResult result) throws IOException, ExecutionException, InterruptedException {
@@ -96,7 +96,7 @@ public class DiseaseTraitFileUploadController {
         return resource;
     }
 
-
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping(value ="/analysis/{analysisId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseBody
     public HttpEntity<byte[]> similaritySearchAnalysisCsvDownload(@PathVariable String analysisId)
@@ -121,6 +121,20 @@ public class DiseaseTraitFileUploadController {
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
 
+        return new HttpEntity<>(result, responseHeaders);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(value = "/templates", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @ResponseBody
+    public HttpEntity<byte[]> fileUploadTemplateDownload(HttpServletResponse response,
+                                             @RequestParam(value = "file") String fileUploadType) throws IOException {
+
+        byte[] result = FileHandler.getTemplate(fileUploadType).getBytes();
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+fileUploadType+".tsv");
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
         return new HttpEntity<>(result, responseHeaders);
     }
 
