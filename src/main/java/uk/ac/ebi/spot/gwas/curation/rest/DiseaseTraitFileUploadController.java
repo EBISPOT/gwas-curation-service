@@ -76,18 +76,14 @@ public class DiseaseTraitFileUploadController {
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/analysis", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Resource<AnalysisCacheDto>  similaritySearchAnalysis(@Valid FileUploadRequest fileUploadRequest, BindingResult result) throws IOException, ExecutionException, InterruptedException {
+    public Resource<AnalysisCacheDto>  similaritySearchAnalysis(@Valid FileUploadRequest fileUploadRequest, BindingResult result) throws IOException {
         if (result.hasErrors()) {
             throw new FileValidationException(result);
         }
         String analysisId = UUID.randomUUID().toString();
-        CompletableFuture<AnalysisCacheDto>  cacheFuture = CompletableFuture.supplyAsync(() -> {
-            List<AnalysisDTO> analysisDTOS = FileHandler.serializeDiseaseTraitAnalysisFile(fileUploadRequest);
-            log.info("{} disease traits were ingested for analysis", analysisDTOS.size());
-            return diseaseTraitService.similaritySearch(analysisDTOS, analysisId, 50);
-        });
-        AnalysisCacheDto  analysisCacheDto = AnalysisCacheDto.builder().uniqueId(analysisId).build();
-
+        List<AnalysisDTO> analysisDTOS = FileHandler.serializeDiseaseTraitAnalysisFile(fileUploadRequest);
+        log.info("{} disease traits were ingested for analysis", analysisDTOS.size());
+        AnalysisCacheDto  analysisCacheDto = diseaseTraitService.similaritySearch(analysisDTOS, analysisId, 50);
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
                 ControllerLinkBuilder.methodOn(DiseaseTraitFileUploadController.class).similaritySearchAnalysisCsvDownload(analysisId));
         Resource<AnalysisCacheDto> resource = new Resource<>(analysisCacheDto);
@@ -100,17 +96,12 @@ public class DiseaseTraitFileUploadController {
     @GetMapping(value ="/analysis/{analysisId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseBody
     public HttpEntity<byte[]> similaritySearchAnalysisCsvDownload(@PathVariable String analysisId)
-            throws IOException, ExecutionException, InterruptedException {
+            throws IOException{
         log.info("Retrieving Cached Analysis with ID  : {}", analysisId);
-        //List<AnalysisDTO> analysisDTO = new ArrayList<>();
-        double threshold = 90.0;
-        //Future<AnalysisCacheDto> cacheFuture = diseaseTraitService.similaritySearch(analysisDTO, analysisId, threshold);
-        CompletableFuture<AnalysisCacheDto>  cacheFuture = CompletableFuture.supplyAsync(() -> {
-            List<AnalysisDTO> analysisDTO = new ArrayList<>();
-            return diseaseTraitService.similaritySearch(analysisDTO, analysisId, threshold);
-        });
 
-        AnalysisCacheDto cache = cacheFuture.get();
+        double threshold = 50.0;
+        List<AnalysisDTO> analysisDTO = new ArrayList<>();
+        AnalysisCacheDto cache = diseaseTraitService.similaritySearch(analysisDTO, analysisId, threshold);
         List<AnalysisDTO> analysisDTOs = cache.getAnalysisResult();
         analysisDTOs.sort(Comparator.comparingDouble(AnalysisDTO::getDegree).reversed());
         byte[] result = FileHandler.serializePojoToTsv(analysisDTOs);

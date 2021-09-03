@@ -57,6 +57,16 @@
     </repositories>
 
     <build>
+        <pluginManagement>
+            <plugins>
+
+                <plugin>
+                    <groupId>org.asciidoctor</groupId>
+                    <artifactId>asciidoctor-maven-plugin</artifactId>
+                    <version>1.5.3</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -94,14 +104,14 @@
                     </execution>
                 </executions>
             </plugin>
-          <!--  <plugin>
+            <plugin>
                 <groupId>org.asciidoctor</groupId>
                 <artifactId>asciidoctor-maven-plugin</artifactId>
                 <version>1.5.3</version>
                 <executions>
                     <execution>
                         <id>output-html</id>
-                        &lt;!&ndash;<phase>prepare-package</phase>&ndash;&gt;
+                        <!--<phase>prepare-package</phase>-->
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>process-asciidoc</goal>
@@ -114,14 +124,14 @@
                     <backend>html</backend>
                     <doctype>book</doctype>
                     <attributes>
-                        &lt;!&ndash;<toc/>&ndash;&gt;
-                        &lt;!&ndash;<imagesdir>img</imagesdir>&ndash;&gt;
+                        <!--<toc/>-->
+                        <!--<imagesdir>img</imagesdir>-->
                         <snippets>${snippetsDirectory}</snippets>
                     </attributes>
-                    &lt;!&ndash;<headerFooter>false</headerFooter>&ndash;&gt;
+                    <!--<headerFooter>false</headerFooter>-->
                     <preserveDirectories>true</preserveDirectories>
                 </configuration>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
 
@@ -287,6 +297,13 @@
         </dependency>
 
         <dependency>
+        <groupId>org.springframework.restdocs</groupId>
+        <artifactId>spring-restdocs-core</artifactId>
+        <version>1.1.2.RELEASE</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.springframework.restdocs</groupId>
             <artifactId>spring-restdocs-mockmvc</artifactId>
             <version>1.1.2.RELEASE</version>
@@ -295,6 +312,10 @@
                 <exclusion>
                     <groupId>org.springframework</groupId>
                     <artifactId>spring-test</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.restdocs</groupId>
+                    <artifactId>spring-restdocs-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
