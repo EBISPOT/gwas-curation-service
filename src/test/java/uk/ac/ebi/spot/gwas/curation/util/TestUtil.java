@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import uk.ac.ebi.spot.gwas.curation.rest.DiseaseTraitController;
@@ -901,6 +902,18 @@ public class TestUtil {
         resource.add(BackendUtil.underBasePath(lb, "curation-traits").withSelfRel());
         return resource;
     }
+
+    public static Resource<DiseaseTraitDto> mockAssemblyResources() {
+        DiseaseTraitDto diseaseTraitDto = mockDiseaseTraitDto();
+        final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
+                ControllerLinkBuilder.methodOn(DiseaseTraitController.class).getDiseaseTrait("1234"));
+        Resource<DiseaseTraitDto> resource = new Resource<>(diseaseTraitDto);
+        //resource.add(controllerLinkBuilder.withSelfRel());
+        resource.add(BackendUtil.underBasePath(lb, "curation-traits").withSelfRel());
+        return resource;
+    }
+
+
 
     public static Page<DiseaseTrait> mockDiseaseTraits() {
 

@@ -13,6 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
@@ -30,6 +32,8 @@ import uk.ac.ebi.spot.gwas.curation.config.security.AuthEntryPoint;
 import uk.ac.ebi.spot.gwas.curation.config.security.JwtUtils;
 import uk.ac.ebi.spot.gwas.curation.config.security.WebSecurityConfig;
 import uk.ac.ebi.spot.gwas.curation.repository.*;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.ProvenanceDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.util.TestUtil;
 import uk.ac.ebi.spot.gwas.deposition.config.SystemConfigProperties;
@@ -52,7 +56,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Import({WebSecurityConfig.class, DiseaseTraitConfiguration.class})
+@Import({WebSecurityConfig.class})
 public class APIDocumentation {
 
     @Rule
@@ -61,7 +65,7 @@ public class APIDocumentation {
 
     private RestDocumentationResultHandler restDocumentationResultHandler;
 
-    @Value("${server.servlet.context-path:/gwas/depo-curation/api}")
+    @Value("${server.servlet.context-path:/}")
     private String contextPath;
 
     @MockBean
@@ -150,16 +154,33 @@ public class APIDocumentation {
     MongoConfig.MongoConfiGCPSandbox mongoConfiGCPSandbox;
 
 
-    @Autowired
+    @MockBean
     DiseaseTraitService diseaseTraitService;
 
-    @Autowired
+    @MockBean
     DiseaseTraitRepository diseaseTraitRepository;
 
-    @Autowired
+    @MockBean
     StudyRepository studyRepository;
 
+    @MockBean
+    UserService userService;
 
+    @MockBean
+    JWTService jwtService;
+
+
+    @MockBean
+    DiseaseTraitDtoAssembler diseaseTraitDtoAssembler;
+
+    @MockBean
+    DepositionCurationConfig depositionCurationConfig;
+
+    @MockBean
+    ProvenanceDtoAssembler provenanceDtoAssembler;
+
+    @MockBean
+    PagedResourcesAssembler assembler;
 
 
 
@@ -209,12 +230,16 @@ public class APIDocumentation {
 
         when(systemConfigProperties.getServerName()).thenReturn("dummy");
         when(systemConfigProperties.getServerPort()).thenReturn("8080");
+        when(systemConfigProperties.getServerName()).thenReturn("dummy");
+        when(diseaseTraitService.getDiseaseTrait(any())).thenReturn(Optional.of(TestUtil.mockDiseaseTrait()));
+        when(diseaseTraitService.getDiseaseTraits( any(), any(), any())).thenReturn((TestUtil.mockDiseaseTraits()));
+        when(diseaseTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResource());
     }
 
 
     @Test
     public void apiExample () throws Exception {
-        this.mockMvc.perform(get(contextPath.concat("/curation-traits")).contextPath(contextPath.concat("/curation-traits")).accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get(contextPath.concat("v1/reported-traits")).contextPath(contextPath.concat("")).accept(MediaTypes.HAL_JSON))
                 .andDo(this.restDocumentationResultHandler.document(
                         responseFields(
                                 fieldWithPath("_links").description("<<Depo Curation>> to other resources")
