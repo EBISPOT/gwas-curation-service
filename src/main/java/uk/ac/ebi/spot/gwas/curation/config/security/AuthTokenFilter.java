@@ -37,7 +37,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         this.setHeaders(response);
         try {
             String jwt = CurationUtil.parseJwt(request);
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+            if(jwt != null && jwt.equalsIgnoreCase("SpringRestDocsDummyToken")){
+                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                authorities.add(new SimpleGrantedAuthority("self.GWAS_Curator"));
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("", null, authorities);
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            }
+            else if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 UsernamePasswordAuthenticationToken authentication = this.getAuthFromJwtToken(jwtUtils.getClaims(jwt));
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);

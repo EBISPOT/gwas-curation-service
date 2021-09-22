@@ -65,7 +65,7 @@ public class APIDocumentation {
 
     private RestDocumentationResultHandler restDocumentationResultHandler;
 
-    @Value("${server.servlet.context-path:/}")
+    @Value("${server.servlet.context-path:/curation-traits}")
     private String contextPath;
 
     @MockBean
@@ -239,13 +239,14 @@ public class APIDocumentation {
 
     @Test
     public void apiExample () throws Exception {
-        this.mockMvc.perform(get(contextPath.concat("v1/reported-traits")).contextPath(contextPath.concat("")).accept(MediaTypes.HAL_JSON))
+        this.mockMvc.perform(get(contextPath.concat("")).contextPath(contextPath.concat("")).accept(MediaTypes.HAL_JSON)
+                .header("Authorization","Bearer SpringRestDocsDummyToken"))
                 .andDo(this.restDocumentationResultHandler.document(
                         responseFields(
                                 fieldWithPath("_links").description("<<Depo Curation>> to other resources")
                         ),
                         links(halLinks(),
-                                linkWithRel("reported-traits").description("Link to all the Reported traits in the GWAS Catalog")
+                                linkWithRel("diseaseTraits").description("Link to all the Reported traits in the GWAS Catalog")
                         )))
                 .andExpect(status().isOk());
     }
