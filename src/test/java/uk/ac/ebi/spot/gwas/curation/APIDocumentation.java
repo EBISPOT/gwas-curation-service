@@ -61,7 +61,7 @@ public class APIDocumentation {
 
     @Rule
     public final JUnitRestDocumentation
-            restDocumentation = new JUnitRestDocumentation("src/main/asciidoc/generated-snippets");
+            restDocumentation = new JUnitRestDocumentation("target/generated-snippets");
 
     private RestDocumentationResultHandler restDocumentationResultHandler;
 
@@ -216,8 +216,10 @@ public class APIDocumentation {
                         .withScheme("http")
                         .withHost("193.62.54.159")
                         .withPort(80))
-
-                .alwaysDo(this.restDocumentationResultHandler)
+                .alwaysDo(document("{method-name}",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())
+                ))
                 .build();
 
         when(diseaseTraitRepository.findById(any())).thenReturn(Optional.of(TestUtil.mockDiseaseTrait()));
@@ -241,14 +243,18 @@ public class APIDocumentation {
     public void apiExample () throws Exception {
         this.mockMvc.perform(get(contextPath.concat("")).contextPath(contextPath.concat("")).accept(MediaTypes.HAL_JSON)
                 .header("Authorization","Bearer SpringRestDocsDummyToken"))
-                .andDo(this.restDocumentationResultHandler.document(
+                .andExpect(status().isOk())
+                .andDo(document("api-example",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())
+                        ,
                         responseFields(
                                 fieldWithPath("_links").description("<<Depo Curation>> to other resources")
                         ),
                         links(halLinks(),
                                 linkWithRel("diseaseTraits").description("Link to all the Reported traits in the GWAS Catalog")
                         )))
-                .andExpect(status().isOk());
+                ;
     }
 
 
