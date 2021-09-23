@@ -1,3 +1,4 @@
+/*
 package uk.ac.ebi.spot.gwas.curation.rest;
 
 import org.springframework.stereotype.Controller;
@@ -5,9 +6,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+*/
 /**
  * Created by dwelter on 24/11/16.
- */
+ *//*
+
 
 @Controller
 public class DocumentationController {
@@ -32,3 +35,4 @@ public class DocumentationController {
 
 
 }
+*/
