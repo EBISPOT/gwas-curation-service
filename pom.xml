@@ -120,7 +120,7 @@
                 </executions>
                 <configuration>
                     <sourceDirectory>src/main/asciidoc</sourceDirectory>
-                    <outputDirectory>${project.build.directory}/classes/static/documents/</outputDirectory>
+                    <outputDirectory>${project.build.directory}/generated-docs</outputDirectory>
                     <backend>html</backend>
                     <doctype>book</doctype>
                     <attributes>
