@@ -1,4 +1,0 @@
-[source,bash]
-----
-$ curl 'https://www.ebi.ac.uk/gwas/depo-curation/api/gwas/depo-curation/api' -i -H 'Accept: application/json'
-----

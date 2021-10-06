@@ -1,4 +1,0 @@
-[source,bash]
-----
-$ http GET 'https://www.ebi.ac.uk/gwas/depo-curation/api/gwas/depo-curation/api' 'Accept:application/json'
-----
