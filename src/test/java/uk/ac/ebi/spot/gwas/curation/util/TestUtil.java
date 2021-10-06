@@ -1,6 +1,7 @@
 package uk.ac.ebi.spot.gwas.curation.util;
 
 import com.google.common.collect.ImmutableList;
+import org.joda.time.DateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -9,8 +10,10 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import uk.ac.ebi.spot.gwas.curation.rest.DiseaseTraitController;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.ProvenanceDtoAssembler;
 import uk.ac.ebi.spot.gwas.deposition.domain.*;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 import uk.ac.ebi.spot.gwas.deposition.javers.CommitMetadata;
 import uk.ac.ebi.spot.gwas.deposition.javers.ElementChange;
 import uk.ac.ebi.spot.gwas.deposition.javers.GlobalId;
@@ -885,9 +888,10 @@ public class TestUtil {
 
     public static DiseaseTraitDto mockDiseaseTraitDto() {
         DiseaseTraitDto diseaseTraitDto = DiseaseTraitDto.builder()
-                .trait("1cbced6789")
+                .diseaseTraitId("1cbced6789")
                 .trait("wg rh intensity-contrast paracentral")
                 .studies(ImmutableList.of("study1","study2","study3"))
+                .created(ProvenanceDtoAssembler.assemble(new Provenance(DateTime.now(),"sijisj0i1"),mockUserDetails()))
                 .build();
 
         return diseaseTraitDto;
@@ -936,15 +940,140 @@ public class TestUtil {
         String[] studyIds2 = {"study1","study2","study3"};
         diseaseTrait2.setStudyIds(Arrays.asList(studyIds));
 
+        DiseaseTrait diseaseTrait3 = new DiseaseTrait();
+        diseaseTrait3.setId("jkahsh1");
+        diseaseTrait3.setTrait("dummy1");
+
+
+        DiseaseTrait diseaseTrait4 = new DiseaseTrait();
+        diseaseTrait4.setId("jhajha");
+        diseaseTrait4.setTrait("dummy2");
+
+
+        DiseaseTrait diseaseTrait5 = new DiseaseTrait();
+        diseaseTrait5.setId("jhakjkaj");
+        diseaseTrait5.setTrait("dummy3");
+
+        DiseaseTrait diseaseTrait6 = new DiseaseTrait();
+        diseaseTrait6.setId("njsajhsj");
+        diseaseTrait6.setTrait("dummy4");
+
+        DiseaseTrait diseaseTrait7 = new DiseaseTrait();
+        diseaseTrait7.setId("kjkHSA");
+        diseaseTrait7.setTrait("dummy5");
+
+        DiseaseTrait diseaseTrait8 = new DiseaseTrait();
+        diseaseTrait8.setId("KJNAKSJ");
+        diseaseTrait8.setTrait("dummy6");
+
+        DiseaseTrait diseaseTrait9 = new DiseaseTrait();
+        diseaseTrait9.setId("wihihija");
+        diseaseTrait9.setTrait("dummy7");
+
+        DiseaseTrait diseaseTrait10 = new DiseaseTrait();
+        diseaseTrait10.setId("njsajhsj");
+        diseaseTrait10.setTrait("dummy8");
+
+        DiseaseTrait diseaseTrait11 = new DiseaseTrait();
+        diseaseTrait11.setId("khkhakjkj");
+        diseaseTrait11.setTrait("dummy9");
+
         traits.add(diseaseTrait);
         traits.add(diseaseTrai1);
         traits.add(diseaseTrait2);
+        traits.add(diseaseTrait3);
+        traits.add(diseaseTrait4);
+        traits.add(diseaseTrait5);
+        traits.add(diseaseTrait6);
+        traits.add(diseaseTrait7);
+        traits.add(diseaseTrait8);
+        traits.add(diseaseTrait9);
+        traits.add(diseaseTrait10);
+        traits.add(diseaseTrait11);
 
         Pageable pageable = new PageRequest(0 , 10);
 
         Page<DiseaseTrait> traitPage = new PageImpl<>(traits, pageable,  traits.size());
 
         return traitPage;
+    }
+
+
+    public static List<DiseaseTrait> mockDiseaseTraitsList() {
+
+        List<DiseaseTrait> traits = new ArrayList<>();
+        DiseaseTrait diseaseTrait = new DiseaseTrait();
+        diseaseTrait.setId("1cbced6789");
+        diseaseTrait.setTrait("wg rh intensity-contrast paracentral");
+        String[] studyIds = {"study1","study2","study3"};
+        diseaseTrait.setStudyIds(Arrays.asList(studyIds));
+
+        DiseaseTrait diseaseTrai1 = new DiseaseTrait();
+        diseaseTrai1.setId("1bcde5432");
+        diseaseTrai1.setTrait("wg rh intensity-contrast precuneus");
+        String[] studyIds1 = {"study1","study2","study3"};
+        diseaseTrai1.setStudyIds(Arrays.asList(studyIds));
+
+        DiseaseTrait diseaseTrait2 = new DiseaseTrait();
+        diseaseTrait2.setId("3ghif5432");
+        diseaseTrait2.setTrait("wg rh intensity-contrast rostralmiddlefrontal");
+        String[] studyIds2 = {"study1","study2","study3"};
+        diseaseTrait2.setStudyIds(Arrays.asList(studyIds));
+
+        DiseaseTrait diseaseTrait3 = new DiseaseTrait();
+        diseaseTrait3.setId("jkahsh1");
+        diseaseTrait3.setTrait("dummy1");
+
+
+        DiseaseTrait diseaseTrait4 = new DiseaseTrait();
+        diseaseTrait4.setId("jhajha");
+        diseaseTrait4.setTrait("dummy2");
+
+
+        DiseaseTrait diseaseTrait5 = new DiseaseTrait();
+        diseaseTrait5.setId("jhakjkaj");
+        diseaseTrait5.setTrait("dummy3");
+
+        DiseaseTrait diseaseTrait6 = new DiseaseTrait();
+        diseaseTrait6.setId("njsajhsj");
+        diseaseTrait6.setTrait("dummy4");
+
+        DiseaseTrait diseaseTrait7 = new DiseaseTrait();
+        diseaseTrait7.setId("kjkHSA");
+        diseaseTrait7.setTrait("dummy5");
+
+        DiseaseTrait diseaseTrait8 = new DiseaseTrait();
+        diseaseTrait8.setId("KJNAKSJ");
+        diseaseTrait8.setTrait("dummy6");
+
+        DiseaseTrait diseaseTrait9 = new DiseaseTrait();
+        diseaseTrait9.setId("wihihija");
+        diseaseTrait9.setTrait("dummy7");
+
+        DiseaseTrait diseaseTrait10 = new DiseaseTrait();
+        diseaseTrait10.setId("njsajhsj");
+        diseaseTrait10.setTrait("dummy8");
+
+        DiseaseTrait diseaseTrait11 = new DiseaseTrait();
+        diseaseTrait11.setId("khkhakjkj");
+        diseaseTrait11.setTrait("dummy9");
+
+        traits.add(diseaseTrait);
+        traits.add(diseaseTrai1);
+        traits.add(diseaseTrait2);
+        traits.add(diseaseTrait3);
+        traits.add(diseaseTrait4);
+        traits.add(diseaseTrait5);
+        traits.add(diseaseTrait6);
+        traits.add(diseaseTrait7);
+        traits.add(diseaseTrait8);
+        traits.add(diseaseTrait9);
+        traits.add(diseaseTrait10);
+        traits.add(diseaseTrait11);
+
+
+
+        return traits;
     }
 
     public static Page<DiseaseTrait> mockDiseaseTraitByStudyId() {
@@ -991,6 +1120,17 @@ public class TestUtil {
         user.setId("1234");
         user.setDomains(ImmutableList.of("curator"));
         return user;
+    }
+
+    public static List<TraitUploadReport> mockTraitUploadReports() {
+        TraitUploadReport traitUploadReport1 = new TraitUploadReport("dummy1","Trait " +
+                "successfully Inserted : dummy1");
+        TraitUploadReport traitUploadReport2 = new TraitUploadReport("dummy2","Trait " +
+                "successfully Inserted : dummy2");
+        List<TraitUploadReport> traitUploadReports = new ArrayList<>();
+        traitUploadReports.add(traitUploadReport1);
+        traitUploadReports.add(traitUploadReport2);
+        return traitUploadReports;
     }
 
 
