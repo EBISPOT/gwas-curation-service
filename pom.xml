@@ -21,7 +21,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <snippetsDirectory>${project.basedir}/src/main/asciidoc/generated-snippets</snippetsDirectory>
+        <snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
         <start-class>uk.ac.ebi.spot.gwas.curation.Application</start-class>
     </properties>
 
@@ -288,6 +288,19 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+       <!-- <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.oracle.ojdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>19.3.0.0</version>
+            <scope>test</scope>
+        </dependency>-->
 
 
         <dependency>
