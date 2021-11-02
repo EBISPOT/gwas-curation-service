@@ -14,4 +14,5 @@ public class DepositionCurationConstants {
     public static final String PARAM_TRAIT = "trait";
     public static final String PARAM_STUDY_ID = "studyId";
     public static final String LINKS_PARENT = "parent";
+    public static final String API_EFO_TRAITS = "/efo-traits";
 }

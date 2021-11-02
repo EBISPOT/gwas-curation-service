@@ -118,5 +118,11 @@ public class ExceptionHandlerAdvice {
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-
+    @ExceptionHandler(CannotCreateTraitWithDuplicateNameException.class)
+    public ResponseEntity<String> handleCreateTraitWithDuplicateName(CannotCreateTraitWithDuplicateNameException e) {
+        log.error("Exception -> " + e.getMessage(), e);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(e.getMessage(), headers, HttpStatus.CONFLICT);
+    }
 }
