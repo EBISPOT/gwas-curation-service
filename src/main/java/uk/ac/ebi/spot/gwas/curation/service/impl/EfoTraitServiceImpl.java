@@ -112,7 +112,6 @@ public class EfoTraitServiceImpl implements EfoTraitService {
     @Override
     public void deleteEfoTrait(String traitIds) {
 
-        // TODO Auth
         String[] traitIdsArray = traitIds.split(",");
         List<String> notFoundTraits = new ArrayList<>();
         List<String> assignedToStudyTraits = new ArrayList<>();

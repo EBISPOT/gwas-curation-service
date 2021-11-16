@@ -129,7 +129,8 @@ public class EfoTraitController {
     
     @DeleteMapping(value = "/{traitIds}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteEfoTrait(@PathVariable String traitIds) {
+    public void deleteEfoTrait(@PathVariable String traitIds, HttpServletRequest request) {
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         efoTraitService.deleteEfoTrait(traitIds);
     }
 
