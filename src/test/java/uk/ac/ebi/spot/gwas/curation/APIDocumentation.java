@@ -2,6 +2,7 @@
 package uk.ac.ebi.spot.gwas.curation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import org.javers.core.Javers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,6 +24,7 @@ import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.restdocs.payload.ResponseFieldsSnippet;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.client.RestTemplate;
@@ -38,6 +40,8 @@ import uk.ac.ebi.spot.gwas.curation.config.security.WebSecurityConfig;
 import uk.ac.ebi.spot.gwas.curation.repository.*;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.ProvenanceDtoAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.util.TestUtil;
 import uk.ac.ebi.spot.gwas.deposition.config.SystemConfigProperties;
@@ -46,9 +50,8 @@ import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.FileUploadRequest;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.net.URI;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
@@ -65,6 +68,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -94,6 +98,9 @@ public class APIDocumentation {
 
     @MockBean
     Javers javers;
+
+    @MockBean
+    BindingResult bindingResult;
 
     @MockBean
     AssociationsService associationsService;
@@ -197,6 +204,13 @@ public class APIDocumentation {
     @MockBean
     FileUploadRequest fileUploadRequest;
 
+    @MockBean
+    StudyDtoAssembler studyDtoAssembler;
+
+    @MockBean
+    StudyPatchRequestAssembler studyPatchRequestAssembler;
+
+
 
 
 
@@ -240,6 +254,13 @@ public class APIDocumentation {
                 ))
                 .build();
 
+        MockMultipartFile multipartFile
+                = new MockMultipartFile(
+                "multipartFile",
+                "hello.txt",
+                MediaType.TEXT_PLAIN_VALUE,
+                "Hello, World!".getBytes()
+        );
 
         when(diseaseTraitRepository.findById(any())).thenReturn(Optional.of(TestUtil.mockDiseaseTrait()));
         when(diseaseTraitRepository.findByStudyIdsContainsAndTrait(any(),any(),any())).thenReturn(TestUtil.mockDiseaseTraits());
@@ -261,7 +282,16 @@ public class APIDocumentation {
         when(diseaseTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResource());
         when(diseaseTraitDtoAssembler.disassemble(any(DiseaseTraitDto.class))).thenReturn(TestUtil.mockDiseaseTrait());
 
-
+        when(studiesService.getStudies(any(), any())).thenReturn(TestUtil.mockStudies());
+        when(studiesService.getStudy(any())).thenReturn(TestUtil.mockStudy());
+        when(studyDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResourceForStudy());
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(fileUploadRequest.getMultipartFile()).thenReturn(multipartFile);
+        when(studiesService.updateTraitsForStudies(any())).thenReturn(TestUtil.mockTraitUploadReportsForStudyTraits());
+        when(studyPatchRequestAssembler.disassemble(any())).thenReturn(TestUtil.mockStudyPatchRequests());
+        when(studiesService.getTraitsIDsFromDB(any(), any())).thenReturn(ImmutableList.of("trait1","trait2","trait3"));
+        when(studyDtoAssembler.disassembleForExsitingStudy(any(), any())).thenReturn(TestUtil.mockStudy());
+        when(studiesService.updateStudies(any())).thenReturn(TestUtil.mockStudy());
         doNothing().when(diseaseTraitService).deleteDiseaseTrait(any());
     }
 
@@ -338,6 +368,7 @@ public class APIDocumentation {
 
 
 
+
     @Test
     public void addDiseaseTraitExample() throws Exception {
         Map<String, Object> payloadMap = new HashMap<>();
@@ -395,6 +426,124 @@ public class APIDocumentation {
                         pathParameters(
                                 parameterWithName("traitId").description("The unique id of the reported trait in the GWAS Catalog")
                         )));
+    }
+
+    @Test
+    public void getStudiesListExample() throws Exception {
+        this.mockMvc.perform(get(contextPath.concat("/v1/studies?page=1&size=1&sort=accession&submissionId=1234")).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization","Bearer SpringRestDocsDummyToken"))
+                .andExpect(status().isOk())
+                .andDo(document("studies-list-example",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestParameters(parameterWithName("page").description("The page number"),
+                                parameterWithName("size").description("The size of elements in a page"),
+                                parameterWithName("sort").description("the property to sort the records"),
+                                parameterWithName("submissionId").description("the submissionId for which studies should be retreived")),
+                        links(halLinks(),
+                                linkWithRel("self").description("This resource list"),
+                                linkWithRel("first").description("The first page in the resource list"),
+                                linkWithRel("next").description("The next page in the resource list"),
+                                linkWithRel("last").description("The last page in the resource list")
+                        )));
+
+    }
+
+    @Test
+    public void getStudyExample() throws Exception {
+        this.mockMvc.perform(get(contextPath.concat("/v1/studies/{studyId}"),1234).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization","Bearer SpringRestDocsDummyToken"))
+                .andExpect(status().isOk())
+                .andDo(this.restDocumentationResultHandler.document
+                        (pathParameters(parameterWithName("studyId").description("the studyId which needs to be retrieved from DB"))
+                        , responseFields(
+                                subsectionWithPath("_links").description("<<diseaseTraits-links,Links>> to other resources"),
+                                fieldWithPath("study_accession").description("The study's GWAS Catalog accession ID"),
+                                fieldWithPath("study_tag").description("Study Tag"),
+                                //fieldWithPath("sample_description").description("Initial sample description"),
+                                //fieldWithPath("genotypingTechnology").description("GenoTyping Technology"),
+                                //fieldWithPath("array_manufacturer").description("Array Manufacturer"),
+                                //fieldWithPath("array_information").description("Array Information"),
+                                fieldWithPath("variant_count").description("Number of SNPs passing QC"),
+                                //fieldWithPath("qualifier").description("Qualifier of number of SNPs passing QC (eg >)"),
+                                //fieldWithPath("imputation").description("Whether SNPs were imputed"),
+                                //fieldWithPath("statistical_model").description("Statistical Model"),
+                                fieldWithPath("study_description").description("Study Description"),
+                                //fieldWithPath("trait").description("the trait associated with study"),
+                               // fieldWithPath("efo_trait").description("Efo trait associated with study"),
+                               // fieldWithPath("background_trait").description("Background trait associated with study"),
+                               // fieldWithPath("background_efo_trait").description("Background trait associated with study"),
+                                fieldWithPath("cohort").description("Cohort for this study"),
+                                subsectionWithPath("diseaseTraits").description("Disease Trait description for the study")
+                                ),
+                                links(halLinks(),
+                                        linkWithRel("self").description("This resource list")
+                                )));
+    }
+
+    @Test
+    public void updateStudiesExample() throws Exception {
+        Map<String, Object> payloadMap = new HashMap<>();
+        List<DiseaseTraitDto> dtos = new ArrayList<>();
+        dtos.add(new DiseaseTraitDto("1234","trait1",null, null, null));
+        dtos.add(new DiseaseTraitDto("12345","trait2",null, null, null));
+        payloadMap.put("diseaseTraits", dtos);
+        payloadMap.put("study_tag","P3");
+        this.mockMvc.perform(get(contextPath.concat("/v1/studies/{studyId}"),1234).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
+                .content(this.mapper.writeValueAsString(payloadMap))
+                .header("Authorization","Bearer SpringRestDocsDummyToken"))
+                .andExpect(status().isOk())
+                .andDo(this.restDocumentationResultHandler.document
+                        ( pathParameters(parameterWithName("studyId").description("the studyId which needs to be retrieved from DB")),
+                                requestFields(subsectionWithPath("diseaseTraits").description("Disease Trait description for the study"),
+                                        fieldWithPath("diseaseTraits[].trait").description("the trait associated with study"),
+                                        fieldWithPath("study_tag").description("Study Tag")),
+
+                                responseFields(
+                                        subsectionWithPath("_links").description("<<diseaseTraits-links,Links>> to other resources"),
+                                        fieldWithPath("study_accession").description("The study's GWAS Catalog accession ID"),
+                                        fieldWithPath("study_tag").description("Study Tag"),
+                                        fieldWithPath("variant_count").description("Number of SNPs passing QC"),
+                                        fieldWithPath("study_description").description("Study Description"),
+                                        fieldWithPath("cohort").description("Cohort for this study"),
+                                        subsectionWithPath("diseaseTraits").description("Disease Trait description for the study")
+                                ),
+                                links(halLinks(),
+                                        linkWithRel("self").description("This resource list")
+                                )));
+    }
+
+    @Test
+    public void uploadDiseaseTraitsStudyMappingsExample() throws Exception {
+
+        String test = "GCST  Curated reported trait\n" +
+                "\"GCST90000026\"  \"Kashin-Beck disease\"";
+        MockMultipartFile multipartFile
+                = new MockMultipartFile(
+                "multipartFile",
+                "hello.tsv",
+                MediaType.TEXT_PLAIN_VALUE,
+                test.getBytes()
+        );
+
+        FileUploadRequest fileUploadRequest = new FileUploadRequest();
+        fileUploadRequest.setMultipartFile(multipartFile);
+
+
+        this.mockMvc.perform(multipart(contextPath.concat("/v1/studies/fileupload")).file(multipartFile).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization","Bearer SpringRestDocsDummyToken"))
+                .andExpect(status().isCreated())
+                .andDo(this.restDocumentationResultHandler.document(
+                        requestParts(partWithName("multipartFile").description("File to upload for trait mappings")),
+                        responseFields(
+                                fieldWithPath("[]").description("An Array of Trait Upload Report Objects"),
+                                fieldWithPath("[].accession").description("The GCST Id for the study to which trait is mapped"),
+                                fieldWithPath("[].trait").description("The name of the reported trait"),
+                                fieldWithPath("[].uploadComment").description("The transaction success or failure message"),
+                                subsectionWithPath("[].links").description("Links to other Trait Upload report")
+                        )));
+
     }
 
 

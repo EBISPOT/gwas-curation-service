@@ -34,11 +34,19 @@ public class MongoConfig {
         @Autowired
         private SystemConfigProperties systemConfigProperties;
 
-        @Override
+        @Autowired
+        private DepositionCurationConfig depositionCurationConfig;
+
+       /* @Override
         protected String getDatabaseName() {
             String serviceName = systemConfigProperties.getServerName();
             String environmentName = systemConfigProperties.getActiveSpringProfile();
             return serviceName + "-" + environmentName;
+        }*/
+
+        @Override
+        protected String getDatabaseName() {
+            return depositionCurationConfig.getDbName();
         }
 
         @Bean
@@ -46,7 +54,7 @@ public class MongoConfig {
             return new GridFsTemplate(mongoDbFactory(), mappingMongoConverter());
         }
 
-        @Override
+       /* @Override
         public MongoClient mongoClient() {
             String mongoUri = systemConfigProperties.getMongoUri();
             String[] addresses = mongoUri.split(",");
@@ -56,6 +64,12 @@ public class MongoConfig {
                 servers.add(new ServerAddress(split[0].trim(), Integer.parseInt(split[1].trim())));
             }
             return new MongoClient(servers);
+        }*/
+
+        @Override
+        public MongoClient mongoClient() {
+            String mongoUri = systemConfigProperties.getMongoUri();
+            return new MongoClient(new MongoClientURI("mongodb://" + mongoUri));
         }
 
         @Bean

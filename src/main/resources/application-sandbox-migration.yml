@@ -31,7 +31,7 @@ gwas-curation:
   auth:
     enabled: true
   db: deposition-backend-sandbox
-  proxy-prefix: /curation-traits
+  proxy-prefix: /curation
 
 email:
   enabled: false

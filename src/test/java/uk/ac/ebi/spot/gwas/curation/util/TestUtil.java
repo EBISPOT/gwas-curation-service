@@ -10,9 +10,13 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import uk.ac.ebi.spot.gwas.curation.rest.DiseaseTraitController;
+import uk.ac.ebi.spot.gwas.curation.rest.StudiesController;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.ProvenanceDtoAssembler;
 import uk.ac.ebi.spot.gwas.deposition.domain.*;
+import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 import uk.ac.ebi.spot.gwas.deposition.javers.CommitMetadata;
 import uk.ac.ebi.spot.gwas.deposition.javers.ElementChange;
@@ -1124,15 +1128,173 @@ public class TestUtil {
 
     public static List<TraitUploadReport> mockTraitUploadReports() {
         TraitUploadReport traitUploadReport1 = new TraitUploadReport("dummy1","Trait " +
-                "successfully Inserted : dummy1");
+                "successfully Inserted : dummy1",null);
         TraitUploadReport traitUploadReport2 = new TraitUploadReport("dummy2","Trait " +
-                "successfully Inserted : dummy2");
+                "successfully Inserted : dummy2",null);
         List<TraitUploadReport> traitUploadReports = new ArrayList<>();
         traitUploadReports.add(traitUploadReport1);
         traitUploadReports.add(traitUploadReport2);
         return traitUploadReports;
     }
 
+    public static List<TraitUploadReport> mockTraitUploadReportsForStudyTraits() {
+        TraitUploadReport traitUploadReport1 = new TraitUploadReport("dummy1","Trait " +
+                "successfully Inserted : dummy1","GCST9000123");
+        TraitUploadReport traitUploadReport2 = new TraitUploadReport("dummy2","Trait " +
+                "successfully Inserted : dummy2","GCST9000123");
+        List<TraitUploadReport> traitUploadReports = new ArrayList<>();
+        traitUploadReports.add(traitUploadReport1);
+        traitUploadReports.add(traitUploadReport2);
+        return traitUploadReports;
+    }
+
+    public static List<StudyPatchRequest> mockStudyPatchRequests() {
+        StudyPatchRequest studyPatchRequest1 = new StudyPatchRequest();
+        studyPatchRequest1.setGcst("GCST9000123");
+        studyPatchRequest1.setCuratedReportedTrait("dummy1");
+
+        StudyPatchRequest studyPatchRequest2 = new StudyPatchRequest();
+        studyPatchRequest2.setGcst("GCST9000124");
+        studyPatchRequest2.setCuratedReportedTrait("dummy2");
+
+        List<StudyPatchRequest> patchRequests = new ArrayList<>();
+        patchRequests.add(studyPatchRequest1);
+        patchRequests.add(studyPatchRequest2);
+
+        return patchRequests;
+    }
+
+
+
+    public static Page<Study> mockStudies() {
+
+        List<Study> studies = new ArrayList<>();
+        Study study = new Study();
+        study.setId("jakjkjakjk");
+        study.setAccession("GCST90000123");
+        String[] diseaseTraits1 = {"trait1","trait2","trait3"};
+        study.setDiseaseTraits(Arrays.asList(diseaseTraits1));
+
+        Study study1 = new Study();
+        study1.setId("lkalklak");
+        study1.setAccession("GCST90000124");
+        String[] diseaseTraits2 = {"trait1","trait2","trait3"};
+        study1.setDiseaseTraits(Arrays.asList(diseaseTraits2));
+
+        Study study2 = new Study();
+        study2.setId("hdakhkdah");
+        study2.setAccession("GCST90000125");
+        String[] diseaseTraits3 = {"trait1","trait2","trait3"};
+        study2.setDiseaseTraits(Arrays.asList(diseaseTraits3));
+
+        Study study3 = new Study();
+        study3.setId("jhskkjskajkj");
+        study3.setAccession("GCST90000126");
+        String[] diseaseTraits4 = {"trait1","trait2","trait3"};
+        study3.setDiseaseTraits(Arrays.asList(diseaseTraits4));
+
+
+        Study study4 = new Study();
+        study4.setId("uguaiuiadjgjh");
+        study4.setAccession("GCST90000127");
+        String[] diseaseTraits5 = {"trait1","trait2","trait3"};
+        study4.setDiseaseTraits(Arrays.asList(diseaseTraits5));
+
+
+        Study study5 = new Study();
+        study5.setId("ajdgugajdkgjk");
+        study5.setAccession("GCST90000128");
+        String[] diseaseTraits6 = {"trait1","trait2","trait3"};
+        study5.setDiseaseTraits(Arrays.asList(diseaseTraits6));
+
+        Study study6 = new Study();
+        study6.setId("hkjhjhkjhjkhjh");
+        study6.setAccession("GCST90000129");
+        String[] diseaseTraits7 = {"trait1","trait2","trait3"};
+        study6.setDiseaseTraits(Arrays.asList(diseaseTraits7));
+
+        Study study7 = new Study();
+        study7.setId("sjhjshajhs");
+        study7.setAccession("GCST90000130");
+        String[] diseaseTraits8 = {"trait1","trait2","trait3"};
+        study7.setDiseaseTraits(Arrays.asList(diseaseTraits8));
+
+        Study study8 = new Study();
+        study8.setId("sjhjshajhs");
+        study8.setAccession("GCST90000131");
+        String[] diseaseTraits9 = {"trait1","trait2","trait3"};
+        study8.setDiseaseTraits(Arrays.asList(diseaseTraits9));
+
+        Study study9 = new Study();
+        study9.setId("akjakjkjak");
+        study9.setAccession("GCST90000131");
+        String[] diseaseTraits10 = {"trait1","trait2","trait3"};
+        study9.setDiseaseTraits(Arrays.asList(diseaseTraits10));
+
+        Study study10 = new Study();
+        study10.setId("haklhkhakhkhd");
+        study10.setAccession("GCST90000131");
+        String[] diseaseTraits11 = {"trait1","trait2","trait3"};
+        study10.setDiseaseTraits(Arrays.asList(diseaseTraits11));
+
+        Study study11 = new Study();
+        study11.setId("haklhkhakhkhd");
+        study11.setAccession("GCST90000131");
+        String[] diseaseTraits12 = {"trait1","trait2","trait3"};
+        study11.setDiseaseTraits(Arrays.asList(diseaseTraits12));
+
+        studies.add(study);
+        studies.add(study1);
+        studies.add(study2);
+        studies.add(study3);
+        studies.add(study4);
+        studies.add(study5);
+        studies.add(study6);
+        studies.add(study7);
+        studies.add(study8);
+        studies.add(study9);
+        studies.add(study10);
+        studies.add(study11);
+
+        Pageable pageable = new PageRequest(0 , 10);
+
+        Page<Study> traitPage = new PageImpl<>(studies, pageable,  studies.size());
+
+        return traitPage;
+    }
+
+    public static Study mockStudy() {
+        Study study = new Study();
+        study.setId("jakjkjakjk");
+        study.setAccession("GCST90000123");
+        String[] diseaseTraits1 = {"trait1", "trait2", "trait3"};
+        study.setDiseaseTraits(Arrays.asList(diseaseTraits1));
+        return study;
+    }
+
+    public static Resource<StudyDto> mockAssemblyResourceForStudy() {
+        StudyDto studyDto = mockStudyDto();
+        final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
+                ControllerLinkBuilder.methodOn(StudiesController.class).getStudy("1234"));
+        Resource<StudyDto> resource = new Resource<>(studyDto);
+        //resource.add(controllerLinkBuilder.withSelfRel());
+        resource.add(BackendUtil.underBasePath(lb, "curation-traits").withSelfRel());
+        return resource;
+    }
+
+
+    public static StudyDto mockStudyDto() {
+        StudyDto studyDto = StudyDto.builder().
+                studyTag("test")
+                .studyDescription("test123")
+                .accession("GCST9000123")
+                .diseaseTraits(Arrays.asList(mockDiseaseTraitDto()))
+                .cohort("GT")
+                .variantCount(1234)
+                .build();
+
+        return studyDto;
+    }
 
 
 }

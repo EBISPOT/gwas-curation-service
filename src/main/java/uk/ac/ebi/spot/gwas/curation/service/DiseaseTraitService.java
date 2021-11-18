@@ -25,9 +25,11 @@ public interface DiseaseTraitService {
 
     public DiseaseTrait updateDiseaseTrait(DiseaseTrait diseaseTrait);
 
-    public void deleteDiseaseTrait(String diseaseTraitIds);
+    public void deleteDiseaseTrait(List<String> diseaseTraitIds);
 
     public Optional<DiseaseTrait> getDiseaseTrait(String traitId);
+
+    public Optional<DiseaseTrait> getDiseaseTraitByTraitName(String traitName);
 
     public Page<DiseaseTrait> getDiseaseTraits(String trait, String studyId, Pageable page);
 }
