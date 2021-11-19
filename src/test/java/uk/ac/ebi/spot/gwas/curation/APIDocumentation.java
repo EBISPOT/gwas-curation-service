@@ -37,11 +37,13 @@ import uk.ac.ebi.spot.gwas.curation.config.security.JwtUtils;
 import uk.ac.ebi.spot.gwas.curation.config.security.WebSecurityConfig;
 import uk.ac.ebi.spot.gwas.curation.repository.*;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.ProvenanceDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.util.TestUtil;
 import uk.ac.ebi.spot.gwas.deposition.config.SystemConfigProperties;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
+import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.FileUploadRequest;
@@ -173,6 +175,15 @@ public class APIDocumentation {
     DiseaseTraitRepository diseaseTraitRepository;
 
     @MockBean
+    EfoTraitService efoTraitService;
+
+    @MockBean
+    EfoTraitRepository efoTraitRepository;
+
+    @MockBean
+    EfoTraitDtoAssembler efoTraitDtoAssembler;
+
+    @MockBean
     StudyRepository studyRepository;
 
     @MockBean
@@ -260,6 +271,8 @@ public class APIDocumentation {
         when(diseaseTraitService.getDiseaseTraits( any(), any(), any())).thenReturn((TestUtil.mockDiseaseTraits()));
         when(diseaseTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResource());
         when(diseaseTraitDtoAssembler.disassemble(any(DiseaseTraitDto.class))).thenReturn(TestUtil.mockDiseaseTrait());
+        when(efoTraitService.getEfoTraits(any(), any())).thenReturn(TestUtil.mockEfoTraits());
+        when(efoTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockEfoTraitAssemblyResource());
 
 
         doNothing().when(diseaseTraitService).deleteDiseaseTrait(any());
@@ -289,6 +302,29 @@ public class APIDocumentation {
                 ))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    public void efoTraitListExample() throws Exception {
+
+        this.mockMvc.perform(get(contextPath.concat("/v1/efo-traits?page=0&size=1&sort=trait&trait=something-better")).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
+                        .header("Authorization","Bearer SpringRestDocsDummyToken"))
+                .andExpect(status().isOk())
+                .andDo(document("efo-traits-list-example",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestParameters(parameterWithName("trait").description("the trait to search"),
+                                parameterWithName("page").description("The page number"),
+                                parameterWithName("size").description("The size of elements in a page"),
+                                parameterWithName("sort").description("the property to sort the records")),
+                        links(halLinks(),
+                                linkWithRel("self").description("This resource list"),
+                                linkWithRel("first").description("The first page in the resource list"),
+                                linkWithRel("next").description("The next page in the resource list"),
+                                linkWithRel("last").description("The last page in the resource list")
+                        )));
+    }
+
+
 
 
 

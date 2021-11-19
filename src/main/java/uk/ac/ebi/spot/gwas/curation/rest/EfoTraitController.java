@@ -115,7 +115,7 @@ public class EfoTraitController {
 
         log.info("Params passed  trait - {} pageNumber - {} - pageSize- {} ", trait,
                 pageable.getPageNumber(), pageable.getPageSize());
-        Page<EfoTrait> efoTraitPage =  efoTraitService.getEfoTraits( trait, pageable);
+        Page<EfoTrait> efoTraitPage =  efoTraitService.getEfoTraits(trait, pageable);
 
         log.info("Size of Page is {}", efoTraitPage.getSize());
         log.info("Content of Page is {}", efoTraitPage.getContent());
