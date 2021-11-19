@@ -18,4 +18,6 @@ public class DepositionCurationConstants {
     public static final String PARAM_SUBMISSION_ID = "submissionId";
     public static final String LINKS_PARENT = "parent";
     public static final String LINKS_DISEASE_TRAITS = "diseaseTraits";
+    public static final String API_EFO_TRAITS = "/efo-traits";
+
 }
