@@ -31,13 +31,14 @@ service:
   port: 8080
 
 ingress:
+  name: curation-ingress
   enabled: false
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
 
   host: chart-example.local
-  path: "/curation(/|$)(.*)"
+  path: "/curation-traits(/|$)(.*)"
 
   tls: []
 

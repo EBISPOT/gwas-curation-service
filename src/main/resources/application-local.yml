@@ -12,7 +12,7 @@ spring:
       uri: ${mongo-server}
 
 gwas-curation:
-  db: gwas-deposition-local
+  db: deposition-backend-sandbox
   auth:
     enabled: ${auth-enable}
     curators:
