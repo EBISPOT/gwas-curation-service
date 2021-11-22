@@ -10,13 +10,19 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import uk.ac.ebi.spot.gwas.curation.rest.DiseaseTraitController;
+
 import uk.ac.ebi.spot.gwas.curation.rest.StudiesController;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
+
+import uk.ac.ebi.spot.gwas.curation.rest.EfoTraitController;
+
 import uk.ac.ebi.spot.gwas.curation.rest.dto.ProvenanceDtoAssembler;
 import uk.ac.ebi.spot.gwas.deposition.domain.*;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
+
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 import uk.ac.ebi.spot.gwas.deposition.javers.CommitMetadata;
 import uk.ac.ebi.spot.gwas.deposition.javers.ElementChange;
@@ -919,6 +925,141 @@ public class TestUtil {
         //resource.add(controllerLinkBuilder.withSelfRel());
         resource.add(BackendUtil.underBasePath(lb, "curation-traits").withSelfRel());
         return resource;
+    }
+
+    public static Resource<EfoTraitDto> mockEfoTraitAssemblyResource() {
+        EfoTraitDto efoTraitDto = mockEfoTraitDto();
+        final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
+                ControllerLinkBuilder.methodOn(EfoTraitController.class).getEfoTrait("1234"));
+        Resource<EfoTraitDto> resource = new Resource<>(efoTraitDto);
+        //resource.add(controllerLinkBuilder.withSelfRel());
+        resource.add(BackendUtil.underBasePath(lb, "curation-traits").withSelfRel());
+        return resource;
+    }
+
+    public static EfoTraitDto mockEfoTraitDto() {
+
+        return EfoTraitDto.builder()
+                .efoTraitId("1cbced6789")
+                .trait("cardiovascular disease")
+                .shortForm("EFO_0000319")
+                .uri("https://www.ebi.ac.uk/efo/EFO_0000319")
+                .created(ProvenanceDtoAssembler.assemble(new Provenance(DateTime.now(),"sijisj0i1"),mockUserDetails()))
+                .build();
+    }
+
+    public static EfoTrait mockEfoTrait() {
+
+        EfoTrait efoTrait = new EfoTrait();
+        efoTrait.setId("1cbced6789");
+        efoTrait.setTrait("cardiovascular disease");
+        efoTrait.setShortForm("EFO_0000319");
+        efoTrait.setUri("https://www.ebi.ac.uk/efo/EFO_0000319");
+        return efoTrait;
+    }
+
+    public static Page<EfoTrait> mockEfoTraits() {
+
+        EfoTrait efoTrait = new EfoTrait();
+        efoTrait.setId("1frf123");
+        efoTrait.setTrait("cardiovascular disease1");
+        efoTrait.setShortForm("EFO_00003191");
+        efoTrait.setUri("https://www.ebi.ac.uk/efo/EFO_00003191");
+
+        EfoTrait efoTrait1 = new EfoTrait();
+        efoTrait1.setId("1cbced678");
+        efoTrait1.setTrait("cardiovascular disease");
+        efoTrait1.setShortForm("EFO_0000319");
+        efoTrait1.setUri("https://www.ebi.ac.uk/efo/EFO_0000319");
+
+        EfoTrait efoTrait2 = new EfoTrait();
+        efoTrait2.setId("vfvfvgbr234");
+        efoTrait2.setTrait("cardiovascular disease2");
+        efoTrait2.setShortForm("EFO_00003192");
+        efoTrait2.setUri("https://www.ebi.ac.uk/efo/EFO_00003192");
+
+        EfoTrait efoTrait3 = new EfoTrait();
+        efoTrait3.setId("rbrbty2124");
+        efoTrait3.setTrait("cardiovascular disease3");
+        efoTrait3.setShortForm("EFO_00003193");
+        efoTrait3.setUri("https://www.ebi.ac.uk/efo/EFO_00003193");
+
+        EfoTrait efoTrait4 = new EfoTrait();
+        efoTrait4.setId("tbtb34gt");
+        efoTrait4.setTrait("cardiovascular disease4");
+        efoTrait4.setShortForm("EFO_00003194");
+        efoTrait4.setUri("https://www.ebi.ac.uk/efo/EFO_00003194");
+
+        EfoTrait efoTrait5 = new EfoTrait();
+        efoTrait5.setId("fgecr543rf");
+        efoTrait5.setTrait("cardiovascular disease5");
+        efoTrait5.setShortForm("EFO_00003195");
+        efoTrait5.setUri("https://www.ebi.ac.uk/efo/EFO_00003195");
+
+        EfoTrait efoTrait6 = new EfoTrait();
+        efoTrait6.setId("dsecrg54fer");
+        efoTrait6.setTrait("cardiovascular disease6");
+        efoTrait6.setShortForm("EFO_00003196");
+        efoTrait6.setUri("https://www.ebi.ac.uk/efo/EFO_00003196");
+
+        EfoTrait efoTrait7 = new EfoTrait();
+        efoTrait7.setId("ffdecrf556gt");
+        efoTrait7.setTrait("cardiovascular disease7");
+        efoTrait7.setShortForm("EFO_00003197");
+        efoTrait7.setUri("https://www.ebi.ac.uk/efo/EFO_00003197");
+
+        EfoTrait efoTrait8 = new EfoTrait();
+        efoTrait8.setId("fmcorog98fj");
+        efoTrait8.setTrait("cardiovascular disease8");
+        efoTrait8.setShortForm("EFO_00003198");
+        efoTrait8.setUri("https://www.ebi.ac.uk/efo/EFO_00003198");
+
+        EfoTrait efoTrait9 = new EfoTrait();
+        efoTrait9.setId("fnnghk56kg");
+        efoTrait9.setTrait("cardiovascular disease9");
+        efoTrait9.setShortForm("EFO_00003199");
+        efoTrait9.setUri("https://www.ebi.ac.uk/efo/EFO_00003199");
+
+        EfoTrait efoTrait10 = new EfoTrait();
+        efoTrait10.setId("fkmgk668ui");
+        efoTrait10.setTrait("cardiovascular disease10");
+        efoTrait10.setShortForm("EFO_000031910");
+        efoTrait10.setUri("https://www.ebi.ac.uk/efo/EFO_000031910");
+
+        EfoTrait efoTrait11 = new EfoTrait();
+        efoTrait10.setId("gfjmcelkf18i");
+        efoTrait10.setTrait("cardiovascular disease11");
+        efoTrait10.setShortForm("EFO_000031911");
+        efoTrait10.setUri("https://www.ebi.ac.uk/efo/EFO_000031911");
+
+        List<EfoTrait> efoTraits = new ArrayList<>();
+        efoTraits.add(efoTrait);
+        efoTraits.add(efoTrait1);
+        efoTraits.add(efoTrait2);
+        efoTraits.add(efoTrait3);
+        efoTraits.add(efoTrait4);
+        efoTraits.add(efoTrait5);
+        efoTraits.add(efoTrait6);
+        efoTraits.add(efoTrait7);
+        efoTraits.add(efoTrait8);
+        efoTraits.add(efoTrait9);
+        efoTraits.add(efoTrait10);
+        efoTraits.add(efoTrait11);
+        Pageable pageable = new PageRequest(0 , 10);
+        return new PageImpl<>(efoTraits, pageable,  efoTraits.size());
+    }
+
+    public static Page<EfoTrait> mockEfoTraitByTrait() {
+        List<EfoTrait> traits = new ArrayList<>();
+        EfoTrait efoTrait = new EfoTrait();
+        efoTrait.setId("1frf123");
+        efoTrait.setTrait("cardiovascular disease1");
+        efoTrait.setShortForm("EFO_00003191");
+        efoTrait.setUri("https://www.ebi.ac.uk/efo/EFO_00003191");
+
+        traits.add(efoTrait);
+        Pageable pageable = new PageRequest(0 , 10);
+        return new PageImpl<>(traits, pageable,  traits.size());
     }
 
 
