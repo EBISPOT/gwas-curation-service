@@ -1,5 +1,7 @@
 package uk.ac.ebi.spot.gwas.curation.repository;
 
+import org.javers.spring.annotation.JaversSpringDataAuditable;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -24,5 +26,7 @@ public interface StudyRepository extends MongoRepository<Study, String> {
 
 
     Stream<Study> findByEfoTraitListContains(String traitId);
+
+
 
 }
