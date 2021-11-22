@@ -1,5 +1,6 @@
 package uk.ac.ebi.spot.gwas.curation.config;
 
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.fge.jsonpatch.JsonPatchException;
 import org.slf4j.Logger;
@@ -11,13 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import uk.ac.ebi.spot.gwas.curation.service.impl.ConversionJaversServiceImpl;
 import uk.ac.ebi.spot.gwas.deposition.exception.*;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+
 
 @ControllerAdvice(annotations = RestController.class)
 public class ExceptionHandlerAdvice {
@@ -26,6 +26,7 @@ public class ExceptionHandlerAdvice {
 
     @ExceptionHandler(AuthorizationException.class)
     public ResponseEntity<String> handleAuthorizationException(AuthorizationException e) {
+        log.error("AuthorizationException :"+e.getLocalizedMessage(),e);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         return new ResponseEntity<>(e.getMessage(), headers, HttpStatus.UNAUTHORIZED);
@@ -33,6 +34,9 @@ public class ExceptionHandlerAdvice {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException e) {
+
+        log.error("EntityNotFoundException :"+e.getLocalizedMessage(),e);
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         return new ResponseEntity<>(e.getMessage(), headers, HttpStatus.NOT_FOUND);
@@ -40,7 +44,8 @@ public class ExceptionHandlerAdvice {
 
     @ExceptionHandler(FileProcessingException.class)
     public ResponseEntity<String> handleFileProcessingException(FileProcessingException ex) {
-        log.error("FileProcessingException :"+ex.getMessage(),ex);
+        log.error("FileProcessingException :"+ex.getLocalizedMessage(),ex);
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -48,6 +53,7 @@ public class ExceptionHandlerAdvice {
 
     @ExceptionHandler(NoVersionSummaryException.class)
     public ResponseEntity<String> handleNoVersionSummaryException(NoVersionSummaryException ex) {
+        log.error("NoVersionSummaryException :"+ex.getLocalizedMessage(),ex);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.BAD_REQUEST);
@@ -112,7 +118,8 @@ public class ExceptionHandlerAdvice {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex) {
-        log.error("Exception ->"+ex.getMessage(),ex);
+        log.error("Exception :"+ex.getLocalizedMessage(),ex);
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);

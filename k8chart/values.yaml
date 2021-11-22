@@ -26,11 +26,12 @@ nameOverride: ""
 fullnameOverride: ""
 
 service:
-  name: gwas-curation-traits-service
+  name: gwas-curation-service
   type: NodePort
   port: 8080
 
 ingress:
+  name: curation-ingress
   enabled: false
   annotations: {}
     # kubernetes.io/ingress.class: nginx

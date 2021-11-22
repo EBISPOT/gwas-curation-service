@@ -11,6 +11,7 @@ import uk.ac.ebi.spot.gwas.curation.constants.FileUploadType;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.FileUploadRequest;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileValidationException;
 
@@ -92,12 +93,21 @@ public class FileHandler {
             analysisDTO.add(AnalysisDTO.builder().userTerm("Yeast Infection").build());
             analysisDTO.add(AnalysisDTO.builder().userTerm("mean interproximal clinical attachment level").build());
             return new String(serializePojoToTsv(analysisDTO));
-        } else {
+        } else if (fileUploadType.equals(FileUploadType.REPORTED_TRAIT_FILE)) {
 
             List<DiseaseTraitDto> diseaseTraitDtos = new ArrayList<>();
             diseaseTraitDtos.add(DiseaseTraitDto.builder().trait("Uterine Carcinoma").build());
             diseaseTraitDtos.add(DiseaseTraitDto.builder().trait("Malaria Parasite").build());
             return new String(serializePojoToTsv(diseaseTraitDtos));
+        } else if (fileUploadType.equals(FileUploadType.STUDY_TRAIT_FILE)){
+            List<StudyPatchRequest> studyPatchRequestList = new ArrayList<>();
+            studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCST90000026").curatedReportedTrait("Kashin-Beck disease").build());
+            studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCST90000029").curatedReportedTrait("Shingles").build());
+            studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCST90000028").curatedReportedTrait("Bilirubin levels in extreme obesity").build());
+            studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCST90000030").curatedReportedTrait("Hepatic lipid content in extreme obesity").build());
+            return new String(serializePojoToTsv(studyPatchRequestList));
+        }else{
+            return null;
         }
     }
 }

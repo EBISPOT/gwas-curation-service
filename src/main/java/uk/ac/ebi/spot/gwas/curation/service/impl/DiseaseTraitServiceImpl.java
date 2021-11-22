@@ -62,9 +62,9 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
             try {
                 diseaseTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
                 diseaseTraitRepository.insert(diseaseTrait);
-                report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait successfully Inserted : "+diseaseTrait.getTrait()));
+                report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait successfully Inserted : "+diseaseTrait.getTrait(),null));
             } catch(DataAccessException ex){
-                report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait Insertion failed as Trait already exists : "+diseaseTrait.getTrait()));
+                report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait Insertion failed as Trait already exists : "+diseaseTrait.getTrait(),null));
             }
         });
         //DiseaseTrait diseaseTraitInserted = diseaseTraitRepository.insert(diseaseTrait);
@@ -77,12 +77,12 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         return diseaseTraitUpdated;
     }
 
-    public void deleteDiseaseTrait(String diseaseTraitIds) {
+    @Override
+    public void deleteDiseaseTrait(List<String> diseaseTraitIds) {
         List<String> errorTraits = new ArrayList<>();
         List<String> errorStudyTraits = new ArrayList<>();
-        if(diseaseTraitIds.contains(",")) {
-            String[] traitIds = diseaseTraitIds.split(",");
-            Arrays.asList(traitIds).forEach(traitId -> {
+
+        diseaseTraitIds.forEach(traitId -> {
                 if(!getDiseaseTrait(traitId).isPresent())
                     errorTraits.add(traitId);
                 if(!checkForLinkedStudies(traitId))
@@ -90,12 +90,7 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
                 else
                     errorStudyTraits.add(traitId);
             });
-        } else{
-            if(!checkForLinkedStudies(diseaseTraitIds))
-                diseaseTraitRepository.deleteById(diseaseTraitIds);
-            else
-                errorStudyTraits.add(diseaseTraitIds);
-        }
+
         String errorTraitsMessage = errorStudyTraits.stream().collect(Collectors.joining(","));
         String errorStudyTraitsMessage = errorStudyTraits.stream().collect(Collectors.joining(","));
         if(!errorTraits.isEmpty())
@@ -105,17 +100,16 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
     }
 
     public boolean checkForLinkedStudies(String traitId) {
-         boolean  studyLinkedToTrait = false;
-     Optional<DiseaseTrait> optDiseaseTrait = diseaseTraitRepository.findById(traitId);
-     if(optDiseaseTrait.isPresent()){
-         DiseaseTrait diseaseTrait = optDiseaseTrait.get();
-         List<String> studyIds = diseaseTrait.getStudyIds();
-         Stream<Study> studyStream = studyRepository.readByIdIn(studyIds);
-         if(studyStream != null && studyStream.count() > 0){
-             studyLinkedToTrait = true;
-         }
+
+     List<Study> studies = studyRepository.findByDiseaseTraitsContains(traitId);
+     if( studies != null && !studies.isEmpty()) {
+         return true;
      }
-        return studyLinkedToTrait;
+     return false;
+    }
+
+    public Optional<DiseaseTrait> getDiseaseTraitByTraitName(String traitName) {
+        return diseaseTraitRepository.findByTrait(traitName);
     }
 
     public Optional<DiseaseTrait> getDiseaseTrait(String traitId) {

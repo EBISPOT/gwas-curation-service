@@ -65,6 +65,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                             .filter((change) -> change.getProperty().equals("fileUploads"))
                             .flatMap((change) -> change.getElementChanges().stream())
                             .map(fileUploadJaversService::processFileUploadTag)
+                            .filter(Objects::nonNull)
                             .collect(Collectors.toList()).stream()
                             .distinct()
                             .map(fileUploadJaversService::getFileUploadDetails)

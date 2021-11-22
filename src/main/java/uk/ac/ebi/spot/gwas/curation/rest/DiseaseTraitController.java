@@ -43,6 +43,7 @@ import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -90,7 +91,7 @@ public class DiseaseTraitController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(value = "/{traitIds}")
-    public void deleteDiseaseTraits(@PathVariable String traitIds) {
+    public void deleteDiseaseTraits(@PathVariable List<String> traitIds) {
         diseaseTraitService.deleteDiseaseTrait(traitIds);
     }
 

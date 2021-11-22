@@ -104,42 +104,100 @@ include::{snippets}/page-example/links.adoc[]
 [[resources]]
 = Resources
 
-[[resource-efoTraits]]
-== EfoTraits
+[[resources-studies]]
+== Studies
 
 The Studies resources is used to list studies in the GWAS Catalog
 
-[[resources-efoTraits-list]]
-=== Listing efoTraits
+[[resources-studies-list]]
+=== Listing studies
 
-A `GET` request will list all of the Catalog efo traits.
+A `GET` request will list all of the Catalog diseaseTraits.
 
 ==== Request Parameters
-include::{snippets}/efo-traits-list-example/request-parameters.adoc[]
+include::{snippets}/studies-list-example/request-parameters.adoc[]
 
 ==== Example request
 
-include::{snippets}/efo-traits-list-example/curl-request.adoc[]
+include::{snippets}/studies-list-example/curl-request.adoc[]
 
 ==== Response structure
 
-The response is <<overview-pagination,paginated>> where the individual <<resources-efoTraits,efoTraits resources>>  are in the `_embedded.efoTraits` field.
+The response is <<overview-pagination,paginated>> where the individual <<resources-studies,studies resources>>  are in the `_embedded.studies` field.
 
-[[resources-efoTraits-links]]
+[[resources-studies-links]]
 ==== Links
 
-include::{snippets}/efo-traits-list-example/links.adoc[]
+include::{snippets}/studies-list-example/links.adoc[]
+
+
+[[resources-study]]
+== Study
+
+=== Retrieve a study
+
+==== Path Parameters
+
+include::{snippets}/get-study-example/path-parameters.adoc[]
+
+==== Example request
+
+include::{snippets}/get-study-example/curl-request.adoc[]
+
+==== Example response
+
+include::{snippets}/get-study-example/http-response.adoc[]
+
+==== Response structure
+
+include::{snippets}/get-study-example/response-fields.adoc[]
+
+=== Update a Study
+
+==== Path Parameters
+
+include::{snippets}/update-studies-example/path-parameters.adoc[]
+
+==== Example request
+
+include::{snippets}/update-studies-example/curl-request.adoc[]
+
+==== Example response
+
+include::{snippets}/update-studies-example/http-response.adoc[]
+
+==== Request structure
+
+include::{snippets}/update-studies-example/request-fields.adoc[]
+
+==== Response structure
+
+include::{snippets}/update-studies-example/response-fields.adoc[]
+
+=== Upload Study Traits
+
+==== Request structure
+
+include::{snippets}/upload-disease-traits-study-mappings-example/request-parts.adoc[]
+
+==== Example response
+
+include::{snippets}/upload-disease-traits-study-mappings-example/http-response.adoc[]
+
+==== Response structure
+
+include::{snippets}/upload-disease-traits-study-mappings-example/response-fields.adoc[]
 
 
 [[resources-diseaseTraits]]
 == DiseaseTraits
 
-The Studies resources is used to list studies in the GWAS Catalog
+The DiseaseTraits resources is used to list diseaseTraits in the GWAS Catalog
 
 [[resources-diseaseTraits-list]]
 === Listing diseaseTraits
 
-A `GET` request will list all of the Catalog studies.
+A `GET` request will list all of the Catalog diseaseTraits.
 
 ==== Request Parameters
 include::{snippets}/disease-traits-list-example/request-parameters.adoc[]
