@@ -13,7 +13,10 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
@@ -27,10 +30,14 @@ import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.FileUploadRequest;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
+import uk.ac.ebi.spot.gwas.deposition.exception.FileValidationException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -65,9 +72,23 @@ public class EfoTraitController {
 
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         EfoTrait efoTrait = efoTraitDtoAssembler.disassemble(efoTraitDto);
-        efoTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
-        EfoTrait efoTraitCreated = efoTraitService.createDiseaseTrait(efoTrait);
+        EfoTrait efoTraitCreated = efoTraitService.createEfoTrait(efoTrait, user);
         return efoTraitDtoAssembler.toResource(efoTraitCreated);
+    }
+
+    @PostMapping(value = "/bulk-upload")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<List<TraitUploadReport>> createEfoTraits(@Valid FileUploadRequest fileUploadRequest,
+                                                                   HttpServletRequest request, BindingResult result) {
+
+        if (result.hasErrors()) {
+            throw new FileValidationException(result);
+        }
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
+        MultipartFile multipartFile = fileUploadRequest.getMultipartFile();
+        List<EfoTrait> efoTraits = efoTraitDtoAssembler.disassemble(multipartFile);
+        List<TraitUploadReport> traitUploadReports = efoTraitService.createEfoTraits(efoTraits, user);
+        return new ResponseEntity<>(traitUploadReports, HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/{traitId}")
@@ -94,7 +115,7 @@ public class EfoTraitController {
 
         log.info("Params passed  trait - {} pageNumber - {} - pageSize- {} ", trait,
                 pageable.getPageNumber(), pageable.getPageSize());
-        Page<EfoTrait> efoTraitPage =  efoTraitService.getEfoTraits( trait, pageable);
+        Page<EfoTrait> efoTraitPage =  efoTraitService.getEfoTraits(trait, pageable);
 
         log.info("Size of Page is {}", efoTraitPage.getSize());
         log.info("Content of Page is {}", efoTraitPage.getContent());
@@ -104,5 +125,20 @@ public class EfoTraitController {
         log.info("Proxy prefix is {}", depositionCurationConfig.getProxy_prefix());
         return assembler.toResource(efoTraitPage, efoTraitDtoAssembler,
                 new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
+    }
+    
+    @DeleteMapping(value = "/{traitIds}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteEfoTrait(@PathVariable String traitIds, HttpServletRequest request) {
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
+        efoTraitService.deleteEfoTrait(traitIds);
+    }
+
+    @PutMapping(value = "/{traitId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Resource<EfoTraitDto> fullyUpdateEfoTrait(@PathVariable String traitId, @RequestBody EfoTraitDto efoTraitDto, HttpServletRequest request) {
+
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
+        return efoTraitDtoAssembler.toResource(efoTraitService.fullyUpdateEfoTrait(traitId, efoTraitDto, user));
     }
 }

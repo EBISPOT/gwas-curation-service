@@ -22,4 +22,5 @@ public interface StudyRepository extends MongoRepository<Study, String> {
 
     List<Study> findByDiseaseTraitsContains(String traitId);
 
+    Stream<Study> findByEfoTraitListContains(String traitId);
 }
