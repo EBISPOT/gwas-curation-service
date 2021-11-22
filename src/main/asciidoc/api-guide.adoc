@@ -104,6 +104,8 @@ include::{snippets}/page-example/links.adoc[]
 [[resources]]
 = Resources
 
+
+
 [[resources-studies]]
 == Studies
 
@@ -187,6 +189,34 @@ include::{snippets}/upload-disease-traits-study-mappings-example/http-response.a
 ==== Response structure
 
 include::{snippets}/upload-disease-traits-study-mappings-example/response-fields.adoc[]
+
+
+[[resource-efoTraits]]
+== EfoTraits
+
+The Studies resources is used to list studies in the GWAS Catalog
+
+[[resources-efoTraits-list]]
+=== Listing efoTraits
+
+A `GET` request will list all of the Catalog efo traits.
+
+==== Request Parameters
+include::{snippets}/efo-traits-list-example/request-parameters.adoc[]
+
+==== Example request
+
+include::{snippets}/efo-traits-list-example/curl-request.adoc[]
+
+==== Response structure
+
+The response is <<overview-pagination,paginated>> where the individual <<resources-efoTraits,efoTraits resources>>  are in the `_embedded.efoTraits` field.
+
+[[resources-efoTraits-links]]
+==== Links
+
+include::{snippets}/efo-traits-list-example/links.adoc[]
+
 
 
 [[resources-diseaseTraits]]
