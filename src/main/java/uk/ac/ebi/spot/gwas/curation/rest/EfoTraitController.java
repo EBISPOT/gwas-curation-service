@@ -12,19 +12,20 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
+import uk.ac.ebi.spot.gwas.curation.constants.FileUploadType;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.JWTService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
+import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
@@ -36,8 +37,10 @@ import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileValidationException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -74,6 +77,18 @@ public class EfoTraitController {
         EfoTrait efoTrait = efoTraitDtoAssembler.disassemble(efoTraitDto);
         EfoTrait efoTraitCreated = efoTraitService.createEfoTrait(efoTrait, user);
         return efoTraitDtoAssembler.toResource(efoTraitCreated);
+    }
+
+    @GetMapping(value = "/download-template", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public HttpEntity<byte[]> downloadCreationTemplate() {
+
+        byte[] result = Objects.requireNonNull(FileHandler.getTemplate(FileUploadType.EFO_TRAIT_FILE)).getBytes();
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + FileUploadType.EFO_TRAIT_FILE + ".tsv");
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
+        return new HttpEntity<>(result, responseHeaders);
     }
 
     @PostMapping(value = "/bulk-upload")

@@ -8,10 +8,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.constants.FileUploadType;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisDTO;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.FileUploadRequest;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileValidationException;
 
@@ -106,7 +103,13 @@ public class FileHandler {
             studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCST90000028").curatedReportedTrait("Bilirubin levels in extreme obesity").build());
             studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCST90000030").curatedReportedTrait("Hepatic lipid content in extreme obesity").build());
             return new String(serializePojoToTsv(studyPatchRequestList));
-        }else{
+        } else if (fileUploadType.equals(FileUploadType.EFO_TRAIT_FILE)) {
+            List<EfoTraitDto> efoTraitDtos = new ArrayList<>();
+            efoTraitDtos.add(EfoTraitDto.builder().trait("uterine carcinoma").uri("http://www.ebi.ac.uk/efo/EFO_0002919").shortForm("EFO_0002919").build());
+            efoTraitDtos.add(EfoTraitDto.builder().trait("malaria").uri("http://www.ebi.ac.uk/efo/EFO_0001068").shortForm("EFO_0001068").build());
+            return new String(serializePojoToTsv(efoTraitDtos));
+        }
+        else{
             return null;
         }
     }
