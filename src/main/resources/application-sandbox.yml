@@ -6,8 +6,7 @@ spring:
     allow-bean-definition-overriding: true
   data:
     mongodb:
-      #uri: mongo-0.mongo.default.svc.cluster.local,mongo-1.mongo.default.svc.cluster.local,mongo-2.mongo.default.svc.cluster.local:27017
-      uri: localhost:9780
+      uri: mongo-0.mongo.default.svc.cluster.local,mongo-1.mongo.default.svc.cluster.local,mongo-2.mongo.default.svc.cluster.local:27017
   mail:
     host: outgoing.ebi.ac.uk
     port: 587
