@@ -60,11 +60,10 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         efoTraits.forEach(efoTrait -> {
             try {
                 createEfoTrait(efoTrait, user);
-
                 report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait successfully Inserted : " + efoTrait.getTrait(), null));
 
             }
-            catch(DataAccessException ex){
+            catch(CannotCreateTraitWithDuplicateNameException ex) {
                 report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait Insertion failed as Trait already exists : " + efoTrait.getTrait(), null));
             }
         });
