@@ -101,6 +101,29 @@ include::{snippets}/page-example/response-fields.adoc[]
 
 include::{snippets}/page-example/links.adoc[]
 
+[[overview-pagination-studies]]
+=== Paging Studies
+
+Links will be provided in the response to navigate the resources.
+
+==== Example request
+
+include::{snippets}/page-studies-example/curl-request.adoc[]
+
+==== Example response
+
+include::{snippets}/page-studies-example/http-response.adoc[]
+
+
+==== Response structure
+
+include::{snippets}/page-studies-example/response-fields.adoc[]
+
+[[resources-page-links]]
+==== Links
+
+include::{snippets}/page-studies-example/links.adoc[]
+
 [[resources]]
 = Resources
 
@@ -125,7 +148,7 @@ include::{snippets}/studies-list-example/curl-request.adoc[]
 
 ==== Response structure
 
-The response is <<overview-pagination,paginated>> where the individual <<resources-studies,studies resources>>  are in the `_embedded.studies` field.
+The response is <<overview-pagination-studies,paginated>> where the individual <<resources-studies,studies resources>>  are in the `_embedded.studies` field.
 
 [[resources-studies-links]]
 ==== Links
@@ -325,29 +348,3 @@ include::{snippets}/delete-disease-trait-example/curl-request.adoc[]
 include::{snippets}/get-disease-trait-example/links.adoc[]
 include::{snippets}/add-disease-trait-example/links.adoc[]
 include::{snippets}/update-disease-trait-example/links.adoc[]
-
-[[resource-efoTraits]]
-== EfoTraits
-
-The EFO Traits resources is used to list EFO traits in the GWAS Catalog
-
-[[resources-efoTraits-list]]
-=== Listing efoTraits
-
-A `GET` request will list all of the Catalog efo traits.
-
-==== Request Parameters
-include::{snippets}/efo-traits-list-example/request-parameters.adoc[]
-
-==== Example request
-
-include::{snippets}/efo-traits-list-example/curl-request.adoc[]
-
-==== Response structure
-
-The response is <<overview-pagination,paginated>> where the individual <<resources-efoTraits,efoTraits resources>>  are in the `_embedded.efoTraits` field.
-
-[[resources-efoTraits-links]]
-==== Links
-
-include::{snippets}/efo-traits-list-example/links.adoc[]

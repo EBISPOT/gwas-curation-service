@@ -66,6 +66,7 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
     public static List<DiseaseTraitDto> assemble(List<DiseaseTrait> diseaseTraits) {
 
         List<DiseaseTraitDto> diseaseTraitDTOS = new ArrayList<>();
+        if(diseaseTraits != null && !diseaseTraits.isEmpty())
         diseaseTraits.forEach(diseaseTrait -> {
             DiseaseTraitDto diseaseTraitDTO = DiseaseTraitDto.builder()
                     .diseaseTraitId(diseaseTrait.getId())

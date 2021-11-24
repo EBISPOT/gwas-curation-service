@@ -45,7 +45,15 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
     @Override
     public Resource<StudyDto> toResource(Study study) {
 
-       List<DiseaseTrait> traits =  study.getDiseaseTraits().stream().map((traitId) ->
+        List<String> traitsList = null;
+        List<DiseaseTrait> traits = null;
+        if( study.getDiseaseTraits() != null && !study.getDiseaseTraits().isEmpty() ){
+            traitsList = study.getDiseaseTraits();
+        }
+
+
+        if( traitsList != null && !traitsList.isEmpty() )
+         traits =  study.getDiseaseTraits().stream().map((traitId) ->
                         diseaseTraitService.getDiseaseTrait(traitId))
                         .filter(optDiseaseTrait -> optDiseaseTrait.isPresent())
                         .map(optDiseaseTrait -> optDiseaseTrait.get())
@@ -73,9 +81,10 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
         resource.add(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT));
 
         if(traits != null && !traits.isEmpty()) {
-            Link diseaseTraitsLink = linkTo(methodOn(StudiesController.class)
-                    .getDiseaseTraits(null, study.getId()))
-                    .withRel(DepositionCurationConstants.LINKS_DISEASE_TRAITS);
+            ControllerLinkBuilder lb1 = ControllerLinkBuilder.linkTo(
+                    ControllerLinkBuilder.methodOn(StudiesController.class).getDiseaseTraits(null, study.getId()));
+
+            Link diseaseTraitsLink = BackendUtil.underBasePath(lb1, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT);
             resource.add(diseaseTraitsLink);
         }
 
