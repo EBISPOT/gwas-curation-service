@@ -334,6 +334,31 @@ public class APIDocumentation {
     }
 
     @Test
+    public void pageStudiesExample () throws Exception {
+
+        this.mockMvc.perform(get(contextPath.concat("/v1/studies?page=1&size=1&sort=accession&submissionId=1234")).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization","Bearer SpringRestDocsDummyToken"))
+                .andDo(this.restDocumentationResultHandler.document(
+                        responseFields(
+                                subsectionWithPath("_links").description("<<resources-page-studies-links,Links>> to other resources"),
+                                subsectionWithPath("_embedded").description("The list of resources"),
+                                subsectionWithPath("page.size").description("The number of resources in this page"),
+                                subsectionWithPath("page.totalElements").description("The total number of resources"),
+                                subsectionWithPath("page.totalPages").description("The total number of pages"),
+                                subsectionWithPath("page.number").description("The page number")
+                        ),
+                        links(halLinks(),
+                                linkWithRel("self").description("This resource list"),
+                                linkWithRel("first").description("The first page in the resource list"),
+                                linkWithRel("next").description("The next page in the resource list"),
+                                linkWithRel("last").description("The last page in the resource list")
+                        )
+
+                ))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     public void efoTraitListExample() throws Exception {
 
         this.mockMvc.perform(get(contextPath.concat("/v1/efo-traits?page=0&size=1&sort=trait&trait=something-better")).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
