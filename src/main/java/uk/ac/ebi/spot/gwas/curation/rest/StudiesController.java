@@ -92,14 +92,18 @@ public class StudiesController {
     @PutMapping(value = "/{studyId}",produces = MediaType.APPLICATION_JSON_VALUE)
     public  Resource<StudyDto> updateStudies(@PathVariable String studyId, @Valid @RequestBody StudyDto studyDto, HttpServletRequest request) {
         List<String> traitIds = null;
-        log.info("Disease Traits from request:"+studyDto.getDiseaseTraits());
-        if(studyDto.getDiseaseTraits() !=null && !studyDto.getDiseaseTraits().isEmpty())  {
-           traitIds = studiesService.getTraitsIDsFromDB(studyDto.getDiseaseTraits(), studyId);
-       }
-        Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyId);
-        study.setDiseaseTraits(traitIds);
-        Study studyUpdated = studiesService.updateStudies(study);
-        return studyDtoAssembler.toResource(studyUpdated);
+        if(studiesService.getStudy(studyId) != null ) {
+            log.info("Disease Traits from request:" + studyDto.getDiseaseTraits());
+            if (studyDto.getDiseaseTraits() != null && !studyDto.getDiseaseTraits().isEmpty()) {
+                traitIds = studiesService.getTraitsIDsFromDB(studyDto.getDiseaseTraits(), studyId);
+            }
+            Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyId);
+            study.setDiseaseTraits(traitIds);
+            Study studyUpdated = studiesService.updateStudies(study);
+            return studyDtoAssembler.toResource(studyUpdated);
+        } else {
+            throw new EntityNotFoundException("Study not found "+ studyId);
+        }
     }
 
     @ResponseStatus(HttpStatus.OK)
