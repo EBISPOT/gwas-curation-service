@@ -84,7 +84,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
             ControllerLinkBuilder lb1 = ControllerLinkBuilder.linkTo(
                     ControllerLinkBuilder.methodOn(StudiesController.class).getDiseaseTraits(null, study.getId()));
 
-            Link diseaseTraitsLink = BackendUtil.underBasePath(lb1, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT);
+            Link diseaseTraitsLink = BackendUtil.underBasePath(lb1, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_DISEASE_TRAITS);
             resource.add(diseaseTraitsLink);
         }
 
