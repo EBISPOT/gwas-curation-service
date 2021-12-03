@@ -3,7 +3,9 @@ FROM openjdk:8u212-jre
 
 # Create log file directory and set permission
 RUN groupadd -r gwas-curation-service && useradd -r --create-home -g gwas-curation-service gwas-curation-service
-RUN apt-get install traceroute
+RUN add-apt-repository universe
+RUN apt-get update
+RUN apt-get install inetutils-traceroute
 RUN if [ ! -d /var/log/gwas/ ];then mkdir /var/log/gwas/;fi
 RUN chown -R gwas-curation-service:gwas-curation-service /var/log/gwas
 
