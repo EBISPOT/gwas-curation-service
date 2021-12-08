@@ -120,7 +120,7 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         if(trait !=null && studyId != null)
             return diseaseTraitRepository.findByStudyIdsContainsAndTrait(studyId, trait, page);
         else if(trait != null)
-            return diseaseTraitRepository.findByTrait(trait, page);
+            return diseaseTraitRepository.findByTraitContainingIgnoreCase(trait, page);
         else if(studyId != null)
             return diseaseTraitRepository.findByStudyIdsContains(studyId, page);
 
