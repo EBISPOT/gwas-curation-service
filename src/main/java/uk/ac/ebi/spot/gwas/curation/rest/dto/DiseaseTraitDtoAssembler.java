@@ -102,7 +102,7 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
         return diseaseTrait;
     }
 
-    public static List<DiseaseTrait> disassemble(MultipartFile multipartFile)  {
+    public  List<DiseaseTrait> disassemble(MultipartFile multipartFile)  {
         CsvMapper mapper = new CsvMapper();
          CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
         List<DiseaseTraitDto> diseaseTraitDtos;

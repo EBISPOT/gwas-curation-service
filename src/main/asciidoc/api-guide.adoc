@@ -331,6 +331,20 @@ include::{snippets}/update-disease-trait-example/request-fields.adoc[]
 
 include::{snippets}/update-disease-trait-example/response-fields.adoc[]
 
+=== Upload diseaseTraits
+
+==== Request structure
+
+include::{snippets}/upload-disease-traits-example/request-parts.adoc[]
+
+==== Example response
+
+include::{snippets}/upload-disease-traits-example/http-response.adoc[]
+
+==== Response structure
+
+include::{snippets}/upload-disease-traits-example/response-fields.adoc[]
+
 [[resources-diseaseTrait-links]]
 
 === Delete a diseaseTrait

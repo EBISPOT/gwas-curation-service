@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -291,6 +292,8 @@ public class APIDocumentation {
         when(diseaseTraitService.saveDiseaseTrait(any(), any(), any())).thenReturn(TestUtil.mockDiseaseTrait());
         when(diseaseTraitService.getDiseaseTraits( any(), any(), any())).thenReturn((TestUtil.mockDiseaseTraits()));
         when(diseaseTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResource());
+        when(diseaseTraitDtoAssembler.disassemble(any(MultipartFile.class))).thenReturn(TestUtil.mockDiseaseTraitsList());
+        when(diseaseTraitService.createDiseaseTrait(any(),any())).thenReturn(TestUtil.mockTraitUploadReports());
         when(diseaseTraitDtoAssembler.disassemble(any(DiseaseTraitDto.class))).thenReturn(TestUtil.mockDiseaseTrait());
         when(efoTraitService.getEfoTraits(any(), any())).thenReturn(TestUtil.mockEfoTraits());
         when(efoTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockEfoTraitAssemblyResource());
@@ -574,8 +577,47 @@ public class APIDocumentation {
                                 )));
     }
 
-    @Test
-    public void uploadDiseaseTraitsStudyMappingsExample() throws Exception {
+    /*@Test
+    public void uploadDiseaseTraitsExample() throws Exception {
+        String test ="trait\n" +
+                "\"Uterine Carcinoma\"\n" +
+                "\"Malaria Parasite\"";
+        MockMultipartFile multipartFile
+                = new MockMultipartFile(
+                "multipartFile",
+                "hello.tsv",
+                MediaType.TEXT_PLAIN_VALUE,
+                test.getBytes()
+        );
+
+        this.mockMvc.perform(fileUpload(contextPath.concat("/v1/reported-traits/fileupload/uploads")).file(multipartFile).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization","Bearer SpringRestDocsDummyToken"))
+                .andExpect(status().isCreated())
+                .andDo(this.restDocumentationResultHandler.document(
+                        requestPartFields("multipartFile" ,fieldWithPath("trait").description("the trait to upload in DataBase"))
+
+                        ));*/
+
+
+        /*this.mockMvc.perform(multipart(contextPath.concat("/v1/reported-traits/fileupload/uploads")).file(multipartFile).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization","Bearer SpringRestDocsDummyToken"))
+                .andExpect(status().isCreated())
+                .andDo(this.restDocumentationResultHandler.document(
+                        requestParts(partWithName("multipartFile").description("File to upload for Reported Traits")),
+                        responseFields(
+                                fieldWithPath("[]").description("An Array of Trait Upload Report Objects"),
+                                fieldWithPath("[].trait").description("The name of the reported trait"),
+                                fieldWithPath("[].uploadComment").description("The transaction success or failure message"),
+                                subsectionWithPath("[].links").description("Links to other Trait Upload report")
+                        )));*/
+
+    //}
+
+
+    //@Test
+    /*public void uploadDiseaseTraitsStudyMappingsExample() throws Exception {
 
         String test = "GCST  Curated reported trait\n" +
                 "\"GCST90000026\"  \"Kashin-Beck disease\"";
@@ -591,10 +633,11 @@ public class APIDocumentation {
         fileUploadRequest.setMultipartFile(multipartFile);
 
 
+
         this.mockMvc.perform(multipart(contextPath.concat("/v1/studies/fileupload")).file(multipartFile).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization","Bearer SpringRestDocsDummyToken"))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andDo(this.restDocumentationResultHandler.document(
                         requestParts(partWithName("multipartFile").description("File to upload for trait mappings")),
                         responseFields(
@@ -605,7 +648,7 @@ public class APIDocumentation {
                                 subsectionWithPath("[].links").description("Links to other Trait Upload report")
                         )));
 
-    }
+    }*/
 
 
 }

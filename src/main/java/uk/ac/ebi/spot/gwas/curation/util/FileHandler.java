@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.constants.FileUploadType;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Component
 public class FileHandler {
 
     private FileHandler() {
@@ -35,12 +37,12 @@ public class FileHandler {
     }
 
 
-    public static List<AnalysisDTO> serializeDiseaseTraitAnalysisFile(FileUploadRequest fileUploadRequest) {
+    public  List<AnalysisDTO> serializeDiseaseTraitAnalysisFile(MultipartFile multipartFile) {
         CsvMapper mapper = new CsvMapper();
-        CsvSchema schema = getSchemaFromMultiPartFile(fileUploadRequest.getMultipartFile());
+        CsvSchema schema = getSchemaFromMultiPartFile(multipartFile);
         List<AnalysisDTO> analysisDTOS;
         try {
-            InputStream inputStream = fileUploadRequest.getMultipartFile().getInputStream();
+            InputStream inputStream = multipartFile.getInputStream();
             MappingIterator<AnalysisDTO> iterator =
                     mapper.readerFor(AnalysisDTO.class).with(schema).readValues(inputStream);
             analysisDTOS = iterator.readAll();
@@ -51,7 +53,7 @@ public class FileHandler {
     }
 
 
-    public static byte[] serializePojoToTsv(List<?> pojoList) {
+    public  byte[] serializePojoToTsv(List<?> pojoList) {
         CsvMapper csvMapper = new CsvMapper();
         List<Map<String, Object>> dataList = csvMapper.convertValue(pojoList, new TypeReference<Object>() {
         });
@@ -83,7 +85,7 @@ public class FileHandler {
         return result;
     }
 
-    public static String getTemplate(String fileUploadType) {
+    public  String getTemplate(String fileUploadType) {
         if (fileUploadType.equals(FileUploadType.SIMILARITY_ANALYSIS_FILE)) {
 
             List<AnalysisDTO> analysisDTO = new ArrayList<>();
