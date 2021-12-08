@@ -3,6 +3,7 @@ package uk.ac.ebi.spot.gwas.curation.rest;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -59,6 +60,9 @@ public class EfoTraitController {
 
     private final JWTService jwtService;
 
+    @Autowired
+    FileHandler fileHandler;
+
     public EfoTraitController(EfoTraitService efoTraitService, EfoTraitDtoAssembler efoTraitDtoAssembler,
                               DepositionCurationConfig depositionCurationConfig, UserService userService,
                               JWTService jwtService) {
@@ -83,7 +87,7 @@ public class EfoTraitController {
     @ResponseStatus(HttpStatus.OK)
     public HttpEntity<byte[]> downloadCreationTemplate() {
 
-        byte[] result = Objects.requireNonNull(FileHandler.getTemplate(FileUploadType.EFO_TRAIT_FILE)).getBytes();
+        byte[] result = Objects.requireNonNull(fileHandler.getTemplate(FileUploadType.EFO_TRAIT_FILE)).getBytes();
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + FileUploadType.EFO_TRAIT_FILE + ".tsv");
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
