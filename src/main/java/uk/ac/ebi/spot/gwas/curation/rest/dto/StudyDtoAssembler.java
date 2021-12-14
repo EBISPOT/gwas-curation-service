@@ -43,7 +43,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
     StudiesService studiesService;
 
     @Override
-    public Resource<StudyDto> toResource(Study study) {
+    public Resource<StudyDto>  toResource(Study study) {
 
         List<String> traitsList = null;
         List<DiseaseTrait> traits = null;
@@ -61,6 +61,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
 
         StudyDto studyDto = StudyDto.builder().
                 studyTag(study.getStudyDescription())
+                .studyId(study.getId())
                 .studyDescription(study.getStudyDescription())
                 .accession(study.getAccession())
                 .diseaseTraits(DiseaseTraitDtoAssembler.assemble(traits))
@@ -96,6 +97,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
 
     public static StudyDto assemble(Study study) {
         return new StudyDto(study.getStudyTag(),
+                study.getId(),
                 study.getAccession(),
                 study.getGenotypingTechnology(),
                 study.getArrayManufacturer(),
