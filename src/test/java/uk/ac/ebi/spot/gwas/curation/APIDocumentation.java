@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -291,6 +292,8 @@ public class APIDocumentation {
         when(diseaseTraitService.saveDiseaseTrait(any(), any(), any())).thenReturn(TestUtil.mockDiseaseTrait());
         when(diseaseTraitService.getDiseaseTraits( any(), any(), any())).thenReturn((TestUtil.mockDiseaseTraits()));
         when(diseaseTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResource());
+        when(diseaseTraitDtoAssembler.disassemble(any(MultipartFile.class))).thenReturn(TestUtil.mockDiseaseTraitsList());
+        when(diseaseTraitService.createDiseaseTrait(any(),any())).thenReturn(TestUtil.mockTraitUploadReports());
         when(diseaseTraitDtoAssembler.disassemble(any(DiseaseTraitDto.class))).thenReturn(TestUtil.mockDiseaseTrait());
         when(efoTraitService.getEfoTraits(any(), any())).thenReturn(TestUtil.mockEfoTraits());
         when(efoTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockEfoTraitAssemblyResource());
@@ -316,6 +319,31 @@ public class APIDocumentation {
                 .andDo(this.restDocumentationResultHandler.document(
                         responseFields(
                                 subsectionWithPath("_links").description("<<resources-page-links,Links>> to other resources"),
+                                subsectionWithPath("_embedded").description("The list of resources"),
+                                subsectionWithPath("page.size").description("The number of resources in this page"),
+                                subsectionWithPath("page.totalElements").description("The total number of resources"),
+                                subsectionWithPath("page.totalPages").description("The total number of pages"),
+                                subsectionWithPath("page.number").description("The page number")
+                        ),
+                        links(halLinks(),
+                                linkWithRel("self").description("This resource list"),
+                                linkWithRel("first").description("The first page in the resource list"),
+                                linkWithRel("next").description("The next page in the resource list"),
+                                linkWithRel("last").description("The last page in the resource list")
+                        )
+
+                ))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void pageStudiesExample () throws Exception {
+
+        this.mockMvc.perform(get(contextPath.concat("/v1/studies?page=1&size=1&sort=accession&submissionId=1234")).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
+                .header("Authorization","Bearer SpringRestDocsDummyToken"))
+                .andDo(this.restDocumentationResultHandler.document(
+                        responseFields(
+                                subsectionWithPath("_links").description("<<resources-page-studies-links,Links>> to other resources"),
                                 subsectionWithPath("_embedded").description("The list of resources"),
                                 subsectionWithPath("page.size").description("The number of resources in this page"),
                                 subsectionWithPath("page.totalElements").description("The total number of resources"),
@@ -549,8 +577,47 @@ public class APIDocumentation {
                                 )));
     }
 
-    @Test
-    public void uploadDiseaseTraitsStudyMappingsExample() throws Exception {
+    /*@Test
+    public void uploadDiseaseTraitsExample() throws Exception {
+        String test ="trait\n" +
+                "\"Uterine Carcinoma\"\n" +
+                "\"Malaria Parasite\"";
+        MockMultipartFile multipartFile
+                = new MockMultipartFile(
+                "multipartFile",
+                "hello.tsv",
+                MediaType.TEXT_PLAIN_VALUE,
+                test.getBytes()
+        );
+
+        this.mockMvc.perform(fileUpload(contextPath.concat("/v1/reported-traits/fileupload/uploads")).file(multipartFile).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization","Bearer SpringRestDocsDummyToken"))
+                .andExpect(status().isCreated())
+                .andDo(this.restDocumentationResultHandler.document(
+                        requestPartFields("multipartFile" ,fieldWithPath("trait").description("the trait to upload in DataBase"))
+
+                        ));*/
+
+
+        /*this.mockMvc.perform(multipart(contextPath.concat("/v1/reported-traits/fileupload/uploads")).file(multipartFile).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .header("Authorization","Bearer SpringRestDocsDummyToken"))
+                .andExpect(status().isCreated())
+                .andDo(this.restDocumentationResultHandler.document(
+                        requestParts(partWithName("multipartFile").description("File to upload for Reported Traits")),
+                        responseFields(
+                                fieldWithPath("[]").description("An Array of Trait Upload Report Objects"),
+                                fieldWithPath("[].trait").description("The name of the reported trait"),
+                                fieldWithPath("[].uploadComment").description("The transaction success or failure message"),
+                                subsectionWithPath("[].links").description("Links to other Trait Upload report")
+                        )));*/
+
+    //}
+
+
+    //@Test
+    /*public void uploadDiseaseTraitsStudyMappingsExample() throws Exception {
 
         String test = "GCST  Curated reported trait\n" +
                 "\"GCST90000026\"  \"Kashin-Beck disease\"";
@@ -566,10 +633,11 @@ public class APIDocumentation {
         fileUploadRequest.setMultipartFile(multipartFile);
 
 
+
         this.mockMvc.perform(multipart(contextPath.concat("/v1/studies/fileupload")).file(multipartFile).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .header("Authorization","Bearer SpringRestDocsDummyToken"))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andDo(this.restDocumentationResultHandler.document(
                         requestParts(partWithName("multipartFile").description("File to upload for trait mappings")),
                         responseFields(
@@ -580,7 +648,7 @@ public class APIDocumentation {
                                 subsectionWithPath("[].links").description("Links to other Trait Upload report")
                         )));
 
-    }
+    }*/
 
 
 }

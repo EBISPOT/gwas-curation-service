@@ -66,6 +66,7 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
     public static List<DiseaseTraitDto> assemble(List<DiseaseTrait> diseaseTraits) {
 
         List<DiseaseTraitDto> diseaseTraitDTOS = new ArrayList<>();
+        if(diseaseTraits != null && !diseaseTraits.isEmpty())
         diseaseTraits.forEach(diseaseTrait -> {
             DiseaseTraitDto diseaseTraitDTO = DiseaseTraitDto.builder()
                     .diseaseTraitId(diseaseTrait.getId())
@@ -101,7 +102,7 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
         return diseaseTrait;
     }
 
-    public static List<DiseaseTrait> disassemble(MultipartFile multipartFile)  {
+    public  List<DiseaseTrait> disassemble(MultipartFile multipartFile)  {
         CsvMapper mapper = new CsvMapper();
          CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
         List<DiseaseTraitDto> diseaseTraitDtos;

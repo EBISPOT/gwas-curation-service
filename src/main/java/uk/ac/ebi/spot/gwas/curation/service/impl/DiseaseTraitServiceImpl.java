@@ -24,6 +24,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisCacheDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
+import uk.ac.ebi.spot.gwas.deposition.exception.CannotCreateTraitWithDuplicateNameException;
 import uk.ac.ebi.spot.gwas.deposition.exception.CannotDeleteTraitException;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
@@ -50,9 +51,11 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
     }
 
     public DiseaseTrait createDiseaseTrait(DiseaseTrait diseaseTrait) {
-
-        DiseaseTrait diseaseTraitInserted = diseaseTraitRepository.insert(diseaseTrait);
-        return diseaseTraitInserted;
+        Optional<DiseaseTrait> optDiseaseTrait = getDiseaseTraitByTraitName(diseaseTrait.getTrait());
+        if(!optDiseaseTrait.isPresent())
+        return diseaseTraitRepository.insert(diseaseTrait);
+        else
+        throw new CannotCreateTraitWithDuplicateNameException("Trait already exists with name"+optDiseaseTrait.get().getTrait());
     }
 
 
@@ -60,10 +63,15 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         List<TraitUploadReport> report = new ArrayList<>();
         diseaseTraits.forEach(diseaseTrait -> {
             try {
+                Optional<DiseaseTrait> optDiseaseTrait = getDiseaseTraitByTraitName(diseaseTrait.getTrait());
+                if(optDiseaseTrait.isPresent())
+                    throw new CannotCreateTraitWithDuplicateNameException("Trait already exists with name"+optDiseaseTrait.get().getTrait());
                 diseaseTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
                 diseaseTraitRepository.insert(diseaseTrait);
                 report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait successfully Inserted : "+diseaseTrait.getTrait(),null));
             } catch(DataAccessException ex){
+                report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait Insertion failed as Trait already exists : "+diseaseTrait.getTrait(),null));
+            } catch(CannotCreateTraitWithDuplicateNameException ex){
                 report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait Insertion failed as Trait already exists : "+diseaseTrait.getTrait(),null));
             }
         });
@@ -109,7 +117,7 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
     }
 
     public Optional<DiseaseTrait> getDiseaseTraitByTraitName(String traitName) {
-        return diseaseTraitRepository.findByTrait(traitName);
+        return diseaseTraitRepository.findByTraitIgnoreCase(traitName);
     }
 
     public Optional<DiseaseTrait> getDiseaseTrait(String traitId) {
@@ -120,7 +128,7 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         if(trait !=null && studyId != null)
             return diseaseTraitRepository.findByStudyIdsContainsAndTrait(studyId, trait, page);
         else if(trait != null)
-            return diseaseTraitRepository.findByTrait(trait, page);
+            return diseaseTraitRepository.findByTraitContainingIgnoreCase(trait, page);
         else if(studyId != null)
             return diseaseTraitRepository.findByStudyIdsContains(studyId, page);
 

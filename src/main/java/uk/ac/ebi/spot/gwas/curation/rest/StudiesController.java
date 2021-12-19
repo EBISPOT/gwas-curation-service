@@ -3,13 +3,16 @@ package uk.ac.ebi.spot.gwas.curation.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.SortDefault;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,19 +23,17 @@ import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
-import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
-import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_STUDIES)
@@ -65,30 +66,44 @@ public class StudiesController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{studyId}/diseasetraits", produces = MediaType.APPLICATION_JSON_VALUE)
-    public PagedResources<StudyDto>  getDiseaseTraits(PagedResourcesAssembler assembler,@PathVariable String studyId) {
+    public Resources<Resource<DiseaseTraitDto>> getDiseaseTraits(PagedResourcesAssembler assembler, @PathVariable String studyId) {
         List<DiseaseTrait> diseaseTraits = studiesService.getDiseaseTraitsByStudyId(studyId);
-        Pageable pageable = new PageRequest(0 , diseaseTraits.size());
-        Page<DiseaseTrait> traitPage = new PageImpl<>(diseaseTraits, pageable,  diseaseTraits.size());
+        List<Resource<DiseaseTraitDto>> resourcesList = new ArrayList<>();
 
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
                 .methodOn(StudiesController.class).getDiseaseTraits(assembler, studyId));
+        for(DiseaseTrait diseaseTrait : diseaseTraits) {
+            DiseaseTraitDto diseaseTraitDto = diseaseTraitDtoAssembler.assemble(diseaseTrait);
+            Resource<DiseaseTraitDto> resource = new Resource<>(diseaseTraitDto);
+            ControllerLinkBuilder lb1 = ControllerLinkBuilder.linkTo(
+                    ControllerLinkBuilder.methodOn(DiseaseTraitController.class).getDiseaseTrait(diseaseTrait.getId()));
+            resource.add(BackendUtil.underBasePath(lb1, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT));
+            resourcesList.add(resource);
+            }
 
-        return assembler.toResource(traitPage, diseaseTraitDtoAssembler,
-                new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
+        Link diseaseTraitsLink = BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT);
+
+        Resources<Resource<DiseaseTraitDto>> resources = new Resources<>(resourcesList, diseaseTraitsLink);
+
+        return resources;
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/{studyId}",produces = MediaType.APPLICATION_JSON_VALUE)
     public  Resource<StudyDto> updateStudies(@PathVariable String studyId, @Valid @RequestBody StudyDto studyDto, HttpServletRequest request) {
         List<String> traitIds = null;
-        log.info("Disease Traits from request:"+studyDto.getDiseaseTraits());
-        if(studyDto.getDiseaseTraits() !=null && !studyDto.getDiseaseTraits().isEmpty())  {
-           traitIds = studiesService.getTraitsIDsFromDB(studyDto.getDiseaseTraits(), studyId);
-       }
-        Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyId);
-        study.setDiseaseTraits(traitIds);
-        Study studyUpdated = studiesService.updateStudies(study);
-        return studyDtoAssembler.toResource(studyUpdated);
+        if(studiesService.getStudy(studyId) != null ) {
+            log.info("Disease Traits from request:" + studyDto.getDiseaseTraits());
+            if (studyDto.getDiseaseTraits() != null && !studyDto.getDiseaseTraits().isEmpty()) {
+                traitIds = studiesService.getTraitsIDsFromDB(studyDto.getDiseaseTraits(), studyId);
+            }
+            Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyId);
+            study.setDiseaseTraits(traitIds);
+            Study studyUpdated = studiesService.updateStudies(study);
+            return studyDtoAssembler.toResource(studyUpdated);
+        } else {
+            throw new EntityNotFoundException("Study not found "+ studyId);
+        }
     }
 
     @ResponseStatus(HttpStatus.OK)

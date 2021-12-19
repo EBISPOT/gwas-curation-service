@@ -31,7 +31,7 @@ gwas-curation:
   auth:
     enabled: true
   db: deposition-backend-sandbox
-  proxy-prefix: /curation
+  proxy-prefix:
 
 email:
   enabled: false
@@ -45,14 +45,14 @@ email:
     #  submission: /v1/submissions/
 
 gwas-deposition-service:
-  url: http://gwas-deposition-backend:8080
+  url: http://gwas-deposition-backend-dev:8080
   fileupload:
     endpoints:
-      submission: /v1/submissions/
+      submission: /gwas/deposition/api/v1/submissions/
 
 
 gwas-curation-service:
   url: http://localhost:8080
   javers:
     endpoints:
-      javers-submission: /v1/javers
+      javers-submission: /gwas/depo-curation/api/v1/javers

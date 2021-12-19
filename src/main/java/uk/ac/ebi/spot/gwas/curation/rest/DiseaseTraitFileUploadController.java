@@ -23,6 +23,7 @@ import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
+import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileValidationException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,30 +59,37 @@ public class DiseaseTraitFileUploadController {
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
 
+    @Autowired
+    FileHandler fileHandler;
+
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/uploads", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<TraitUploadReport>> uploadDiseaseTraits(@Valid FileUploadRequest fileUploadRequest, BindingResult result,
+            produces = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public HttpEntity<byte[]> uploadDiseaseTraits(@RequestParam MultipartFile multipartFile,
                                                                         HttpServletRequest request) {
-        if (result.hasErrors()) {
-            throw new FileValidationException(result);
+        if(multipartFile.isEmpty()){
+            throw new FileProcessingException("File not found");
         }
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        MultipartFile multipartFile = fileUploadRequest.getMultipartFile();
         List<DiseaseTrait> diseaseTraits = diseaseTraitDtoAssembler.disassemble(multipartFile);
         List<TraitUploadReport> traitUploadReports = diseaseTraitService.createDiseaseTrait(diseaseTraits, user);
-        return new ResponseEntity<>(traitUploadReports, HttpStatus.CREATED);
+        byte[] result = fileHandler.serializePojoToTsv(traitUploadReports);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=traitUploadReports.tsv");
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
+        return new HttpEntity<>(result, responseHeaders);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/analysis", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public Resource<AnalysisCacheDto>  similaritySearchAnalysis(@Valid FileUploadRequest fileUploadRequest, BindingResult result) throws IOException {
-        if (result.hasErrors()) {
-            throw new FileValidationException(result);
+    public Resource<AnalysisCacheDto>  similaritySearchAnalysis(@RequestParam MultipartFile multipartFile) throws IOException {
+        if(multipartFile.isEmpty()){
+            throw new FileProcessingException("File not found");
         }
         String analysisId = UUID.randomUUID().toString();
-        List<AnalysisDTO> analysisDTOS = FileHandler.serializeDiseaseTraitAnalysisFile(fileUploadRequest);
+        List<AnalysisDTO> analysisDTOS = fileHandler.serializeDiseaseTraitAnalysisFile(multipartFile);
         log.info("{} disease traits were ingested for analysis", analysisDTOS.size());
         AnalysisCacheDto  analysisCacheDto = diseaseTraitService.similaritySearch(analysisDTOS, analysisId, 50);
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
@@ -104,7 +112,7 @@ public class DiseaseTraitFileUploadController {
         AnalysisCacheDto cache = diseaseTraitService.similaritySearch(analysisDTO, analysisId, threshold);
         List<AnalysisDTO> analysisDTOs = cache.getAnalysisResult();
         analysisDTOs.sort(Comparator.comparingDouble(AnalysisDTO::getDegree).reversed());
-        byte[] result = FileHandler.serializePojoToTsv(analysisDTOs);
+        byte[] result = fileHandler.serializePojoToTsv(analysisDTOs);
         //log.info(result);
 
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -121,7 +129,7 @@ public class DiseaseTraitFileUploadController {
     public HttpEntity<byte[]> fileUploadTemplateDownload(HttpServletResponse response,
                                              @RequestParam(value = "file") String fileUploadType) throws IOException {
 
-        byte[] result = FileHandler.getTemplate(fileUploadType).getBytes();
+        byte[] result = fileHandler.getTemplate(fileUploadType).getBytes();
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+fileUploadType+".tsv");
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);

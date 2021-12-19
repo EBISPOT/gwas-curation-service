@@ -11,7 +11,9 @@ public interface DiseaseTraitRepository extends MongoRepository<DiseaseTrait, St
 
     Page<DiseaseTrait> findByTrait(String trait, Pageable page);
 
-    Optional<DiseaseTrait> findByTrait(String trait);
+    Page<DiseaseTrait> findByTraitContainingIgnoreCase(String trait, Pageable page);
+
+    Optional<DiseaseTrait> findByTraitIgnoreCase(String trait);
 
     Page<DiseaseTrait> findByStudyIdsContains(String studyId, Pageable page);
 
