@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_STUDIES)
@@ -94,9 +95,12 @@ public class StudiesController {
         List<String> traitIds = null;
         if(studiesService.getStudy(studyId) != null ) {
             log.info("Disease Traits from request:" + studyDto.getDiseaseTraits());
-            if (studyDto.getDiseaseTraits() != null && !studyDto.getDiseaseTraits().isEmpty()) {
+            /*if (studyDto.getDiseaseTraits() != null && !studyDto.getDiseaseTraits().isEmpty()) {
                 traitIds = studiesService.getTraitsIDsFromDB(studyDto.getDiseaseTraits(), studyId);
-            }
+            }*/
+
+            traitIds = studyDto.getDiseaseTraits().stream().map(DiseaseTraitDto::getDiseaseTraitId).collect(Collectors.toList());
+
             Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyId);
             study.setDiseaseTraits(traitIds);
             Study studyUpdated = studiesService.updateStudies(study);
