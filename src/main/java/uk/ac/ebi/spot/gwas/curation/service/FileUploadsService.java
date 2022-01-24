@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface FileUploadsService {
 
+    public List<FileUpload> getFileUploads(List<String> ids);
 
     FileUpload getFileUpload(String fileUploadId);
 

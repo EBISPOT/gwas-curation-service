@@ -9,6 +9,8 @@ import uk.ac.ebi.spot.gwas.curation.service.FileUploadsService;
 import uk.ac.ebi.spot.gwas.deposition.domain.FileUpload;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,6 +31,18 @@ public class FileUploadsServiceImpl implements FileUploadsService {
         }
         log.info("File upload successfully retrieved: {}", optionalFileUpload.get().getId());
         return optionalFileUpload.get();
+    }
+
+    @Override
+    public List<FileUpload> getFileUploads(List<String> ids) {
+        log.info("Retrieving files: {}", ids);
+        if (ids == null) {
+            return new ArrayList<>();
+        }
+
+        List<FileUpload> fileUploads = fileUploadRepository.findByIdIn(ids);
+        log.info("Found {} files.", fileUploads.size());
+        return fileUploads;
     }
 
 }
