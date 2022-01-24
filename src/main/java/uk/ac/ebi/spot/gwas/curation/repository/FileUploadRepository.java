@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @JaversSpringDataAuditable
 public interface FileUploadRepository extends MongoRepository<FileUpload, String> {
+
     List<FileUpload> findByIdIn(List<String> ids);
 
     Optional<FileUpload> findByCallbackId(String callbackId);
