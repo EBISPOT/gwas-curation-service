@@ -94,9 +94,9 @@ public class FileHandler {
             return new String(serializePojoToTsv(analysisDTO));
         } else if (fileUploadType.equals(FileUploadType.REPORTED_TRAIT_FILE)) {
 
-            List<DiseaseTraitDto> diseaseTraitDtos = new ArrayList<>();
-            diseaseTraitDtos.add(DiseaseTraitDto.builder().trait("Uterine Carcinoma").build());
-            diseaseTraitDtos.add(DiseaseTraitDto.builder().trait("Malaria Parasite").build());
+            List<DiseaseTraitWrapperDTO> diseaseTraitDtos = new ArrayList<>();
+            diseaseTraitDtos.add(DiseaseTraitWrapperDTO.builder().trait("Uterine Carcinoma").build());
+            diseaseTraitDtos.add(DiseaseTraitWrapperDTO.builder().trait("Malaria Parasite").build());
             return new String(serializePojoToTsv(diseaseTraitDtos));
         } else if (fileUploadType.equals(FileUploadType.STUDY_TRAIT_FILE)){
             List<StudyPatchRequest> studyPatchRequestList = new ArrayList<>();
@@ -106,9 +106,9 @@ public class FileHandler {
             studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCST90000030").curatedReportedTrait("Hepatic lipid content in extreme obesity").build());
             return new String(serializePojoToTsv(studyPatchRequestList));
         } else if (fileUploadType.equals(FileUploadType.EFO_TRAIT_FILE)) {
-            List<EfoTraitDto> efoTraitDtos = new ArrayList<>();
-            efoTraitDtos.add(EfoTraitDto.builder().trait("uterine carcinoma").uri("http://www.ebi.ac.uk/efo/EFO_0002919").shortForm("EFO_0002919").build());
-            efoTraitDtos.add(EfoTraitDto.builder().trait("malaria").uri("http://www.ebi.ac.uk/efo/EFO_0001068").shortForm("EFO_0001068").build());
+            List<EFOTraitWrapperDTO> efoTraitDtos = new ArrayList<>();
+            efoTraitDtos.add(EFOTraitWrapperDTO.builder().trait("uterine carcinoma").uri("http://www.ebi.ac.uk/efo/EFO_0002919").shortForm("EFO_0002919").build());
+            efoTraitDtos.add(EFOTraitWrapperDTO.builder().trait("malaria").uri("http://www.ebi.ac.uk/efo/EFO_0001068").shortForm("EFO_0001068").build());
             return new String(serializePojoToTsv(efoTraitDtos));
         }
         else{

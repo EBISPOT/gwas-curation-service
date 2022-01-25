@@ -1425,7 +1425,7 @@ public class TestUtil {
     public static Resource<StudyDto> mockAssemblyResourceForStudy() {
         StudyDto studyDto = mockStudyDto();
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
-                ControllerLinkBuilder.methodOn(StudiesController.class).getStudy("1234"));
+                ControllerLinkBuilder.methodOn(StudiesController.class).getStudy("1234", "12khdkhkdh"));
         Resource<StudyDto> resource = new Resource<>(studyDto);
         //resource.add(controllerLinkBuilder.withSelfRel());
         resource.add(BackendUtil.underBasePath(lb, "curation-traits").withSelfRel());
