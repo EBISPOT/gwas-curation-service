@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_STUDIES)
+@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_SUBMISSIONS)
 public class StudiesController {
 
     private static final Logger log = LoggerFactory.getLogger(StudiesController.class);
@@ -54,8 +54,8 @@ public class StudiesController {
     DepositionCurationConfig depositionCurationConfig;
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping(value = "/{studyId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Resource<StudyDto> getStudy(@PathVariable String studyId) {
+    @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+"/{studyId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Resource<StudyDto> getStudy(@PathVariable String studyId, @PathVariable String submissionId) {
         Study study = studiesService.getStudy(studyId);
         if( study != null ) {
             return studyDtoAssembler.toResource(study);
@@ -65,13 +65,13 @@ public class StudiesController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping(value = "/{studyId}/diseasetraits", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Resources<Resource<DiseaseTraitDto>> getDiseaseTraits(PagedResourcesAssembler assembler, @PathVariable String studyId) {
+    @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+"/{studyId}/diseasetraits", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Resources<Resource<DiseaseTraitDto>> getDiseaseTraits(PagedResourcesAssembler assembler, @PathVariable String studyId, @PathVariable String submissionId) {
         List<DiseaseTrait> diseaseTraits = studiesService.getDiseaseTraitsByStudyId(studyId);
         List<Resource<DiseaseTraitDto>> resourcesList = new ArrayList<>();
 
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
-                .methodOn(StudiesController.class).getDiseaseTraits(assembler, studyId));
+                .methodOn(StudiesController.class).getDiseaseTraits(assembler, studyId, submissionId));
         for(DiseaseTrait diseaseTrait : diseaseTraits) {
             DiseaseTraitDto diseaseTraitDto = diseaseTraitDtoAssembler.assemble(diseaseTrait);
             Resource<DiseaseTraitDto> resource = new Resource<>(diseaseTraitDto);
@@ -89,8 +89,8 @@ public class StudiesController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PutMapping(value = "/{studyId}",produces = MediaType.APPLICATION_JSON_VALUE)
-    public  Resource<StudyDto> updateStudies(@PathVariable String studyId, @Valid @RequestBody StudyDto studyDto, HttpServletRequest request) {
+    @PutMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+"/{studyId}",produces = MediaType.APPLICATION_JSON_VALUE)
+    public  Resource<StudyDto> updateStudies(@PathVariable String studyId, @PathVariable String submissionId, @Valid @RequestBody StudyDto studyDto, HttpServletRequest request) {
         List<String> traitIds = null;
         if(studiesService.getStudy(studyId) != null ) {
             log.info("Disease Traits from request:" + studyDto.getDiseaseTraits());
@@ -107,9 +107,9 @@ public class StudiesController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES,produces = MediaType.APPLICATION_JSON_VALUE)
     public PagedResources<StudyDto> getStudies(PagedResourcesAssembler assembler,
-                                               @RequestParam(value = DepositionCurationConstants.PARAM_SUBMISSION_ID, required = true )  String submissionId,
+                                               @PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID)  String submissionId,
                                                @SortDefault(sort = "accession", direction = Sort.Direction.DESC)
                                                    @PageableDefault(size = 10, page = 0) Pageable pageable) {
         Page<Study> studies =  studiesService.getStudies(submissionId, pageable);

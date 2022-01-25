@@ -39,7 +39,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @RestController
-@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_DISEASE_TRAITS_FILE_UPLOAD)
+@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_DISEASE_TRAITS)
 public class DiseaseTraitFileUploadController {
 
     private static final Logger log = LoggerFactory.getLogger(DiseaseTraitFileUploadController.class);
@@ -63,7 +63,7 @@ public class DiseaseTraitFileUploadController {
     FileHandler fileHandler;
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping(value = "/uploads", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+    @PostMapping(value = "/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public HttpEntity<byte[]> uploadDiseaseTraits(@RequestParam MultipartFile multipartFile,
                                                                         HttpServletRequest request) {
