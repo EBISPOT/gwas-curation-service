@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_STUDIES_TRAITS_UPLOAD)
+@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_SUBMISSIONS)
 public class StudyTraitsUploadFileController {
 
     @Autowired
@@ -44,7 +44,8 @@ public class StudyTraitsUploadFileController {
     FileHandler fileHandler;
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping( consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+    @PostMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+"/files",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public HttpEntity<byte[]> uploadDiseaseTraitsStudyMappings(@RequestParam MultipartFile multipartFile,
                                                                        HttpServletRequest request) {
