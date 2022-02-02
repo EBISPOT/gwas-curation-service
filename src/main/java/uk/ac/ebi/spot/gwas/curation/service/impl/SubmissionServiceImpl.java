@@ -71,7 +71,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                     return submissionRepository.findByPublicationIdAndArchived(pubId, false, page);
                 else if(bowId != null)
                     return submissionRepository.findByBodyOfWorksContainsAndArchived(bowId, false, page);
-                if(metaStatus != null && ssStatus != null && overAllStatus != null && lockStatus != null )
+                else if(metaStatus != null && ssStatus != null && overAllStatus != null && lockStatus != null )
                     return submissionRepository.findByMetadataStatusInAndSummaryStatsStatusInAndOverallStatusInAndLockDetails_StatusInAndArchived(
                             metaStatus, ssStatus, overAllStatus, lockStatus, false, page);
                 else if(metaStatus != null && ssStatus != null && overAllStatus != null)
