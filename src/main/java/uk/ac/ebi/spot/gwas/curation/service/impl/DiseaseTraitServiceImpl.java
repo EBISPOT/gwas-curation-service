@@ -165,6 +165,8 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
                         diseaseTraits.forEach(diseaseTrait -> {
                                     String trait = diseaseTrait.getTrait();
                                     String userTerm = diseaseTraitAnalysisDTO.getUserTerm();
+                                    log.info("Trait ->"+trait);
+                                    log.info("userTerm ->"+userTerm);
 
                                     double cosineDistance = cd.apply(userTerm, trait);
                                     double levenshteinDistance = ((double) lv.apply(userTerm, trait)) / Math.max(userTerm.length(), trait.length());
