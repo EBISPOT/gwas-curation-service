@@ -24,35 +24,35 @@ public interface SubmissionRepository extends MongoRepository<Submission, String
 
     Page<Submission> findByBodyOfWorksContainsAndArchived(String pubId, Boolean archived, Pageable page);
 
-    Page<Submission> findByMetadataStatusAndArchived(String status, Boolean archived, Pageable page );
+    Page<Submission> findByMetadataStatusInAndArchived(List<String> status, Boolean archived, Pageable page );
 
-    Page<Submission> findBySummaryStatsStatusAndArchived(String status, Boolean archived, Pageable page );
+    Page<Submission> findBySummaryStatsStatusInAndArchived(List<String> status, Boolean archived, Pageable page );
 
-    Page<Submission> findByOverallStatusAndArchived(String status, Boolean archived, Pageable page );
+    Page<Submission> findByOverallStatusInAndArchived(List<String> status, Boolean archived, Pageable page );
 
-    Page<Submission> findByLockDetails_StatusAndArchived(String status, Boolean archived, Pageable page );
+    Page<Submission> findByLockDetails_StatusInAndArchived(List<String> status, Boolean archived, Pageable page );
 
-    Page<Submission> findByMetadataStatusAndSummaryStatsStatusAndArchived(String metaStatus,String ssStatus, Boolean archived, Pageable page );
+    Page<Submission> findByMetadataStatusInAndSummaryStatsStatusInAndArchived(List<String> metaStatus,List<String> ssStatus, Boolean archived, Pageable page );
 
-    Page<Submission> findByMetadataStatusAndOverallStatusAndArchived(String metaStatus,String overallStatus, Boolean archived, Pageable page );
+    Page<Submission> findByMetadataStatusInAndOverallStatusInAndArchived(List<String> metaStatus,List<String> overallStatus, Boolean archived, Pageable page );
 
-    Page<Submission> findBySummaryStatsStatusAndOverallStatusAndArchived(String ssStatus,String overallStatus, Boolean archived, Pageable page );
+    Page<Submission> findBySummaryStatsStatusInAndOverallStatusInAndArchived(List<String> ssStatus,List<String>  overallStatus, Boolean archived, Pageable page );
 
-    Page<Submission> findByMetadataStatusAndLockDetails_StatusAndArchived(String metaStatus,String lockStatus, Boolean archived, Pageable page );
+    Page<Submission> findByMetadataStatusInAndLockDetails_StatusInAndArchived(List<String> metaStatus,List<String> lockStatus, Boolean archived, Pageable page );
 
-    Page<Submission> findByOverallStatusAndLockDetails_StatusAndArchived(String overallStatus,String lockStatus, Boolean archived, Pageable page );
+    Page<Submission> findByOverallStatusInAndLockDetails_StatusInAndArchived(List<String> overallStatus,List<String> lockStatus, Boolean archived, Pageable page );
 
-    Page<Submission> findBySummaryStatsStatusAndLockDetails_StatusAndArchived(String ssStatus, String lockStatus, Boolean archived, Pageable page );
+    Page<Submission> findBySummaryStatsStatusInAndLockDetails_StatusInAndArchived(List<String> ssStatus, List<String> lockStatus, Boolean archived, Pageable page );
 
-    Page<Submission> findByMetadataStatusAndSummaryStatsStatusAndLockDetails_StatusAndArchived(String metaStatus, String ssStatus, String lockStatus, Boolean archived, Pageable page );
+    Page<Submission> findByMetadataStatusInAndSummaryStatsStatusInAndLockDetails_StatusInAndArchived(List<String> metaStatus, List<String> ssStatus, List<String> lockStatus, Boolean archived, Pageable page );
 
-    Page<Submission> findByMetadataStatusAndSummaryStatsStatusAndOverallStatusAndArchived(String metaStatus,String ssStatus, String overallStatus, Boolean archived, Pageable page );
+    Page<Submission> findByMetadataStatusInAndSummaryStatsStatusInAndOverallStatusInAndArchived(List<String> metaStatus,List<String> ssStatus, List<String> overallStatus, Boolean archived, Pageable page );
 
-    Page<Submission> findBySummaryStatsStatusAndOverallStatusAndLockDetails_StatusAndArchived(String ssStatus,String overallStatus, String lockStatus, Boolean archived, Pageable page );
+    Page<Submission> findBySummaryStatsStatusInAndOverallStatusInAndLockDetails_StatusInAndArchived(List<String> ssStatus,List<String> overallStatus, List<String> lockStatus, Boolean archived, Pageable page );
 
-    Page<Submission> findByMetadataStatusAndOverallStatusAndLockDetails_StatusAndArchived(String metaStatus,String overallStatus, String lockStatus, Boolean archived, Pageable page );
+    Page<Submission> findByMetadataStatusInAndOverallStatusInAndLockDetails_StatusInAndArchived(List<String> metaStatus,List<String> overallStatus, List<String> lockStatus, Boolean archived, Pageable page );
 
-    Page<Submission> findByMetadataStatusAndSummaryStatsStatusAndOverallStatusAndLockDetails_StatusAndArchived(String metaStatus,String ssStatus,String overallStatus, String lockStatus, Boolean archived, Pageable page );
+    Page<Submission> findByMetadataStatusInAndSummaryStatsStatusInAndOverallStatusInAndLockDetails_StatusInAndArchived(List<String> metaStatus,List<String> ssStatus,List<String> overallStatus, List<String> lockStatus, Boolean archived, Pageable page );
 
 
 }
