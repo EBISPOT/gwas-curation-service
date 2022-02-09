@@ -2,6 +2,7 @@ package uk.ac.ebi.spot.gwas.curation.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisCacheDto;
@@ -18,6 +19,14 @@ public interface DiseaseTraitService {
     public DiseaseTrait createDiseaseTrait(DiseaseTrait diseaseTrait);
 
     public List<TraitUploadReport> createDiseaseTrait(List<DiseaseTrait> diseaseTraits, User user);
+
+    public void callOldCurationService(MultipartFile multipartFile);
+
+    public void callOldCurationServiceDelete(String traitId);
+
+    public void callOldCurationServiceInsert(DiseaseTraitDto diseaseTraitDto);
+
+    public void callOldCurationServiceUpdate(DiseaseTraitDto diseaseTraitDto, String traitName);
 
     public DiseaseTrait saveDiseaseTrait(String traitId, DiseaseTraitDto diseaseTraitDto, User user);
 

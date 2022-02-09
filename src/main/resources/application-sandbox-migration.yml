@@ -56,3 +56,12 @@ gwas-curation-service:
   javers:
     endpoints:
       javers-submission: /gwas/depo-curation/api/v1/javers
+
+
+goci:
+  url: http://snoopy.ebi.ac.uk:9680/gwas/curation
+  diseaseTraits:
+    endpoints:
+      reported-traits-upload: /api/v1/disease-traits/uploads
+      reported-traits: /api/v1/disease-traits
+      search-reported-traits: /api/v1/disease-traits/search

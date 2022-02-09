@@ -4,7 +4,7 @@ auth-enable:
 #===============COMPULSORY PROGRAM ARGUMENTS=====#
 
 server:
-  port: 8080
+  port: 8081
 
 spring:
   data:
@@ -34,3 +34,11 @@ gwas-curation-service:
   javers:
     endpoints:
       javers-submission: /v1/javers
+
+goci:
+  url: http://localhost:8080
+  diseaseTraits:
+    endpoints:
+      reported-traits-upload: /api/v1/disease-traits/uploads
+      reported-traits: /api/v1/disease-traits
+      search-reported-traits: /api/v1/disease-traits/search

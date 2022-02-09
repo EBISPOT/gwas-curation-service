@@ -51,6 +51,8 @@ import java.util.Optional;
 public class DiseaseTraitController {
 
     private static final Logger log = LoggerFactory.getLogger(DiseaseTraitController.class);
+
+
     @Autowired
     DiseaseTraitService diseaseTraitService;
 
@@ -78,14 +80,18 @@ public class DiseaseTraitController {
         DiseaseTrait diseaseTrait = diseaseTraitDtoAssembler.disassemble(diseaseTraitDto);
         diseaseTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
         DiseaseTrait diseaseTraitInserted = diseaseTraitService.createDiseaseTrait(diseaseTrait);
+        diseaseTraitService.callOldCurationServiceInsert(diseaseTraitDto);
         return diseaseTraitDtoAssembler.toResource(diseaseTraitInserted);
     }
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/{traitId}",produces = MediaType.APPLICATION_JSON_VALUE)
     public Resource<DiseaseTraitDto> updateDiseaseTraits(@PathVariable String traitId,@Valid @RequestBody DiseaseTraitDto diseaseTraitDto, HttpServletRequest request) {
+        Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitId);
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         DiseaseTrait diseaseTraitUpdated = diseaseTraitService.saveDiseaseTrait(traitId, diseaseTraitDto, user);
+        if(optionalDiseaseTrait.isPresent())
+        diseaseTraitService.callOldCurationServiceUpdate(diseaseTraitDto, optionalDiseaseTrait.get().getTrait());
         return diseaseTraitDtoAssembler.toResource(diseaseTraitUpdated);
     }
 
@@ -125,6 +131,7 @@ public class DiseaseTraitController {
             diseaseTraitPatched.setCreated(provenanceDtoAssembler.disassemble(diseaseTraitPatchedDTO.getCreated(), user));
             diseaseTraitPatched.setUpdated(new Provenance(DateTime.now(), user.getId()));
             DiseaseTrait diseaseTraitUpdated =  diseaseTraitService.updateDiseaseTrait(diseaseTraitPatched);
+            diseaseTraitService.callOldCurationServiceUpdate(diseaseTraitPatchedDTO, optionalDiseaseTrait.get().getTrait());
             return diseaseTraitDtoAssembler.toResource(diseaseTraitUpdated);
         }else{
             throw new EntityNotFoundException("Disease Trait not found"+ traitId);

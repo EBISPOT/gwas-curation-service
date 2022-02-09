@@ -73,6 +73,7 @@ public class DiseaseTraitFileUploadController {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         List<DiseaseTrait> diseaseTraits = diseaseTraitDtoAssembler.disassemble(multipartFile);
         List<TraitUploadReport> traitUploadReports = diseaseTraitService.createDiseaseTrait(diseaseTraits, user);
+        diseaseTraitService.callOldCurationService(multipartFile);
         byte[] result = fileHandler.serializePojoToTsv(traitUploadReports);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=traitUploadReports.tsv");
