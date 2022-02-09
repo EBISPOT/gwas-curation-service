@@ -43,7 +43,7 @@ public class EfoTraitServiceTest {
     public void setup() {
 
         when(efoTraitRepository.findById(any())).thenReturn(Optional.of(TestUtil.mockEfoTrait()));
-        when(efoTraitRepository.findByTrait(any(),any())).thenReturn(TestUtil.mockEfoTraitByTrait());
+        when(efoTraitRepository.findByTraitContainingIgnoreCase(any(),any())).thenReturn(TestUtil.mockEfoTraitByTrait());
         when(efoTraitRepository.findAll()).thenReturn(TestUtil.mockEfoTraits().getContent());
         when(efoTraitRepository.findAll((Pageable) any())).thenReturn(TestUtil.mockEfoTraits());
         when(efoTraitRepository.save(any())).thenReturn(TestUtil.mockEfoTrait());

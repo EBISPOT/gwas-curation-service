@@ -24,5 +24,9 @@ public interface EfoTraitService {
 
     Page<EfoTrait> getEfoTraits(String trait, Pageable pageable);
 
+    List<EfoTrait> getEfoTraits(String trait);
+
+    String getEfoTraitsTsv(String trait);
+
     void deleteEfoTrait(String traitIds);
 }
