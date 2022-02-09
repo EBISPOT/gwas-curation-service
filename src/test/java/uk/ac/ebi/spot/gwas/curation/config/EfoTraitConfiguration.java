@@ -11,6 +11,7 @@ import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.JWTService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.service.impl.EfoTraitServiceImpl;
+import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 
 @TestConfiguration
 public class EfoTraitConfiguration {
@@ -27,6 +28,8 @@ public class EfoTraitConfiguration {
     @MockBean
     JWTService jwtService;
 
+    @MockBean
+    FileHandler fileHandler;
 
     @MockBean
     EfoTraitDtoAssembler efoTraitDtoAssembler;
@@ -39,6 +42,6 @@ public class EfoTraitConfiguration {
 
     @Bean
     public EfoTraitService efoTraitService() {
-        return new EfoTraitServiceImpl(efoTraitRepository, studyRepository, efoTraitDtoAssembler);
+        return new EfoTraitServiceImpl(efoTraitRepository, studyRepository, efoTraitDtoAssembler, fileHandler);
     }
 }
