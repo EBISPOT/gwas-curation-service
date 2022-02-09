@@ -142,6 +142,18 @@ public class EfoTraitController {
         return assembler.toResource(efoTraitPage, efoTraitDtoAssembler,
                 new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
     }
+
+    @GetMapping(value = "/export")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpEntity<byte[]> exportTraits(@RequestParam(value = DepositionCurationConstants.PARAM_TRAIT, required = false) String trait) {
+
+        byte[] result = Objects.requireNonNull(efoTraitService.getEfoTraitsTsv(trait)).getBytes();
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=efo-traits-export.tsv");
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
+        return new HttpEntity<>(result, responseHeaders);
+    }
     
     @DeleteMapping(value = "/{traitIds}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

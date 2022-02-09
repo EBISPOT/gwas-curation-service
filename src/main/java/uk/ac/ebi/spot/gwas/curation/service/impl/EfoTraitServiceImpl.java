@@ -2,7 +2,6 @@ package uk.ac.ebi.spot.gwas.curation.service.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,9 +10,11 @@ import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
+import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 import uk.ac.ebi.spot.gwas.deposition.exception.CannotCreateTraitWithDuplicateNameException;
@@ -23,6 +24,7 @@ import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EfoTraitServiceImpl implements EfoTraitService {
@@ -33,10 +35,13 @@ public class EfoTraitServiceImpl implements EfoTraitService {
 
     private final EfoTraitDtoAssembler efoTraitDtoAssembler;
 
-    public EfoTraitServiceImpl(EfoTraitRepository efoTraitRepository, StudyRepository studyRepository, EfoTraitDtoAssembler efoTraitDtoAssembler) {
+    private final FileHandler fileHandler;
+
+    public EfoTraitServiceImpl(EfoTraitRepository efoTraitRepository, StudyRepository studyRepository, EfoTraitDtoAssembler efoTraitDtoAssembler, FileHandler fileHandler) {
         this.efoTraitRepository = efoTraitRepository;
         this.studyRepository = studyRepository;
         this.efoTraitDtoAssembler = efoTraitDtoAssembler;
+        this.fileHandler = fileHandler;
     }
 
     @Override
@@ -105,9 +110,29 @@ public class EfoTraitServiceImpl implements EfoTraitService {
     public Page<EfoTrait> getEfoTraits(String trait, Pageable pageable) {
 
         if (!StringUtils.isEmpty(trait)) {
-            return efoTraitRepository.findByTrait(trait, pageable);
+            return efoTraitRepository.findByTraitContainingIgnoreCase(trait, pageable);
         }
         return efoTraitRepository.findAll(pageable);
+    }
+
+    @Override
+    public List<EfoTrait> getEfoTraits(String trait) {
+
+        if (!StringUtils.isEmpty(trait)) {
+            return efoTraitRepository.findByTraitContainingIgnoreCase(trait);
+        }
+        return efoTraitRepository.findAll();
+    }
+
+    @Override
+    public String getEfoTraitsTsv(String trait) {
+
+        List<EfoTrait> efoTraits = getEfoTraits(trait);
+        List<EFOTraitWrapperDTO> efoTraitWrapperDtos = efoTraits
+                .stream()
+                .map(efoTrait -> EFOTraitWrapperDTO.builder().trait(efoTrait.getTrait()).uri(efoTrait.getUri()).shortForm(efoTrait.getShortForm()).build())
+                .collect(Collectors.toList());
+        return new String(fileHandler.serializePojoToTsv(efoTraitWrapperDtos));
     }
 
     @Override
