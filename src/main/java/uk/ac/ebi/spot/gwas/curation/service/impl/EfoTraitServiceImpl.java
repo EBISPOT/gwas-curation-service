@@ -17,7 +17,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
-import uk.ac.ebi.spot.gwas.deposition.exception.CannotCreateTraitWithDuplicateNameException;
+import uk.ac.ebi.spot.gwas.deposition.exception.CannotCreateTraitWithDuplicateUriException;
 import uk.ac.ebi.spot.gwas.deposition.exception.CannotDeleteTraitException;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
@@ -53,7 +53,7 @@ public class EfoTraitServiceImpl implements EfoTraitService {
             efoTraitCreated = efoTraitRepository.insert(efoTrait);
         }
         catch (DuplicateKeyException e) {
-            throw new CannotCreateTraitWithDuplicateNameException("Trait name already exists!");
+            throw new CannotCreateTraitWithDuplicateUriException("Trait with same URI already exists.");
         }
         return efoTraitCreated;
     }
@@ -65,11 +65,11 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         efoTraits.forEach(efoTrait -> {
             try {
                 createEfoTrait(efoTrait, user);
-                report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait successfully Inserted : " + efoTrait.getTrait(), null));
+                report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait successfully added : " + efoTrait.getTrait(), null));
 
             }
-            catch(CannotCreateTraitWithDuplicateNameException ex) {
-                report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait Insertion failed as Trait already exists : " + efoTrait.getTrait(), null));
+            catch(CannotCreateTraitWithDuplicateUriException ex) {
+                report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait cannot be added because one with same URI already exists: " + efoTrait.getTrait(), null));
             }
         });
         return report;
@@ -88,7 +88,7 @@ public class EfoTraitServiceImpl implements EfoTraitService {
                 return efoTraitRepository.save(updatedEfoTrait);
             }
             catch (DuplicateKeyException e) {
-                throw new CannotCreateTraitWithDuplicateNameException("Trait name already exists!");
+                throw new CannotCreateTraitWithDuplicateUriException("Trait with same URI already exists.");
             }
         }
         throw new EntityNotFoundException("EFO Trait with id " + traitId + " not found.");

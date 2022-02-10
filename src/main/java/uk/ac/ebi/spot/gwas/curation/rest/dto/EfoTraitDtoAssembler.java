@@ -84,9 +84,7 @@ public class EfoTraitDtoAssembler implements ResourceAssembler<EfoTrait, Resourc
             throw new FileProcessingException("Could not read the file");
         }
         List<EfoTrait> efoTraits = new ArrayList<>();
-        efoTraitDtos.forEach(efoTraitDto -> {
-            efoTraits.add(disassemble(efoTraitDto));
-        });
+        efoTraitDtos.forEach(efoTraitDto -> efoTraits.add(disassemble(efoTraitDto)));
         return efoTraits;
     }
 }
