@@ -6,9 +6,11 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface EfoTraitRepository extends MongoRepository<EfoTrait, String> {
 
     Page<EfoTrait> findByTraitContainingIgnoreCase(String trait, Pageable page);
     List<EfoTrait> findByTraitContainingIgnoreCase(String trait);
+    Optional<EfoTrait> findByShortForm(String shortForm);
 }

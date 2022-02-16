@@ -17,16 +17,11 @@ public interface StudyRepository extends MongoRepository<Study, String> {
 
     Stream<Study> readByIdIn(List<String> ids);
 
-
     Optional<Study> findByAccession(String accession);
 
     Page<Study> findBySubmissionId(String submissionId, Pageable page);
 
     List<Study> findByDiseaseTraitsContains(String traitId);
 
-
-    Stream<Study> findByEfoTraitListContains(String traitId);
-
-
-
+    Stream<Study> findByEfoTraitsContains(String traitId);
 }

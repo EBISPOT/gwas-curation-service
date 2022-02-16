@@ -21,6 +21,7 @@ import uk.ac.ebi.spot.gwas.deposition.exception.CannotCreateTraitWithDuplicateUr
 import uk.ac.ebi.spot.gwas.deposition.exception.CannotDeleteTraitException;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
+import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +60,7 @@ public class EfoTraitServiceImpl implements EfoTraitService {
     }
 
     @Override
-    public List<TraitUploadReport> createEfoTraits(List<EfoTrait> efoTraits, User user) {
+    public byte[] createEfoTraits(List<EfoTrait> efoTraits, User user) {
 
         List<TraitUploadReport> report = new ArrayList<>();
         efoTraits.forEach(efoTrait -> {
@@ -71,8 +72,16 @@ public class EfoTraitServiceImpl implements EfoTraitService {
             catch(CannotCreateTraitWithDuplicateUriException ex) {
                 report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait cannot be added because one with same URI already exists: " + efoTrait.getTrait(), null));
             }
+            catch (ConstraintViolationException ex) {
+                if (efoTrait.getTrait() == null || efoTrait.getTrait().equals("")) {
+                    report.add(new TraitUploadReport("Empty trait field", ex.getMessage(), null));
+                }
+                else {
+                    report.add(new TraitUploadReport(efoTrait.getTrait(), ex.getMessage(), null));
+                }
+            }
         });
-        return report;
+        return fileHandler.serializePojoToTsv(report);
     }
 
     @Override
@@ -125,14 +134,14 @@ public class EfoTraitServiceImpl implements EfoTraitService {
     }
 
     @Override
-    public String getEfoTraitsTsv(String trait) {
+    public byte[] getEfoTraitsTsv(String trait) {
 
         List<EfoTrait> efoTraits = getEfoTraits(trait);
         List<EFOTraitWrapperDTO> efoTraitWrapperDtos = efoTraits
                 .stream()
                 .map(efoTrait -> EFOTraitWrapperDTO.builder().trait(efoTrait.getTrait()).uri(efoTrait.getUri()).shortForm(efoTrait.getShortForm()).build())
                 .collect(Collectors.toList());
-        return new String(fileHandler.serializePojoToTsv(efoTraitWrapperDtos));
+        return fileHandler.serializePojoToTsv(efoTraitWrapperDtos);
     }
 
     @Override
@@ -145,7 +154,7 @@ public class EfoTraitServiceImpl implements EfoTraitService {
             if (!efoTraitRepository.existsById(traitId)) {
                 notFoundTraits.add(traitId);
             }
-            else if (studyRepository.findByEfoTraitListContains(traitIds).findAny().isPresent()) {
+            else if (studyRepository.findByEfoTraitsContains(traitIds).findAny().isPresent()) {
                 assignedToStudyTraits.add(traitId);
             }
             else {
