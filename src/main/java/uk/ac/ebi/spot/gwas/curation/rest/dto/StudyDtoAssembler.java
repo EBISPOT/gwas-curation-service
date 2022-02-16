@@ -11,9 +11,11 @@ import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.DiseaseTraitController;
 import uk.ac.ebi.spot.gwas.curation.rest.StudiesController;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
+import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
+import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
@@ -38,6 +40,11 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
     @Autowired
     DiseaseTraitService diseaseTraitService;
 
+    @Autowired
+    EfoTraitService efoTraitService;
+
+    @Autowired
+    EfoTraitDtoAssembler efoTraitDtoAssembler;
 
     @Autowired
     StudiesService studiesService;
@@ -47,11 +54,9 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
 
         List<String> traitsList = null;
         List<DiseaseTrait> traits = null;
-        if( study.getDiseaseTraits() != null && !study.getDiseaseTraits().isEmpty() ){
+        if(study.getDiseaseTraits() != null && !study.getDiseaseTraits().isEmpty() ){
             traitsList = study.getDiseaseTraits();
         }
-
-
         if( traitsList != null && !traitsList.isEmpty() )
          traits =  study.getDiseaseTraits().stream().map((traitId) ->
                         diseaseTraitService.getDiseaseTrait(traitId))
@@ -59,12 +64,22 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                         .map(optDiseaseTrait -> optDiseaseTrait.get())
                         .collect(Collectors.toList());
 
+        List<EfoTrait> efoTraits = null;
+        if(study.getEfoTraits() != null && !study.getEfoTraits().isEmpty() ){
+            efoTraits = study.getEfoTraits().stream().map((traitId) ->
+                    efoTraitService.getEfoTrait(traitId))
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .collect(Collectors.toList());;
+        }
+
         StudyDto studyDto = StudyDto.builder().
                 studyTag(study.getStudyDescription())
                 .studyId(study.getId())
                 .studyDescription(study.getStudyDescription())
                 .accession(study.getAccession())
                 .diseaseTraits(DiseaseTraitDtoAssembler.assemble(traits))
+                .efoTraits(EfoTraitDtoAssembler.assemble(efoTraits))
                 .arrayInformation(study.getArrayManufacturer())
                 .efoTrait(study.getEfoTrait())
                 .arrayManufacturer(study.getArrayManufacturer())
@@ -122,6 +137,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 null,
                 null,
                 study.isAgreedToCc0(),
+                null,
                 null);
     }
 

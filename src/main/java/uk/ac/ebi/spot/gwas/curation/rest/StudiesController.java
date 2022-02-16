@@ -28,6 +28,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -93,16 +94,21 @@ public class StudiesController {
     @PutMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+"/{studyId}",produces = MediaType.APPLICATION_JSON_VALUE)
     public  Resource<StudyDto> updateStudies(@PathVariable String studyId, @PathVariable String submissionId, @Valid @RequestBody StudyDto studyDto, HttpServletRequest request) {
         List<String> traitIds = null;
+        List<String> efoTraitIds = null;
         if(studiesService.getStudy(studyId) != null ) {
             log.info("Disease Traits from request:" + studyDto.getDiseaseTraits());
             /*if (studyDto.getDiseaseTraits() != null && !studyDto.getDiseaseTraits().isEmpty()) {
                 traitIds = studiesService.getTraitsIDsFromDB(studyDto.getDiseaseTraits(), studyId);
             }*/
-
-            traitIds = studyDto.getDiseaseTraits().stream().map(DiseaseTraitDto::getDiseaseTraitId).collect(Collectors.toList());
-
             Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyId);
-            study.setDiseaseTraits(traitIds);
+            if (studyDto.getDiseaseTraits() != null && !studyDto.getDiseaseTraits().isEmpty()) {
+                traitIds = studyDto.getDiseaseTraits().stream().map(DiseaseTraitDto::getDiseaseTraitId).collect(Collectors.toList());
+                study.setDiseaseTraits(traitIds);
+            }
+            if (studyDto.getEfoTraits() != null && !studyDto.getEfoTraits().isEmpty()) {
+                efoTraitIds = studyDto.getEfoTraits().stream().map(EfoTraitDto::getEfoTraitId).collect(Collectors.toList());
+                study.setEfoTraits(efoTraitIds);
+            }
             Study studyUpdated = studiesService.updateStudies(study);
             return studyDtoAssembler.toResource(studyUpdated);
         } else {

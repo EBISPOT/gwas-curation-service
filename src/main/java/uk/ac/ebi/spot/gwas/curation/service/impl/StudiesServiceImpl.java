@@ -7,12 +7,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
+import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
+import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitStudyMappingDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 
@@ -34,6 +37,9 @@ public class StudiesServiceImpl implements StudiesService {
 
     @Autowired
     private DiseaseTraitRepository diseaseTraitRepository;
+
+    @Autowired
+    private EfoTraitRepository efoTraitRepository;
 
     @Override
     public Study updateStudies(Study study) {
@@ -130,4 +136,33 @@ public class StudiesServiceImpl implements StudiesService {
         return report;
     }
 
+    @Override
+    public List<TraitUploadReport> updateEfoTraitsForStudies(List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos) {
+
+        List<TraitUploadReport> report = new ArrayList<>();
+        efoTraitStudyMappingDtos.forEach((efoTraitStudyMappingDto -> {
+            Study study = getStudyByAccession(efoTraitStudyMappingDto.getGcst());
+            Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findByShortForm(efoTraitStudyMappingDto.getShortForm());
+            if(study != null) {
+                if (efoTraitOptional.isPresent()) {
+                    EfoTrait efoTrait = efoTraitOptional.get();
+                    List<String> traitsList = study.getEfoTraits();
+                    if (traitsList == null) {
+                        traitsList = new ArrayList<>();
+                    }
+                    if (!traitsList.contains(efoTrait.getId())) {
+                        traitsList.add(efoTrait.getId());
+                    }
+                    study.setEfoTraits(traitsList);
+                    studyRepository.save(study);
+                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " successfully updated with trait : " + efoTraitStudyMappingDto.getShortForm(), efoTraitStudyMappingDto.getGcst()));
+                } else {
+                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " failed as trait : " + efoTraitStudyMappingDto.getShortForm()+" not present in DB", efoTraitStudyMappingDto.getGcst()));
+                }
+            } else {
+                report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study not present in DB", efoTraitStudyMappingDto.getGcst()));
+            }
+        }));
+        return report;
+    }
 }

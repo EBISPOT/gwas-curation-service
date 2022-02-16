@@ -16,7 +16,9 @@ import uk.ac.ebi.spot.gwas.curation.rest.EfoTraitController;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
+import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 
@@ -60,6 +62,40 @@ public class EfoTraitDtoAssembler implements ResourceAssembler<EfoTrait, Resourc
         resource.add(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT));
         log.info("EfoTraitDtoAssembler Resource ->" + resource);
         return resource;
+    }
+
+    public static List<EfoTraitDto> assemble(List<EfoTrait> efoTraits) {
+
+        List<EfoTraitDto> efoTraitDtos = new ArrayList<>();
+        if(efoTraits != null && !efoTraits.isEmpty())
+            efoTraits.forEach(efoTrait -> {
+                EfoTraitDto efoTraitDto = EfoTraitDto.builder()
+                        .efoTraitId(efoTrait.getId())
+                        .trait(efoTrait.getTrait())
+                        .uri(efoTrait.getUri())
+                        .shortForm(efoTrait.getShortForm())
+                        .build();
+                efoTraitDtos.add(efoTraitDto);
+            });
+        return efoTraitDtos;
+    }
+
+
+    public  EfoTraitDto assemble(EfoTrait efoTrait) {
+
+        EfoTraitDto efoTraitDto = EfoTraitDto.builder()
+                .efoTraitId(efoTrait.getId())
+                .trait(efoTrait.getTrait())
+                .uri(efoTrait.getUri())
+                .shortForm(efoTrait.getShortForm())
+                .created(efoTrait.getCreated() != null ? ProvenanceDtoAssembler.assemble(efoTrait.getCreated(),
+                        userService.getUser(efoTrait.getCreated().getUserId())) : null)
+                .updated(efoTrait.getUpdated() != null ? ProvenanceDtoAssembler.assemble(efoTrait.getUpdated(),
+                        userService.getUser(efoTrait.getUpdated().getUserId())) : null)
+                .build();
+
+
+        return efoTraitDto;
     }
 
     public EfoTrait disassemble(EfoTraitDto efoTraitDto) {

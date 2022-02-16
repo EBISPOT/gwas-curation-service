@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +13,7 @@ public interface EfoTraitService {
 
     EfoTrait createEfoTrait(EfoTrait efoTrait, User user);
 
-    List<TraitUploadReport> createEfoTraits(List<EfoTrait> efoTraits, User user);
+    byte[] createEfoTraits(List<EfoTrait> efoTraits, User user);
 
     EfoTrait fullyUpdateEfoTrait(String traitId, EfoTraitDto efoTraitDto, User user);
 
@@ -26,7 +25,7 @@ public interface EfoTraitService {
 
     List<EfoTrait> getEfoTraits(String trait);
 
-    String getEfoTraitsTsv(String trait);
+    byte[] getEfoTraitsTsv(String trait);
 
     void deleteEfoTrait(String traitIds);
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitStudyMappingDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 
@@ -26,6 +27,21 @@ public class StudyPatchRequestAssembler {
             MappingIterator<StudyPatchRequest> iterator = mapper.readerFor(StudyPatchRequest.class).with(csvSchema).readValues(inputStream);
             studyPatchRequestList = iterator.readAll();
         }catch (IOException ex){
+            throw new FileProcessingException("Could not read the file");
+        }
+        return studyPatchRequestList;
+    }
+
+    public List<EfoTraitStudyMappingDto> disassembleForEfoMapping(MultipartFile multipartFile) {
+
+        CsvMapper mapper = new CsvMapper();
+        CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
+        List<EfoTraitStudyMappingDto> studyPatchRequestList;
+        try {
+            InputStream inputStream = multipartFile.getInputStream();
+            MappingIterator<EfoTraitStudyMappingDto> iterator = mapper.readerFor(EfoTraitStudyMappingDto.class).with(csvSchema).readValues(inputStream);
+            studyPatchRequestList = iterator.readAll();
+        } catch (IOException ex){
             throw new FileProcessingException("Could not read the file");
         }
         return studyPatchRequestList;

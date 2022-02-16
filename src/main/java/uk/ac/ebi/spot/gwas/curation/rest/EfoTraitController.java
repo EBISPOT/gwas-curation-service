@@ -94,7 +94,7 @@ public class EfoTraitController {
 
     @PostMapping(value = "/bulk-upload")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<List<TraitUploadReport>> createEfoTraits(@Valid FileUploadRequest fileUploadRequest,
+    public HttpEntity<byte[]> createEfoTraits(@Valid FileUploadRequest fileUploadRequest,
                                                                    HttpServletRequest request, BindingResult result) {
 
         if (result.hasErrors()) {
@@ -103,8 +103,12 @@ public class EfoTraitController {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         MultipartFile multipartFile = fileUploadRequest.getMultipartFile();
         List<EfoTrait> efoTraits = efoTraitDtoAssembler.disassemble(multipartFile);
-        List<TraitUploadReport> traitUploadReports = efoTraitService.createEfoTraits(efoTraits, user);
-        return new ResponseEntity<>(traitUploadReports, HttpStatus.CREATED);
+        byte[] tsvReport = efoTraitService.createEfoTraits(efoTraits, user);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=efo-bulk-upload-report.tsv");
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(tsvReport.length));
+        return new HttpEntity<>(tsvReport, responseHeaders);
     }
 
     @GetMapping(value = "/{traitId}")
@@ -147,7 +151,7 @@ public class EfoTraitController {
     @ResponseStatus(HttpStatus.OK)
     public HttpEntity<byte[]> exportTraits(@RequestParam(value = DepositionCurationConstants.PARAM_TRAIT, required = false) String trait) {
 
-        byte[] result = Objects.requireNonNull(efoTraitService.getEfoTraitsTsv(trait)).getBytes();
+        byte[] result = Objects.requireNonNull(efoTraitService.getEfoTraitsTsv(trait));
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=efo-traits-export.tsv");
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);

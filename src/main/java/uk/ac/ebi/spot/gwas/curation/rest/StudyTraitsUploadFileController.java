@@ -17,6 +17,7 @@ import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitStudyMappingDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
@@ -44,7 +45,7 @@ public class StudyTraitsUploadFileController {
     FileHandler fileHandler;
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+"/files",
+    @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_DISEASE_TRAITS + "/files",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public HttpEntity<byte[]> uploadDiseaseTraitsStudyMappings(@RequestParam MultipartFile multipartFile,
@@ -64,7 +65,23 @@ public class StudyTraitsUploadFileController {
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
         return new HttpEntity<>(result, responseHeaders);
-
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_EFO_TRAITS + "/files")
+    public HttpEntity<byte[]> uploadEfoStudyMapping(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile, HttpServletRequest request) {
+
+        if(multipartFile.isEmpty()){
+            throw new FileProcessingException("File not found");
+        }
+        userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
+        List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForEfoMapping(multipartFile);
+        List<TraitUploadReport> traitUploadReport = studiesService.updateEfoTraitsForStudies(efoTraitStudyMappingDtos);
+        byte[] result = fileHandler.serializePojoToTsv(traitUploadReport);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studyTraitUploadReports.tsv");
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
+        return new HttpEntity<>(result, responseHeaders);
+    }
 }

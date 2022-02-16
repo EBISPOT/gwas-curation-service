@@ -87,7 +87,6 @@ public class FileHandler {
 
     public  String getTemplate(String fileUploadType) {
         if (fileUploadType.equals(FileUploadType.SIMILARITY_ANALYSIS_FILE)) {
-
             List<AnalysisDTO> analysisDTO = new ArrayList<>();
             analysisDTO.add(AnalysisDTO.builder().userTerm("Yeast Infection").build());
             analysisDTO.add(AnalysisDTO.builder().userTerm("mean interproximal clinical attachment level").build());
@@ -110,8 +109,15 @@ public class FileHandler {
             efoTraitDtos.add(EFOTraitWrapperDTO.builder().trait("uterine carcinoma").uri("http://www.ebi.ac.uk/efo/EFO_0002919").shortForm("EFO_0002919").build());
             efoTraitDtos.add(EFOTraitWrapperDTO.builder().trait("malaria").uri("http://www.ebi.ac.uk/efo/EFO_0001068").shortForm("EFO_0001068").build());
             return new String(serializePojoToTsv(efoTraitDtos));
+        } else if (fileUploadType.equals(FileUploadType.STUDY_EFO_TRAIT_FILE)) {
+            List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = new ArrayList<>();
+            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().gcst("GCST90000026").shortForm("EFO_0001060").build());
+            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().gcst("GCST90000029").shortForm("EFO_0001065").build());
+            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().gcst("GCST90000028").shortForm("EFO_0001068").build());
+            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().gcst("GCST90000030").shortForm("EFO_0001071").build());
+            return new String(serializePojoToTsv(efoTraitStudyMappingDtos));
         }
-        else{
+        else {
             return null;
         }
     }

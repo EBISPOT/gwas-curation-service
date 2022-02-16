@@ -10,5 +10,7 @@ public class FileUploadType {
 
     public static final String STUDY_TRAIT_FILE = "study-trait";
 
+    public static final String STUDY_EFO_TRAIT_FILE = "study-efo-trait";
+
     public static final String SIMILARITY_ANALYSIS_FILE = "similarity-analysis";
 }
