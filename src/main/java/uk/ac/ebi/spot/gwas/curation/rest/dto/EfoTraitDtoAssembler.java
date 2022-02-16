@@ -81,7 +81,7 @@ public class EfoTraitDtoAssembler implements ResourceAssembler<EfoTrait, Resourc
     }
 
 
-    public  EfoTraitDto assemble(EfoTrait efoTrait) {
+    public EfoTraitDto assemble(EfoTrait efoTrait) {
 
         EfoTraitDto efoTraitDto = EfoTraitDto.builder()
                 .efoTraitId(efoTrait.getId())
