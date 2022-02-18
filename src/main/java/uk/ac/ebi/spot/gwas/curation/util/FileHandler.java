@@ -106,8 +106,8 @@ public class FileHandler {
             return new String(serializePojoToTsv(studyPatchRequestList));
         } else if (fileUploadType.equals(FileUploadType.EFO_TRAIT_FILE)) {
             List<EFOTraitWrapperDTO> efoTraitDtos = new ArrayList<>();
-            efoTraitDtos.add(EFOTraitWrapperDTO.builder().trait("uterine carcinoma").uri("http://www.ebi.ac.uk/efo/EFO_0002919").shortForm("EFO_0002919").build());
-            efoTraitDtos.add(EFOTraitWrapperDTO.builder().trait("malaria").uri("http://www.ebi.ac.uk/efo/EFO_0001068").shortForm("EFO_0001068").build());
+            efoTraitDtos.add(EFOTraitWrapperDTO.builder().trait("uterine carcinoma").uri("http://www.ebi.ac.uk/efo/EFO_0002919").build());
+            efoTraitDtos.add(EFOTraitWrapperDTO.builder().trait("malaria").uri("http://www.ebi.ac.uk/efo/EFO_0001068").build());
             return new String(serializePojoToTsv(efoTraitDtos));
         } else if (fileUploadType.equals(FileUploadType.STUDY_EFO_TRAIT_FILE)) {
             List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = new ArrayList<>();

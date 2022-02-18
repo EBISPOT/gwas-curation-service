@@ -51,6 +51,8 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         EfoTrait efoTraitCreated;
         try {
             efoTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
+            String uri = efoTrait.getUri();
+            efoTrait.setShortForm(uri.substring(uri.lastIndexOf('/') + 1));
             efoTraitCreated = efoTraitRepository.insert(efoTrait);
         }
         catch (DuplicateKeyException e) {
@@ -91,6 +93,8 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         if (efoTraitOptional.isPresent()) {
             EfoTrait updatedEfoTrait = efoTraitDtoAssembler.disassemble(efoTraitDto);
             updatedEfoTrait.setId(traitId);
+            String uri = updatedEfoTrait.getUri();
+            updatedEfoTrait.setShortForm(uri.substring(uri.lastIndexOf('/') + 1));
             updatedEfoTrait.setCreated(efoTraitOptional.get().getCreated());
             updatedEfoTrait.setUpdated(new Provenance(DateTime.now(), user.getId()));
             try {
@@ -139,7 +143,7 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         List<EfoTrait> efoTraits = getEfoTraits(trait);
         List<EFOTraitWrapperDTO> efoTraitWrapperDtos = efoTraits
                 .stream()
-                .map(efoTrait -> EFOTraitWrapperDTO.builder().trait(efoTrait.getTrait()).uri(efoTrait.getUri()).shortForm(efoTrait.getShortForm()).build())
+                .map(efoTrait -> EFOTraitWrapperDTO.builder().trait(efoTrait.getTrait()).uri(efoTrait.getUri()).build())
                 .collect(Collectors.toList());
         return fileHandler.serializePojoToTsv(efoTraitWrapperDtos);
     }
