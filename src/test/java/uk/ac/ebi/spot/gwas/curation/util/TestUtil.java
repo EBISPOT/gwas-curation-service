@@ -901,7 +901,6 @@ public class TestUtil {
         diseaseTrait.setId("1cbced6789");
         diseaseTrait.setTrait("wg rh intensity-contrast paracentral");
         String[] studyIds = {"study1","study2","study3"};
-        diseaseTrait.setStudyIds(Arrays.asList(studyIds));
         return diseaseTrait;
     }
 
@@ -909,7 +908,6 @@ public class TestUtil {
         DiseaseTraitDto diseaseTraitDto = DiseaseTraitDto.builder()
                 .diseaseTraitId("1cbced6789")
                 .trait("wg rh intensity-contrast paracentral")
-                .studies(ImmutableList.of("study1","study2","study3"))
                 .created(ProvenanceDtoAssembler.assemble(new Provenance(DateTime.now(),"sijisj0i1"),mockUserDetails()))
                 .build();
 
@@ -1080,19 +1078,19 @@ public class TestUtil {
         diseaseTrait.setId("1cbced6789");
         diseaseTrait.setTrait("wg rh intensity-contrast paracentral");
         String[] studyIds = {"study1","study2","study3"};
-        diseaseTrait.setStudyIds(Arrays.asList(studyIds));
+
 
         DiseaseTrait diseaseTrai1 = new DiseaseTrait();
         diseaseTrai1.setId("1bcde5432");
         diseaseTrai1.setTrait("wg rh intensity-contrast precuneus");
         String[] studyIds1 = {"study1","study2","study3"};
-        diseaseTrai1.setStudyIds(Arrays.asList(studyIds));
+
 
         DiseaseTrait diseaseTrait2 = new DiseaseTrait();
         diseaseTrait2.setId("3ghif5432");
         diseaseTrait2.setTrait("wg rh intensity-contrast rostralmiddlefrontal");
         String[] studyIds2 = {"study1","study2","study3"};
-        diseaseTrait2.setStudyIds(Arrays.asList(studyIds));
+
 
         DiseaseTrait diseaseTrait3 = new DiseaseTrait();
         diseaseTrait3.setId("jkahsh1");
@@ -1160,19 +1158,19 @@ public class TestUtil {
         diseaseTrait.setId("1cbced6789");
         diseaseTrait.setTrait("wg rh intensity-contrast paracentral");
         String[] studyIds = {"study1","study2","study3"};
-        diseaseTrait.setStudyIds(Arrays.asList(studyIds));
+
 
         DiseaseTrait diseaseTrai1 = new DiseaseTrait();
         diseaseTrai1.setId("1bcde5432");
         diseaseTrai1.setTrait("wg rh intensity-contrast precuneus");
         String[] studyIds1 = {"study1","study2","study3"};
-        diseaseTrai1.setStudyIds(Arrays.asList(studyIds));
+
 
         DiseaseTrait diseaseTrait2 = new DiseaseTrait();
         diseaseTrait2.setId("3ghif5432");
         diseaseTrait2.setTrait("wg rh intensity-contrast rostralmiddlefrontal");
         String[] studyIds2 = {"study1","study2","study3"};
-        diseaseTrait2.setStudyIds(Arrays.asList(studyIds));
+
 
         DiseaseTrait diseaseTrait3 = new DiseaseTrait();
         diseaseTrait3.setId("jkahsh1");
@@ -1236,13 +1234,11 @@ public class TestUtil {
         diseaseTrait.setId("1cbced6789");
         diseaseTrait.setTrait("wg rh intensity-contrast paracentral");
         String[] studyIds = {"study1","study2","study3"};
-        diseaseTrait.setStudyIds(Arrays.asList(studyIds));
 
         DiseaseTrait diseaseTrai1 = new DiseaseTrait();
         diseaseTrai1.setId("1bcde5432");
         diseaseTrai1.setTrait("wg rh intensity-contrast precuneus");
         String[] studyIds1 = {"study1","study2","study3"};
-        diseaseTrai1.setStudyIds(Arrays.asList(studyIds));
         traits.add(diseaseTrait);
         traits.add(diseaseTrai1);
 
@@ -1257,7 +1253,6 @@ public class TestUtil {
         diseaseTrait.setId("1cbced6789");
         diseaseTrait.setTrait("wg rh intensity-contrast paracentral");
         String[] studyIds = {"study1","study2","study3"};
-        diseaseTrait.setStudyIds(Arrays.asList(studyIds));
 
         traits.add(diseaseTrait);
         Pageable pageable = new PageRequest(0 , 10);
@@ -1323,75 +1318,75 @@ public class TestUtil {
         study.setId("jakjkjakjk");
         study.setAccession("GCST90000123");
         String[] diseaseTraits1 = {"trait1","trait2","trait3"};
-        study.setDiseaseTraits(Arrays.asList(diseaseTraits1));
+
 
         Study study1 = new Study();
         study1.setId("lkalklak");
         study1.setAccession("GCST90000124");
         String[] diseaseTraits2 = {"trait1","trait2","trait3"};
-        study1.setDiseaseTraits(Arrays.asList(diseaseTraits2));
+
 
         Study study2 = new Study();
         study2.setId("hdakhkdah");
         study2.setAccession("GCST90000125");
         String[] diseaseTraits3 = {"trait1","trait2","trait3"};
-        study2.setDiseaseTraits(Arrays.asList(diseaseTraits3));
+
 
         Study study3 = new Study();
         study3.setId("jhskkjskajkj");
         study3.setAccession("GCST90000126");
         String[] diseaseTraits4 = {"trait1","trait2","trait3"};
-        study3.setDiseaseTraits(Arrays.asList(diseaseTraits4));
+
 
 
         Study study4 = new Study();
         study4.setId("uguaiuiadjgjh");
         study4.setAccession("GCST90000127");
         String[] diseaseTraits5 = {"trait1","trait2","trait3"};
-        study4.setDiseaseTraits(Arrays.asList(diseaseTraits5));
+
 
 
         Study study5 = new Study();
         study5.setId("ajdgugajdkgjk");
         study5.setAccession("GCST90000128");
         String[] diseaseTraits6 = {"trait1","trait2","trait3"};
-        study5.setDiseaseTraits(Arrays.asList(diseaseTraits6));
+
 
         Study study6 = new Study();
         study6.setId("hkjhjhkjhjkhjh");
         study6.setAccession("GCST90000129");
         String[] diseaseTraits7 = {"trait1","trait2","trait3"};
-        study6.setDiseaseTraits(Arrays.asList(diseaseTraits7));
+
 
         Study study7 = new Study();
         study7.setId("sjhjshajhs");
         study7.setAccession("GCST90000130");
         String[] diseaseTraits8 = {"trait1","trait2","trait3"};
-        study7.setDiseaseTraits(Arrays.asList(diseaseTraits8));
+
 
         Study study8 = new Study();
         study8.setId("sjhjshajhs");
         study8.setAccession("GCST90000131");
         String[] diseaseTraits9 = {"trait1","trait2","trait3"};
-        study8.setDiseaseTraits(Arrays.asList(diseaseTraits9));
+
 
         Study study9 = new Study();
         study9.setId("akjakjkjak");
         study9.setAccession("GCST90000131");
         String[] diseaseTraits10 = {"trait1","trait2","trait3"};
-        study9.setDiseaseTraits(Arrays.asList(diseaseTraits10));
+
 
         Study study10 = new Study();
         study10.setId("haklhkhakhkhd");
         study10.setAccession("GCST90000131");
         String[] diseaseTraits11 = {"trait1","trait2","trait3"};
-        study10.setDiseaseTraits(Arrays.asList(diseaseTraits11));
+
 
         Study study11 = new Study();
         study11.setId("haklhkhakhkhd");
         study11.setAccession("GCST90000131");
         String[] diseaseTraits12 = {"trait1","trait2","trait3"};
-        study11.setDiseaseTraits(Arrays.asList(diseaseTraits12));
+
 
         studies.add(study);
         studies.add(study1);
@@ -1418,7 +1413,7 @@ public class TestUtil {
         study.setId("jakjkjakjk");
         study.setAccession("GCST90000123");
         String[] diseaseTraits1 = {"trait1", "trait2", "trait3"};
-        study.setDiseaseTraits(Arrays.asList(diseaseTraits1));
+
         return study;
     }
 
@@ -1438,7 +1433,7 @@ public class TestUtil {
                 studyTag("test")
                 .studyDescription("test123")
                 .accession("GCST9000123")
-                .diseaseTraits(Arrays.asList(mockDiseaseTraitDto()))
+                .diseaseTrait(mockDiseaseTraitDto())
                 .cohort("GT")
                 .variantCount(1234)
                 .build();

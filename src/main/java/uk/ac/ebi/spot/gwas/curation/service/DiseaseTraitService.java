@@ -20,13 +20,6 @@ public interface DiseaseTraitService {
 
     public List<TraitUploadReport> createDiseaseTrait(List<DiseaseTrait> diseaseTraits, User user);
 
-    public void callOldCurationService(MultipartFile multipartFile);
-
-    public void callOldCurationServiceDelete(String traitId);
-
-    public void callOldCurationServiceInsert(DiseaseTraitDto diseaseTraitDto);
-
-    public void callOldCurationServiceUpdate(DiseaseTraitDto diseaseTraitDto, String traitName);
 
     public DiseaseTrait saveDiseaseTrait(String traitId, DiseaseTraitDto diseaseTraitDto, User user);
 

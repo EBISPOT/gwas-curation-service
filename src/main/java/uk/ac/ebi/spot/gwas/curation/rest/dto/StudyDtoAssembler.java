@@ -53,16 +53,17 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
     public Resource<StudyDto>  toResource(Study study) {
 
         List<String> traitsList = null;
-        List<DiseaseTrait> traits = null;
-        if(study.getDiseaseTraits() != null && !study.getDiseaseTraits().isEmpty() ){
-            traitsList = study.getDiseaseTraits();
+        String traitSeqId = null;
+        if(study.getDiseaseTrait() != null  ){
+            traitSeqId = study.getDiseaseTrait();
         }
-        if( traitsList != null && !traitsList.isEmpty() )
-         traits =  study.getDiseaseTraits().stream().map((traitId) ->
-                        diseaseTraitService.getDiseaseTrait(traitId))
-                        .filter(optDiseaseTrait -> optDiseaseTrait.isPresent())
-                        .map(optDiseaseTrait -> optDiseaseTrait.get())
-                        .collect(Collectors.toList());
+
+        DiseaseTrait diseaseTrait = null;
+
+        Optional<DiseaseTrait> optDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitSeqId);
+
+        if(optDiseaseTrait.isPresent())
+            diseaseTrait = optDiseaseTrait.get();
 
         List<EfoTrait> efoTraits = null;
         if(study.getEfoTraits() != null && !study.getEfoTraits().isEmpty() ){
@@ -78,7 +79,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 .studyId(study.getId())
                 .studyDescription(study.getStudyDescription())
                 .accession(study.getAccession())
-                .diseaseTraits(DiseaseTraitDtoAssembler.assemble(traits))
+                .diseaseTrait(diseaseTraitDtoAssembler.assemble(diseaseTrait))
                 .efoTraits(EfoTraitDtoAssembler.assemble(efoTraits))
                 .arrayInformation(study.getArrayManufacturer())
                 .efoTrait(study.getEfoTrait())
@@ -96,7 +97,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
         Resource<StudyDto> resource = new Resource<>(studyDto);
         resource.add(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT));
 
-        if(traits != null && !traits.isEmpty()) {
+        if(traitSeqId != null && !traitSeqId.isEmpty()) {
             ControllerLinkBuilder lb1 = ControllerLinkBuilder.linkTo(
                     ControllerLinkBuilder.methodOn(StudiesController.class).getDiseaseTraits(null, study.getId(), study.getSubmissionId()));
 

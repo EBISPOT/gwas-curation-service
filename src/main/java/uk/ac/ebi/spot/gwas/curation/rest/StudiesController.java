@@ -68,26 +68,22 @@ public class StudiesController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+"/{studyId}/diseasetraits", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Resources<Resource<DiseaseTraitDto>> getDiseaseTraits(PagedResourcesAssembler assembler, @PathVariable String studyId, @PathVariable String submissionId) {
-        List<DiseaseTrait> diseaseTraits = studiesService.getDiseaseTraitsByStudyId(studyId);
+    public Resource<DiseaseTraitDto> getDiseaseTraits(PagedResourcesAssembler assembler, @PathVariable String studyId, @PathVariable String submissionId) {
+
+        DiseaseTrait diseaseTrait = studiesService.getDiseaseTraitsByStudyId(studyId);
         List<Resource<DiseaseTraitDto>> resourcesList = new ArrayList<>();
 
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
                 .methodOn(StudiesController.class).getDiseaseTraits(assembler, studyId, submissionId));
-        for(DiseaseTrait diseaseTrait : diseaseTraits) {
+
             DiseaseTraitDto diseaseTraitDto = diseaseTraitDtoAssembler.assemble(diseaseTrait);
             Resource<DiseaseTraitDto> resource = new Resource<>(diseaseTraitDto);
             ControllerLinkBuilder lb1 = ControllerLinkBuilder.linkTo(
                     ControllerLinkBuilder.methodOn(DiseaseTraitController.class).getDiseaseTrait(diseaseTrait.getId()));
             resource.add(BackendUtil.underBasePath(lb1, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT));
-            resourcesList.add(resource);
-            }
 
-        Link diseaseTraitsLink = BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT);
 
-        Resources<Resource<DiseaseTraitDto>> resources = new Resources<>(resourcesList, diseaseTraitsLink);
-
-        return resources;
+        return resource;
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -96,14 +92,14 @@ public class StudiesController {
         List<String> traitIds = null;
         List<String> efoTraitIds = null;
         if(studiesService.getStudy(studyId) != null ) {
-            log.info("Disease Traits from request:" + studyDto.getDiseaseTraits());
+            log.info("Disease Traits from request:" + studyDto.getDiseaseTrait());
             /*if (studyDto.getDiseaseTraits() != null && !studyDto.getDiseaseTraits().isEmpty()) {
                 traitIds = studiesService.getTraitsIDsFromDB(studyDto.getDiseaseTraits(), studyId);
             }*/
             Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyId);
-            if (studyDto.getDiseaseTraits() != null && !studyDto.getDiseaseTraits().isEmpty()) {
-                traitIds = studyDto.getDiseaseTraits().stream().map(DiseaseTraitDto::getDiseaseTraitId).collect(Collectors.toList());
-                study.setDiseaseTraits(traitIds);
+            if (studyDto.getDiseaseTrait() != null ) {
+
+                study.setDiseaseTrait(studyDto.getDiseaseTrait().getDiseaseTraitId());
             }
             if (studyDto.getEfoTraits() != null && !studyDto.getEfoTraits().isEmpty()) {
                 efoTraitIds = studyDto.getEfoTraits().stream().map(EfoTraitDto::getEfoTraitId).collect(Collectors.toList());

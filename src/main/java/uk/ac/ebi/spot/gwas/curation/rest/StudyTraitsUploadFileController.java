@@ -48,7 +48,7 @@ public class StudyTraitsUploadFileController {
     @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_DISEASE_TRAITS + "/files",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public HttpEntity<byte[]> uploadDiseaseTraitsStudyMappings(@RequestParam MultipartFile multipartFile,
+    public HttpEntity<byte[]> uploadDiseaseTraitsStudyMappings(@RequestParam MultipartFile multipartFile,@PathVariable String submissionId,
                                                                        HttpServletRequest request) {
        /* if (result.hasErrors()) {
             throw   new FileValidationException(result);
@@ -58,7 +58,7 @@ public class StudyTraitsUploadFileController {
         }
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         List<StudyPatchRequest> studyPatchRequests = studyPatchRequestAssembler.disassemble(multipartFile);
-        List<TraitUploadReport> traitUploadReport = studiesService.updateTraitsForStudies(studyPatchRequests);
+        List<TraitUploadReport> traitUploadReport = studiesService.updateTraitsForStudies(studyPatchRequests, submissionId );
         byte[] result = fileHandler.serializePojoToTsv(traitUploadReport);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studyTraitUploadReports.tsv");
@@ -76,7 +76,7 @@ public class StudyTraitsUploadFileController {
         }
         userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForEfoMapping(multipartFile);
-        List<TraitUploadReport> traitUploadReport = studiesService.updateEfoTraitsForStudies(efoTraitStudyMappingDtos);
+        List<TraitUploadReport> traitUploadReport = studiesService.updateEfoTraitsForStudies(efoTraitStudyMappingDtos, submissionId);
         byte[] result = fileHandler.serializePojoToTsv(traitUploadReport);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studyTraitUploadReports.tsv");

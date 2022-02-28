@@ -275,8 +275,6 @@ public class APIDocumentation {
         );
 
         when(diseaseTraitRepository.findById(any())).thenReturn(Optional.of(TestUtil.mockDiseaseTrait()));
-        when(diseaseTraitRepository.findByStudyIdsContainsAndTrait(any(),any(),any())).thenReturn(TestUtil.mockDiseaseTraits());
-        when(diseaseTraitRepository.findByStudyIdsContains(any(),any())).thenReturn(TestUtil.mockDiseaseTraitByStudyId());
         when(diseaseTraitRepository.findByTrait(any(),any())).thenReturn(TestUtil.mockDiseaseTraitByTrait());
         when(diseaseTraitRepository.findAll()).thenReturn(TestUtil.mockDiseaseTraits().getContent());
         when(diseaseTraitRepository.save(any())).thenReturn(TestUtil.mockDiseaseTrait());
@@ -303,9 +301,9 @@ public class APIDocumentation {
         when(studyDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResourceForStudy());
         when(bindingResult.hasErrors()).thenReturn(false);
         when(fileUploadRequest.getMultipartFile()).thenReturn(multipartFile);
-        when(studiesService.updateTraitsForStudies(any())).thenReturn(TestUtil.mockTraitUploadReportsForStudyTraits());
+        when(studiesService.updateTraitsForStudies(any(),any())).thenReturn(TestUtil.mockTraitUploadReportsForStudyTraits());
         when(studyPatchRequestAssembler.disassemble(any())).thenReturn(TestUtil.mockStudyPatchRequests());
-        when(studiesService.getTraitsIDsFromDB(any(), any())).thenReturn(ImmutableList.of("trait1","trait2","trait3"));
+
         when(studyDtoAssembler.disassembleForExsitingStudy(any(), any())).thenReturn(TestUtil.mockStudy());
         when(studiesService.updateStudies(any())).thenReturn(TestUtil.mockStudy());
         doNothing().when(diseaseTraitService).deleteDiseaseTrait(any());
@@ -549,8 +547,8 @@ public class APIDocumentation {
     public void updateStudiesExample() throws Exception {
         Map<String, Object> payloadMap = new HashMap<>();
         List<DiseaseTraitDto> dtos = new ArrayList<>();
-        dtos.add(new DiseaseTraitDto("1234","trait1",null, null, null));
-        dtos.add(new DiseaseTraitDto("12345","trait2",null, null, null));
+        dtos.add(new DiseaseTraitDto("1234","trait1",null, null ));
+        dtos.add(new DiseaseTraitDto("12345","trait2",null, null ));
         payloadMap.put("diseaseTraits", dtos);
         payloadMap.put("study_tag","P3");
         this.mockMvc.perform(get(contextPath.concat("/v1/studies/{studyId}"),1234).contextPath(contextPath.concat("")).accept(MediaType.APPLICATION_JSON_VALUE)

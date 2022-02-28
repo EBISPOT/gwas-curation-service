@@ -17,18 +17,17 @@ public interface StudiesService {
 
     Study getStudy(String studyId);
 
-    Study getStudyByAccession(String accessionId);
+    Study getStudyByAccession(String accessionId, String submissionId);
 
     Study updateStudies(Study study);
 
     public Page<Study> getStudies(String submissionId,  Pageable page);
 
-    public List<DiseaseTrait> getDiseaseTraitsByStudyId(String studyId);
+    public DiseaseTrait getDiseaseTraitsByStudyId(String studyId);
 
-    public List<String> getTraitsIDsFromDB(List<DiseaseTraitDto> diseaseTraitDtos, String studyId);
 
-    List<TraitUploadReport> updateTraitsForStudies(List<StudyPatchRequest> studyPatchRequests);
+    List<TraitUploadReport> updateTraitsForStudies(List<StudyPatchRequest> studyPatchRequests, String submissionId);
 
-    List<TraitUploadReport> updateEfoTraitsForStudies(List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos);
+    List<TraitUploadReport> updateEfoTraitsForStudies(List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos, String submissionId);
 
 }

@@ -80,7 +80,6 @@ public class DiseaseTraitController {
         DiseaseTrait diseaseTrait = diseaseTraitDtoAssembler.disassemble(diseaseTraitDto);
         diseaseTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
         DiseaseTrait diseaseTraitInserted = diseaseTraitService.createDiseaseTrait(diseaseTrait);
-        diseaseTraitService.callOldCurationServiceInsert(diseaseTraitDto);
         return diseaseTraitDtoAssembler.toResource(diseaseTraitInserted);
     }
 
@@ -90,8 +89,6 @@ public class DiseaseTraitController {
         Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitId);
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         DiseaseTrait diseaseTraitUpdated = diseaseTraitService.saveDiseaseTrait(traitId, diseaseTraitDto, user);
-        if(optionalDiseaseTrait.isPresent())
-        diseaseTraitService.callOldCurationServiceUpdate(diseaseTraitDto, optionalDiseaseTrait.get().getTrait());
         return diseaseTraitDtoAssembler.toResource(diseaseTraitUpdated);
     }
 
@@ -131,7 +128,6 @@ public class DiseaseTraitController {
             diseaseTraitPatched.setCreated(provenanceDtoAssembler.disassemble(diseaseTraitPatchedDTO.getCreated(), user));
             diseaseTraitPatched.setUpdated(new Provenance(DateTime.now(), user.getId()));
             DiseaseTrait diseaseTraitUpdated =  diseaseTraitService.updateDiseaseTrait(diseaseTraitPatched);
-            diseaseTraitService.callOldCurationServiceUpdate(diseaseTraitPatchedDTO, optionalDiseaseTrait.get().getTrait());
             return diseaseTraitDtoAssembler.toResource(diseaseTraitUpdated);
         }else{
             throw new EntityNotFoundException("Disease Trait not found"+ traitId);

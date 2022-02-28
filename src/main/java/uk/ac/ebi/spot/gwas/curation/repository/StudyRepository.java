@@ -19,9 +19,11 @@ public interface StudyRepository extends MongoRepository<Study, String> {
 
     Optional<Study> findByAccession(String accession);
 
+    Optional<Study> findByAccessionAndSubmissionId(String accession, String submissionId);
+
     Page<Study> findBySubmissionId(String submissionId, Pageable page);
 
-    List<Study> findByDiseaseTraitsContains(String traitId);
+    List<Study> findByDiseaseTrait(String traitId);
 
     Stream<Study> findByEfoTraitsContains(String traitId);
 }

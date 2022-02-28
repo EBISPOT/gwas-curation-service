@@ -28,7 +28,6 @@ public class DiseaseTraitAssemblyService implements ResourceAssembler<DiseaseTra
         DiseaseTraitDto diseaseTraitDTO = DiseaseTraitDto.builder()
                 .diseaseTraitId(diseaseTrait.getId())
                 .trait(diseaseTrait.getTrait())
-                .studies(diseaseTrait.getStudyIds())
                 .created(ProvenanceDtoAssembler.assemble(diseaseTrait.getCreated(),
                         userService.getUser(diseaseTrait.getCreated().getUserId())))
                 .build();

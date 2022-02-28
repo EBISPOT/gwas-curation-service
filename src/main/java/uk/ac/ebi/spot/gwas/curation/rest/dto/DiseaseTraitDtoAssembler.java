@@ -46,7 +46,6 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
         DiseaseTraitDto diseaseTraitDTO = DiseaseTraitDto.builder()
                 .diseaseTraitId(diseaseTrait.getId())
                 .trait(diseaseTrait.getTrait())
-                .studies(diseaseTrait.getStudyIds())
                 .created(diseaseTrait.getCreated() != null ? ProvenanceDtoAssembler.assemble(diseaseTrait.getCreated(),
                         userService.getUser(diseaseTrait.getCreated().getUserId())) : null)
                 .updated(diseaseTrait.getUpdated() != null ? ProvenanceDtoAssembler.assemble(diseaseTrait.getUpdated(),
@@ -83,7 +82,6 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
             DiseaseTraitDto diseaseTraitDTO = DiseaseTraitDto.builder()
                     .diseaseTraitId(diseaseTrait.getId())
                     .trait(diseaseTrait.getTrait())
-                    .studies(diseaseTrait.getStudyIds())
                     .created(diseaseTrait.getCreated() != null ? ProvenanceDtoAssembler.assemble(diseaseTrait.getCreated(),
                             userService.getUser(diseaseTrait.getCreated().getUserId())) : null)
                     .updated(diseaseTrait.getUpdated() != null ? ProvenanceDtoAssembler.assemble(diseaseTrait.getUpdated(),
@@ -98,7 +96,6 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
         DiseaseTrait diseaseTrait = new DiseaseTrait();
         Optional.ofNullable(diseaseTraitDTO.getDiseaseTraitId()).ifPresent(id -> diseaseTrait.setId(diseaseTraitDTO.getDiseaseTraitId()));
         Optional.ofNullable(diseaseTraitDTO.getTrait()).ifPresent(trait -> diseaseTrait.setTrait(diseaseTraitDTO.getTrait()));
-        Optional.ofNullable(diseaseTraitDTO.getStudies()).ifPresent(studies -> diseaseTrait.setStudyIds(diseaseTraitDTO.getStudies()));
         return diseaseTrait;
     }
 

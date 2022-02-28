@@ -59,43 +59,28 @@ public class StudiesServiceImpl implements StudiesService {
         return null;
     }
 
-    @Override
-    public List<String> getTraitsIDsFromDB(List<DiseaseTraitDto> diseaseTraitDtos, String studyId) {
-       List<String> newTraitIds = diseaseTraitDtos.stream().map(diseaseTraitDto ->
-                diseaseTraitService.getDiseaseTraitByTraitName(diseaseTraitDto.getTrait()))
-                .filter((optTrait) -> optTrait.isPresent())
-                .map((optTrait) -> optTrait.get().getId() )
-                .collect(Collectors.toList());
 
-        Study study = getStudy(studyId);
-        List<String> origTraitIds = study.getDiseaseTraits();
-
-        newTraitIds.forEach((traitId) -> {
-            if (!origTraitIds.contains(traitId)) {
-                origTraitIds.add(traitId);
-            }
-        });
-
-        return origTraitIds;
-    }
 
     @Override
     public Page<Study> getStudies(String submissionId,  Pageable page) {
         return studyRepository.findBySubmissionId(submissionId, page);
     }
 
-    public List<DiseaseTrait> getDiseaseTraitsByStudyId(String studyId) {
-      return   getStudy(studyId).getDiseaseTraits().stream()
-                .map((traitId) -> diseaseTraitRepository.findById(traitId) )
-                .filter((optDiseaseTrait) -> optDiseaseTrait.isPresent())
-                .map((optDiseaseTrait) -> optDiseaseTrait.get())
-                .collect(Collectors.toList());
+    public DiseaseTrait getDiseaseTraitsByStudyId(String studyId) {
+        String  traitId = getStudy(studyId).getDiseaseTrait();
+
+        Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitRepository.findById(traitId);
+        if(optionalDiseaseTrait.isPresent())
+            return optionalDiseaseTrait.get();
+        else
+            return null;
+
     }
 
     @Override
-    public Study getStudyByAccession(String accessionId) {
+    public Study getStudyByAccession(String accessionId, String submissionId) {
         log.info("Retrieving study from accession: {}", accessionId);
-        Optional<Study> studyOptional = studyRepository.findByAccession(accessionId);
+        Optional<Study> studyOptional = studyRepository.findByAccessionAndSubmissionId(accessionId, submissionId);
         if (studyOptional.isPresent()) {
             log.info("Found study: {}", studyOptional.get().getStudyTag());
             return studyOptional.get();
@@ -105,25 +90,16 @@ public class StudiesServiceImpl implements StudiesService {
     }
 
     @Override
-    public List<TraitUploadReport> updateTraitsForStudies(List<StudyPatchRequest> studyPatchRequests) {
+    public List<TraitUploadReport> updateTraitsForStudies(List<StudyPatchRequest> studyPatchRequests, String submissionId) {
         List<TraitUploadReport> report = new ArrayList<>();
         studyPatchRequests.forEach((studyPatchRequest) -> {
-            Study study = getStudyByAccession(studyPatchRequest.getGcst());
+            Study study = getStudyByAccession(studyPatchRequest.getGcst(), submissionId);
             Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTraitByTraitName(studyPatchRequest.getCuratedReportedTrait());
             if(study != null) {
                 if (optionalDiseaseTrait.isPresent()) {
                     DiseaseTrait diseaseTrait = optionalDiseaseTrait.get();
 
-                    List<String> traitsList = study.getDiseaseTraits();
-                    if (traitsList != null) {
-                    }
-                    else {
-                        traitsList = new ArrayList<>();
-                    }
-                    if (!traitsList.contains(diseaseTrait.getId())) {
-                        traitsList.add(diseaseTrait.getId());
-                    }
-                    study.setDiseaseTraits(traitsList);
+                    study.setDiseaseTrait(diseaseTrait.getId());
                     studyRepository.save(study);
                     report.add(new TraitUploadReport(diseaseTrait.getTrait(), "Study for accession " + studyPatchRequest.getGcst() + " successfully Updated with trait : " + studyPatchRequest.getCuratedReportedTrait(), studyPatchRequest.getGcst()));
                 }else {
@@ -137,11 +113,11 @@ public class StudiesServiceImpl implements StudiesService {
     }
 
     @Override
-    public List<TraitUploadReport> updateEfoTraitsForStudies(List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos) {
+    public List<TraitUploadReport> updateEfoTraitsForStudies(List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos, String submissionId) {
 
         List<TraitUploadReport> report = new ArrayList<>();
         efoTraitStudyMappingDtos.forEach((efoTraitStudyMappingDto -> {
-            Study study = getStudyByAccession(efoTraitStudyMappingDto.getGcst());
+            Study study = getStudyByAccession(efoTraitStudyMappingDto.getGcst(), submissionId);
             Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findByShortForm(efoTraitStudyMappingDto.getShortForm());
             if(study != null) {
                 if (efoTraitOptional.isPresent()) {
