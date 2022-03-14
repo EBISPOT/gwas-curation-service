@@ -89,6 +89,8 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 .genotypingTechnology(study.getGenotypingTechnology())
                 .cohort(study.getCohort())
                 .variantCount(study.getVariantCount())
+                .initialSampleDescription(study.getInitialSampleDescription())
+                .replicateSampleDescription(study.getReplicateSampleDescription())
                 .build();
 
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
@@ -139,7 +141,13 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 null,
                 study.isAgreedToCc0(),
                 null,
-                null);
+                null,
+                study.getInitialSampleDescription(),
+                study.getReplicateSampleDescription(),
+                null,
+                null,
+                null
+                );
     }
 
     public static Study disassemble(StudyDto studyDto) {

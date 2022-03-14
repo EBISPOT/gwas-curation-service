@@ -9,15 +9,13 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitStudyMappingDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +32,9 @@ public class StudiesServiceImpl implements StudiesService {
 
     @Autowired
     private DiseaseTraitService diseaseTraitService;
+
+    @Autowired
+    StudySampleDescPatchRequestAssembler studySampleDescPatchRequestAssembler;
 
     @Autowired
     private DiseaseTraitRepository diseaseTraitRepository;
@@ -140,5 +141,16 @@ public class StudiesServiceImpl implements StudiesService {
             }
         }));
         return report;
+    }
+
+
+    public List<StudySampleDescPatchRequest> updateSampleDescription(List<StudySampleDescPatchRequest> studySampleDescPatchRequests, String submissionId) {
+        return studySampleDescPatchRequests.stream().map((studySampleDescPatchRequest) ->
+                     Optional.ofNullable(getStudyByAccession(studySampleDescPatchRequest.getGcst(), submissionId))
+                            .map(study -> studySampleDescPatchRequestAssembler.disassemble(studySampleDescPatchRequest, study.getId()))
+                            .map(this::updateStudies)
+                            .map(studySampleDescPatchRequestAssembler::assemble).orElse(null)
+                ).collect(Collectors.toList());
+
     }
 }

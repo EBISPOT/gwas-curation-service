@@ -5,10 +5,7 @@ import org.springframework.data.domain.Pageable;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitStudyMappingDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
 import java.util.List;
 
@@ -29,5 +26,7 @@ public interface StudiesService {
     List<TraitUploadReport> updateTraitsForStudies(List<StudyPatchRequest> studyPatchRequests, String submissionId);
 
     List<TraitUploadReport> updateEfoTraitsForStudies(List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos, String submissionId);
+
+    List<StudySampleDescPatchRequest> updateSampleDescription(List<StudySampleDescPatchRequest> studySampleDescPatchRequests, String submissionId);
 
 }

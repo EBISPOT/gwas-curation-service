@@ -5,6 +5,7 @@ public class DepositionCurationConstants {
     public static final String API_TEST = "/test";
     public static final String API_SUBMISSIONS = "/submissions";
     public static final String API_STUDIES = "/studies";
+    public static final String API_SAMPLEDESCRIPTION = "/sampledescription";
     public static final String API_STUDIES_TRAITS_UPLOAD = "/studies/fileupload";
     public static final String API_EDIT_UPLOADS = "/uploads/edit";
     public static final String API_SUBMISSIONS_LOCK = "/lock";
