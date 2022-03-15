@@ -9,15 +9,13 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitStudyMappingDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +32,9 @@ public class StudiesServiceImpl implements StudiesService {
 
     @Autowired
     private DiseaseTraitService diseaseTraitService;
+
+    @Autowired
+    StudySampleDescPatchRequestAssembler studySampleDescPatchRequestAssembler;
 
     @Autowired
     private DiseaseTraitRepository diseaseTraitRepository;
@@ -93,9 +94,13 @@ public class StudiesServiceImpl implements StudiesService {
     public List<TraitUploadReport> updateTraitsForStudies(List<StudyPatchRequest> studyPatchRequests, String submissionId) {
         List<TraitUploadReport> report = new ArrayList<>();
         studyPatchRequests.forEach((studyPatchRequest) -> {
+            boolean invalidStudyTag = false;
             Study study = getStudyByAccession(studyPatchRequest.getGcst(), submissionId);
+            if(!study.getStudyTag().equalsIgnoreCase(studyPatchRequest.getStudyTag())){
+                invalidStudyTag = true;
+            }
             Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTraitByTraitName(studyPatchRequest.getCuratedReportedTrait());
-            if(study != null) {
+            if(study != null && !invalidStudyTag) {
                 if (optionalDiseaseTrait.isPresent()) {
                     DiseaseTrait diseaseTrait = optionalDiseaseTrait.get();
 
@@ -106,6 +111,9 @@ public class StudiesServiceImpl implements StudiesService {
                     report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " failed with trait : " + studyPatchRequest.getCuratedReportedTrait()+" not present in DB", studyPatchRequest.getGcst()));
                 }
             } else {
+                if(invalidStudyTag)
+                    report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study tag is not matched with DB entry "+study.getStudyTag(), studyPatchRequest.getGcst()));
+                else
                 report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study not present in DB", studyPatchRequest.getGcst()));
             }
         });
@@ -117,9 +125,12 @@ public class StudiesServiceImpl implements StudiesService {
 
         List<TraitUploadReport> report = new ArrayList<>();
         efoTraitStudyMappingDtos.forEach((efoTraitStudyMappingDto -> {
+            boolean invalidStudyTag = false;
             Study study = getStudyByAccession(efoTraitStudyMappingDto.getGcst(), submissionId);
+            if(!efoTraitStudyMappingDto.getStudyTag().equalsIgnoreCase(study.getStudyTag()))
+                invalidStudyTag = true;
             Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findByShortForm(efoTraitStudyMappingDto.getShortForm());
-            if(study != null) {
+            if(study != null && !invalidStudyTag) {
                 if (efoTraitOptional.isPresent()) {
                     EfoTrait efoTrait = efoTraitOptional.get();
                     List<String> traitsList = study.getEfoTraits();
@@ -136,9 +147,23 @@ public class StudiesServiceImpl implements StudiesService {
                     report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " failed as trait : " + efoTraitStudyMappingDto.getShortForm()+" not present in DB", efoTraitStudyMappingDto.getGcst()));
                 }
             } else {
+                if(invalidStudyTag)
+                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study tag is not matched with DB entry "+study.getStudyTag(), efoTraitStudyMappingDto.getGcst()));
+                else
                 report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study not present in DB", efoTraitStudyMappingDto.getGcst()));
             }
         }));
         return report;
+    }
+
+
+    public List<StudySampleDescPatchRequest> updateSampleDescription(List<StudySampleDescPatchRequest> studySampleDescPatchRequests, String submissionId) {
+        return studySampleDescPatchRequests.stream().map((studySampleDescPatchRequest) ->
+                     Optional.ofNullable(getStudyByAccession(studySampleDescPatchRequest.getGcst(), submissionId))
+                            .map(study -> studySampleDescPatchRequestAssembler.disassemble(studySampleDescPatchRequest, study.getId()))
+                            .map(this::updateStudies)
+                            .map(studySampleDescPatchRequestAssembler::assemble).orElse(null)
+                ).collect(Collectors.toList());
+
     }
 }
