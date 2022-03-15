@@ -52,18 +52,14 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
     @Override
     public Resource<StudyDto>  toResource(Study study) {
 
-        List<String> traitsList = null;
         String traitSeqId = null;
+        DiseaseTrait diseaseTrait = null;
         if(study.getDiseaseTrait() != null  ){
             traitSeqId = study.getDiseaseTrait();
+            Optional<DiseaseTrait> optDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitSeqId);
+            diseaseTrait = optDiseaseTrait.isPresent() ? optDiseaseTrait.get() :null;
         }
 
-        DiseaseTrait diseaseTrait = null;
-
-        Optional<DiseaseTrait> optDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitSeqId);
-
-        if(optDiseaseTrait.isPresent())
-            diseaseTrait = optDiseaseTrait.get();
 
         List<EfoTrait> efoTraits = null;
         if(study.getEfoTraits() != null && !study.getEfoTraits().isEmpty() ){
@@ -79,7 +75,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 .studyId(study.getId())
                 .studyDescription(study.getStudyDescription())
                 .accession(study.getAccession())
-                .diseaseTrait(diseaseTraitDtoAssembler.assemble(diseaseTrait))
+                .diseaseTrait(diseaseTrait != null ? diseaseTraitDtoAssembler.assemble(diseaseTrait) : null)
                 .efoTraits(EfoTraitDtoAssembler.assemble(efoTraits))
                 .arrayInformation(study.getArrayManufacturer())
                 .efoTrait(study.getEfoTrait())

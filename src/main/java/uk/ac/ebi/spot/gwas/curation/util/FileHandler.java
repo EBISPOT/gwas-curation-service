@@ -92,29 +92,20 @@ public class FileHandler {
             analysisDTO.add(AnalysisDTO.builder().userTerm("mean interproximal clinical attachment level").build());
             return new String(serializePojoToTsv(analysisDTO));
         } else if (fileUploadType.equals(FileUploadType.REPORTED_TRAIT_FILE)) {
-
             List<DiseaseTraitWrapperDTO> diseaseTraitDtos = new ArrayList<>();
-            diseaseTraitDtos.add(DiseaseTraitWrapperDTO.builder().trait("Uterine Carcinoma").build());
-            diseaseTraitDtos.add(DiseaseTraitWrapperDTO.builder().trait("Malaria Parasite").build());
+            diseaseTraitDtos.add(DiseaseTraitWrapperDTO.builder().trait("Example_Trait").build());
             return new String(serializePojoToTsv(diseaseTraitDtos));
         } else if (fileUploadType.equals(FileUploadType.STUDY_TRAIT_FILE)){
             List<StudyPatchRequest> studyPatchRequestList = new ArrayList<>();
-            studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCST90000026").curatedReportedTrait("Kashin-Beck disease").build());
-            studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCST90000029").curatedReportedTrait("Shingles").build());
-            studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCST90000028").curatedReportedTrait("Bilirubin levels in extreme obesity").build());
-            studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCST90000030").curatedReportedTrait("Hepatic lipid content in extreme obesity").build());
+            studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCSTxxxxxxxx").curatedReportedTrait("Example_Trait").studyTag("example_tag").build());
             return new String(serializePojoToTsv(studyPatchRequestList));
         } else if (fileUploadType.equals(FileUploadType.EFO_TRAIT_FILE)) {
             List<EFOTraitWrapperDTO> efoTraitDtos = new ArrayList<>();
-            efoTraitDtos.add(EFOTraitWrapperDTO.builder().trait("uterine carcinoma").uri("http://www.ebi.ac.uk/efo/EFO_0002919").build());
-            efoTraitDtos.add(EFOTraitWrapperDTO.builder().trait("malaria").uri("http://www.ebi.ac.uk/efo/EFO_0001068").build());
+            efoTraitDtos.add(EFOTraitWrapperDTO.builder().trait("Example_EFO").uri("http://www.ebi.ac.uk/efo/EFO_xxxxxxx").build());
             return new String(serializePojoToTsv(efoTraitDtos));
         } else if (fileUploadType.equals(FileUploadType.STUDY_EFO_TRAIT_FILE)) {
             List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = new ArrayList<>();
-            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().gcst("GCST90000026").shortForm("EFO_0001060").build());
-            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().gcst("GCST90000029").shortForm("EFO_0001065").build());
-            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().gcst("GCST90000028").shortForm("EFO_0001068").build());
-            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().gcst("GCST90000030").shortForm("EFO_0001071").build());
+            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().gcst("GCSTxxxxxxxx").shortForm("EFO_xxxxxx").studyTag("example_tag").build());
             return new String(serializePojoToTsv(efoTraitStudyMappingDtos));
         }
         else {
