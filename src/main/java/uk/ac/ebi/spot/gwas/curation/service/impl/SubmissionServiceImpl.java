@@ -11,9 +11,11 @@ import uk.ac.ebi.spot.gwas.curation.service.CuratorAuthService;
 import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
 import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
+import uk.ac.ebi.spot.gwas.deposition.dto.SubmissionDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchSubmissionDTO;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -130,8 +132,22 @@ public class SubmissionServiceImpl implements SubmissionService {
     }
 
 
+    @Override
+    public Submission patchSubmission(SubmissionDto submissionDto) {
 
-
-
-
+        Optional<Submission> submissionOptional = submissionRepository.findById(submissionDto.getSubmissionId());
+        if (!submissionOptional.isPresent()) {
+            log.error("Unable to find submission: {}", submissionDto.getSubmissionId());
+            throw new EntityNotFoundException("Unable to find submission: " + submissionDto.getSubmissionId());
+        }
+        Submission submission = submissionOptional.get();
+        if (submissionDto.getOpenTargetsFlag() != null) {
+            submission.setOpenTargetsFlag(submissionDto.getOpenTargetsFlag());
+        }
+        if (submissionDto.getUserRequestedFlag() != null) {
+            submission.setUserRequestedFlag(submissionDto.getUserRequestedFlag());
+        }
+        submissionRepository.save(submission);
+        return submission;
+    }
 }

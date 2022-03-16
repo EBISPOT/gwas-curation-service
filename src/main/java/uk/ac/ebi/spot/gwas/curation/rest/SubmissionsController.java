@@ -78,4 +78,11 @@ public class SubmissionsController {
 
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping(value = "/{submissionId}")
+    public Resource<SubmissionDto> patchSubmission(@PathVariable String submissionId, @RequestBody SubmissionDto submissionDto) {
+
+        return submissionAssemblyService.toResource(submissionService.patchSubmission(submissionDto));
+    }
+
 }
