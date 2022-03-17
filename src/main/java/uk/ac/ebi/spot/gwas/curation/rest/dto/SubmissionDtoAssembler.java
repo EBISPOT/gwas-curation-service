@@ -34,6 +34,7 @@ public class SubmissionDtoAssembler {
                 submission.isAgreedToCc0(),
                 submission.getOpenTargetsFlag(),
                 submission.getUserRequestedFlag()
+
         );
     }
 }

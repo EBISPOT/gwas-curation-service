@@ -112,4 +112,20 @@ public class FileHandler {
             return null;
         }
     }
+
+    public List<?> disassemble(MultipartFile multipartFile, Class<?> T) {
+        CsvMapper mapper = new CsvMapper();
+        CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
+        List<?> objectList;
+        try {
+            InputStream inputStream = multipartFile.getInputStream();
+            MappingIterator<?> iterator = mapper.readerFor(T).with(csvSchema).readValues(inputStream);
+            objectList = iterator.readAll();
+        }catch (IOException ex){
+            throw new FileProcessingException("Could not read the file");
+        }
+        return objectList;
+    }
+
+
 }

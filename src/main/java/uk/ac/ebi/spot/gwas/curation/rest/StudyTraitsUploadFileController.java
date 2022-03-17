@@ -2,6 +2,8 @@
 package uk.ac.ebi.spot.gwas.curation.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -10,20 +12,22 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyPatchRequestAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.JWTService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
+import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitStudyMappingDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_SUBMISSIONS)
@@ -37,6 +41,9 @@ public class StudyTraitsUploadFileController {
 
     @Autowired
     StudyPatchRequestAssembler studyPatchRequestAssembler;
+
+    @Autowired
+    StudySampleDescPatchRequestAssembler studySampleDescPatchRequestAssembler;
 
     @Autowired
     StudiesService studiesService;
@@ -84,4 +91,41 @@ public class StudyTraitsUploadFileController {
         responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
         return new HttpEntity<>(result, responseHeaders);
     }
+
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_SAMPLEDESCRIPTION + "/files",
+            produces = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public HttpEntity<byte[]> getSampleDescriptions(@PathVariable String submissionId) {
+
+        List<StudySampleDescPatchWrapper> sampleDescPatchRequests =
+                Optional.ofNullable(studiesService.getStudies(submissionId, Pageable.unpaged()))
+                .map(unpagedStudies -> unpagedStudies.stream().collect(Collectors.toList()))
+                .map(studies -> studies.stream().map(studySampleDescPatchRequestAssembler::assembleWrapper)
+                        .collect(Collectors.toList()))
+                .orElse(null);
+        byte[] result = fileHandler.serializePojoToTsv(sampleDescPatchRequests);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studySampleDescriptions.tsv");
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
+        return new HttpEntity<>(result, responseHeaders);
+
+    }
+
+
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_SAMPLEDESCRIPTION + "/files",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public HttpEntity<byte[]> uploadSampleDescriptions(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile) {
+         List<StudySampleDescPatchRequest>  sampleDescPatchRequests =  (List<StudySampleDescPatchRequest>) fileHandler.disassemble(multipartFile, StudySampleDescPatchRequest.class);
+        byte[] result = studiesService.uploadSampleDescriptions(sampleDescPatchRequests, submissionId);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studySampleDescriptions_Extract");
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
+        return new HttpEntity<>(result, responseHeaders);
+    }
+
 }
