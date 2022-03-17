@@ -20,6 +20,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -156,7 +157,7 @@ public class StudiesServiceImpl implements StudiesService {
         return report;
     }
 
-
+    @Override
     public List<StudySampleDescPatchRequest> updateSampleDescription(List<StudySampleDescPatchRequest> studySampleDescPatchRequests, String submissionId) {
         return studySampleDescPatchRequests.stream().map((studySampleDescPatchRequest) ->
                      Optional.ofNullable(getStudyByAccession(studySampleDescPatchRequest.getGcst(), submissionId))
@@ -164,6 +165,69 @@ public class StudiesServiceImpl implements StudiesService {
                             .map(this::updateStudies)
                             .map(studySampleDescPatchRequestAssembler::assemble).orElse(null)
                 ).collect(Collectors.toList());
+
+    }
+
+    @Override
+    public byte[] uploadSampleDescriptions(List<StudySampleDescPatchRequest> studySampleDescPatchRequests, String submissionId) {
+        AtomicInteger initialSampleDescCnt = new AtomicInteger();
+        AtomicInteger replicatedSampleDescCnt = new AtomicInteger();
+        StringBuilder sampleChangesBuilder = new StringBuilder();
+        StringBuilder finalUploadBuilder = new StringBuilder();
+        studySampleDescPatchRequests.forEach((studySampleDescPatchRequest) ->
+        {
+            boolean invalidStudyTag = false;
+            boolean sampleDescChanged = false;
+            Study study = getStudyByAccession(studySampleDescPatchRequest.getGcst(), submissionId);
+            if(!studySampleDescPatchRequest.getStudyTag().equalsIgnoreCase(study.getStudyTag()))
+                invalidStudyTag = true;
+            if(study != null && !invalidStudyTag) {
+                if(studySampleDescPatchRequest.getInitialSampleDescription() != null && !study.getInitialSampleDescription().equalsIgnoreCase(studySampleDescPatchRequest.getInitialSampleDescription())) {
+                    initialSampleDescCnt.getAndIncrement();
+                    study.setInitialSampleDescription(studySampleDescPatchRequest.getInitialSampleDescription());
+                    sampleDescChanged = true;
+                    sampleChangesBuilder.append("Initial Sample Description changed successfully for GCST "+study.getAccession() + " and Study Tag "+study.getStudyTag());
+                    sampleChangesBuilder.append("\n");
+                }
+                if(studySampleDescPatchRequest.getReplicateSampleDescription() != null && !study.getReplicateSampleDescription().equalsIgnoreCase(studySampleDescPatchRequest.getReplicateSampleDescription())) {
+                    replicatedSampleDescCnt.getAndIncrement();
+                    study.setReplicateSampleDescription(studySampleDescPatchRequest.getReplicateSampleDescription());
+                    sampleDescChanged = true;
+                    sampleChangesBuilder.append("Replicated Sample Description changed successfully for GCST "+study.getAccession() + " and Study Tag "+study.getStudyTag());
+                    sampleChangesBuilder.append("\n");
+                }
+                if (sampleDescChanged)
+                    studyRepository.save(study);
+
+            } else {
+                if(invalidStudyTag){
+                    if(studySampleDescPatchRequest.getInitialSampleDescription() != null && !study.getInitialSampleDescription().equalsIgnoreCase(studySampleDescPatchRequest.getInitialSampleDescription())) {
+                        sampleChangesBuilder.append("Initial Sample Description changes failed for GCST " + study.getAccession() + " as Study Tag did not match " + study.getStudyTag());
+                        sampleChangesBuilder.append("\n");
+                    }
+                    if(studySampleDescPatchRequest.getReplicateSampleDescription() != null && !study.getReplicateSampleDescription().equalsIgnoreCase(studySampleDescPatchRequest.getReplicateSampleDescription())) {
+                        sampleChangesBuilder.append("Initial Sample Description changes failed for GCST " + study.getAccession() + " as Study Tag did not match " + study.getStudyTag());
+                        sampleChangesBuilder.append("\n");
+                    }
+                }
+                else{
+                    sampleChangesBuilder.append("Sample Description changes failed for missing GCST "+ study.getAccession() + " and Study Tag  " + study.getStudyTag());
+                    sampleChangesBuilder.append("\n");
+                }
+            }
+
+        });
+
+
+        String replicatedSampleDescText = "Number of Replication Description changed is -: "+ String.valueOf(replicatedSampleDescCnt);
+        String initialSampleDescText = "Number of Initial Description changed is -: "+String.valueOf(initialSampleDescCnt);
+        finalUploadBuilder.append(initialSampleDescText);
+        finalUploadBuilder.append("\n");
+        finalUploadBuilder.append(replicatedSampleDescText);
+        finalUploadBuilder.append("\n");
+        finalUploadBuilder.append(sampleChangesBuilder);
+        return  finalUploadBuilder.toString().getBytes();
+
 
     }
 }
