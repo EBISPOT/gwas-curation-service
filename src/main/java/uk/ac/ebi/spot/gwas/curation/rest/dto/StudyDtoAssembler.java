@@ -87,6 +87,9 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 .variantCount(study.getVariantCount())
                 .initialSampleDescription(study.getInitialSampleDescription())
                 .replicateSampleDescription(study.getReplicateSampleDescription())
+                .sumstatsFlag(study.getSumstatsFlag())
+                .gxeFlag(study.getGxeFlag())
+                .pooledFlag(study.getPooledFlag())
                 .build();
 
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
@@ -140,10 +143,9 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 null,
                 study.getInitialSampleDescription(),
                 study.getReplicateSampleDescription(),
-                null,
-                null,
-                null
-                );
+                study.getSumstatsFlag(),
+                study.getPooledFlag(),
+                study.getGxeFlag());
     }
 
     public static Study disassemble(StudyDto studyDto) {
@@ -169,7 +171,9 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
         study.setChecksum(studyDto.getChecksum());
         study.setCohort(studyDto.getCohort());
         study.setCohortId(studyDto.getCohortId());
-
+        study.setSumstatsFlag(studyDto.getSumstatsFlag());
+        study.setGxeFlag(studyDto.getGxeFlag());
+        study.setPooledFlag(studyDto.getPooledFlag());
         return study;
     }
 
@@ -195,7 +199,9 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
         Optional.ofNullable(studyDto.getChecksum()).ifPresent(checkSum -> study.setChecksum(checkSum));
         Optional.ofNullable(studyDto.getCohort()).ifPresent(cohort -> study.setCohort(cohort));
         Optional.ofNullable(studyDto.getCohortId()).ifPresent(cohortId -> study.setCohort(cohortId));
-
+        Optional.ofNullable(studyDto.getSumstatsFlag()).ifPresent(sumstatsFlag -> study.setSumstatsFlag(sumstatsFlag));
+        Optional.ofNullable(studyDto.getGxeFlag()).ifPresent(gxeFlag -> study.setGxeFlag(gxeFlag));
+        Optional.ofNullable(studyDto.getPooledFlag()).ifPresent(pooledFlag -> study.setPooledFlag(pooledFlag));
         return study;
     }
 }
