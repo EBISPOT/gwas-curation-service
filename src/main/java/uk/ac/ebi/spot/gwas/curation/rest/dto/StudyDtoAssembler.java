@@ -71,7 +71,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
         }
 
         StudyDto studyDto = StudyDto.builder().
-                studyTag(study.getStudyDescription())
+                studyTag(study.getStudyTag())
                 .studyId(study.getId())
                 .studyDescription(study.getStudyDescription())
                 .accession(study.getAccession())
