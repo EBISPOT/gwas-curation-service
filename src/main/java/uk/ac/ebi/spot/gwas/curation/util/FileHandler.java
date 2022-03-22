@@ -97,7 +97,7 @@ public class FileHandler {
             return new String(serializePojoToTsv(diseaseTraitDtos));
         } else if (fileUploadType.equals(FileUploadType.STUDY_TRAIT_FILE)){
             List<StudyPatchRequest> studyPatchRequestList = new ArrayList<>();
-            studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCSTxxxxxxxx").curatedReportedTrait("Example_Trait").studyTag("example_tag").build());
+            studyPatchRequestList.add(StudyPatchRequest.builder().studyTag("example_tag").gcst("GCSTxxxxxxxx").curatedReportedTrait("Example_Trait").build());
             return new String(serializePojoToTsv(studyPatchRequestList));
         } else if (fileUploadType.equals(FileUploadType.EFO_TRAIT_FILE)) {
             List<EFOTraitWrapperDTO> efoTraitDtos = new ArrayList<>();
@@ -105,7 +105,7 @@ public class FileHandler {
             return new String(serializePojoToTsv(efoTraitDtos));
         } else if (fileUploadType.equals(FileUploadType.STUDY_EFO_TRAIT_FILE)) {
             List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = new ArrayList<>();
-            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().gcst("GCSTxxxxxxxx").shortForm("EFO_xxxxxx").studyTag("example_tag").build());
+            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().studyTag("example_tag").gcst("GCSTxxxxxxxx").shortForm("EFO_xxxxxx").build());
             return new String(serializePojoToTsv(efoTraitStudyMappingDtos));
         }
         else {
