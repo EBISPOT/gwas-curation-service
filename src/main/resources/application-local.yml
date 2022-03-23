@@ -12,7 +12,8 @@ spring:
       uri: ${mongo-server}
 
 gwas-curation:
-  db: deposition-backend-sandbox
+  #db: deposition-backend-sandbox
+  db: gwasdepo
   auth:
     enabled: ${auth-enable}
     curators:
@@ -20,7 +21,7 @@ gwas-curation:
 
 quartz:
   scheduler:
-    dbName: gwas-deposition-dev
+    dbName: gwasdepo
 
 gwas-deposition-service:
   url: http://hh-rke-wp-webadmin-09-worker-2.caas.ebi.ac.uk:30183/gwas/deposition/api
