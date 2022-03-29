@@ -1,0 +1,70 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /gwas/depo-curation/api
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  data:
+    mongodb:
+      #uri: mongo-0.mongo.gwas-dev.svc.cluster.local,mongo-1.mongo.gwas-dev.svc.cluster.local,mongo-2.mongo.gwas-dev.svc.cluster.local:27017
+      uri: mongodb-hhvm-062.ebi.ac.uk:27017,mongodb-hxvm-063.ebi.ac.uk:27017/admin?replicaSet=gwasdepodevrs039
+  mail:
+    host: outgoing.ebi.ac.uk
+    port: 587
+    properties:
+      mail:
+        smtp:
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+          auth: false
+          sendpartial: true
+          starttls:
+            enable: true
+
+quartz:
+  scheduler:
+    #dbName: deposition-backend-sandbox
+    dbName: gwasdepo
+
+gwas-curation:
+  auth:
+    enabled: true
+  #db: deposition-backend-sandbox
+  db: gwasdepo
+  proxy-prefix:
+
+email:
+  enabled: false
+
+
+#gwas-deposition-service:
+ # fileupload:
+    #endpoint : http://gwas-deposition-backend:8080/v1/submissions/
+    #url: http://gwas-deposition-backend:8080
+    #endpoints:
+    #  submission: /v1/submissions/
+
+gwas-deposition-service:
+  url: http://gwas-deposition-backend-dev:8080
+  fileupload:
+    endpoints:
+      submission: /gwas/deposition/api/v1/submissions/
+
+
+gwas-curation-service:
+  url: http://localhost:8080
+  javers:
+    endpoints:
+      javers-submission: /gwas/depo-curation/api/v1/javers
+
+
+goci:
+  url: http://snoopy.ebi.ac.uk:9680/gwas/curation
+  diseaseTraits:
+    endpoints:
+      reported-traits-upload: /api/v1/disease-traits/uploads
+      reported-traits: /api/v1/disease-traits
+      search-reported-traits: /api/v1/disease-traits/search

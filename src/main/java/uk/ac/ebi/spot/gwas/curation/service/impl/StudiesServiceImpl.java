@@ -3,12 +3,26 @@ package uk.ac.ebi.spot.gwas.curation.service.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
+import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
+import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
+import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
+import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitStudyMappingDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class StudiesServiceImpl implements StudiesService {
@@ -18,7 +32,20 @@ public class StudiesServiceImpl implements StudiesService {
     @Autowired
     private StudyRepository studyRepository;
 
+    @Autowired
+    private DiseaseTraitService diseaseTraitService;
 
+    @Autowired
+    private DiseaseTraitRepository diseaseTraitRepository;
+
+    @Autowired
+    private EfoTraitRepository efoTraitRepository;
+
+    @Override
+    public Study updateStudies(Study study) {
+        log.info("Inside updateStudies");
+        return studyRepository.save(study);
+    }
 
     @Override
     public Study getStudy(String studyId) {
@@ -34,4 +61,97 @@ public class StudiesServiceImpl implements StudiesService {
 
 
 
+    @Override
+    public Page<Study> getStudies(String submissionId,  Pageable page) {
+        return studyRepository.findBySubmissionId(submissionId, page);
+    }
+
+    public DiseaseTrait getDiseaseTraitsByStudyId(String studyId) {
+        String  traitId = getStudy(studyId).getDiseaseTrait();
+
+        Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitRepository.findById(traitId);
+        if(optionalDiseaseTrait.isPresent())
+            return optionalDiseaseTrait.get();
+        else
+            return null;
+
+    }
+
+    @Override
+    public Study getStudyByAccession(String accessionId, String submissionId) {
+        log.info("Retrieving study from accession: {}", accessionId);
+        Optional<Study> studyOptional = studyRepository.findByAccessionAndSubmissionId(accessionId, submissionId);
+        if (studyOptional.isPresent()) {
+            log.info("Found study: {}", studyOptional.get().getStudyTag());
+            return studyOptional.get();
+        }
+        log.error("Unable to find study with : {}", accessionId);
+        return null;
+    }
+
+    @Override
+    public List<TraitUploadReport> updateTraitsForStudies(List<StudyPatchRequest> studyPatchRequests, String submissionId) {
+        List<TraitUploadReport> report = new ArrayList<>();
+        studyPatchRequests.forEach((studyPatchRequest) -> {
+            boolean invalidStudyTag = false;
+            Study study = getStudyByAccession(studyPatchRequest.getGcst(), submissionId);
+            if(!study.getStudyTag().equalsIgnoreCase(studyPatchRequest.getStudyTag())){
+                invalidStudyTag = true;
+            }
+            Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTraitByTraitName(studyPatchRequest.getCuratedReportedTrait());
+            if(study != null && !invalidStudyTag) {
+                if (optionalDiseaseTrait.isPresent()) {
+                    DiseaseTrait diseaseTrait = optionalDiseaseTrait.get();
+
+                    study.setDiseaseTrait(diseaseTrait.getId());
+                    studyRepository.save(study);
+                    report.add(new TraitUploadReport(diseaseTrait.getTrait(), "Study for accession " + studyPatchRequest.getGcst() + " successfully Updated with trait : " + studyPatchRequest.getCuratedReportedTrait(), studyPatchRequest.getGcst()));
+                } else {
+                    report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " failed with trait : " + studyPatchRequest.getCuratedReportedTrait()+" not present in DB", studyPatchRequest.getGcst()));
+                }
+            } else {
+                if(invalidStudyTag)
+                    report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study tag is not matched with DB entry", study.getStudyTag()));
+                else
+                    report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study not present in DB", studyPatchRequest.getGcst()));
+            }
+        });
+        return report;
+    }
+
+    @Override
+    public List<TraitUploadReport> updateEfoTraitsForStudies(List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos, String submissionId) {
+
+        List<TraitUploadReport> report = new ArrayList<>();
+        efoTraitStudyMappingDtos.forEach((efoTraitStudyMappingDto -> {
+            boolean invalidStudyTag = false;
+            Study study = getStudyByAccession(efoTraitStudyMappingDto.getGcst(), submissionId);
+            if(!efoTraitStudyMappingDto.getStudyTag().equalsIgnoreCase(study.getStudyTag()))
+                invalidStudyTag = true;
+            Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findByShortForm(efoTraitStudyMappingDto.getShortForm());
+            if(study != null && !invalidStudyTag) {
+                if (efoTraitOptional.isPresent()) {
+                    EfoTrait efoTrait = efoTraitOptional.get();
+                    List<String> traitsList = study.getEfoTraits();
+                    if (traitsList == null) {
+                        traitsList = new ArrayList<>();
+                    }
+                    if (!traitsList.contains(efoTrait.getId())) {
+                        traitsList.add(efoTrait.getId());
+                    }
+                    study.setEfoTraits(traitsList);
+                    studyRepository.save(study);
+                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " successfully updated with trait : " + efoTraitStudyMappingDto.getShortForm(), efoTraitStudyMappingDto.getGcst()));
+                } else {
+                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " failed as trait : " + efoTraitStudyMappingDto.getShortForm()+" not present in DB", efoTraitStudyMappingDto.getGcst()));
+                }
+            } else {
+                if(invalidStudyTag)
+                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study tag is not matched with DB entry", study.getStudyTag()));
+                else
+                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study not present in DB", efoTraitStudyMappingDto.getGcst()));
+            }
+        }));
+        return report;
+    }
 }

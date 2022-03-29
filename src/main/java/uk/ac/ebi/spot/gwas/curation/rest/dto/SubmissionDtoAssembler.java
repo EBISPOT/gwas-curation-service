@@ -1,0 +1,37 @@
+package uk.ac.ebi.spot.gwas.curation.rest.dto;
+
+import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
+import uk.ac.ebi.spot.gwas.deposition.dto.*;
+
+import java.util.List;
+
+public class SubmissionDtoAssembler {
+
+    public static SubmissionDto assemble(Submission submission,
+                                         PublicationDto publication,
+                                         BodyOfWorkDto bodyOfWork,
+                                         List<FileUploadDto> fileUploads,
+                                         ProvenanceDto created,
+                                         ProvenanceDto lastUpdated,
+                                         ProvenanceDto editTemplate,
+                                         LockDetailsDto lockDetailsDto) {
+        return new SubmissionDto(submission.getId(),
+                publication,
+                bodyOfWork,
+                fileUploads,
+                submission.getGlobusFolderId(),
+                submission.getGlobusOriginId(),
+                submission.getStudies().size(),
+                submission.getSamples().size(),
+                submission.getAssociations().size(),
+                submission.getOverallStatus(),
+                submission.getMetadataStatus(),
+                submission.getSummaryStatsStatus(),
+                submission.getDateSubmitted(),
+                submission.getProvenanceType(),
+                created, lastUpdated,editTemplate,
+                lockDetailsDto,
+                submission.isAgreedToCc0()
+        );
+    }
+}

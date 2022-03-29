@@ -1,0 +1,364 @@
+= GWAS CATALOG API Guide
+:doctype: book
+:toc: left
+:toc-title: GWAS Catalog API
+:sectanchors:
+:sectlinks:
+:toclevels: 4
+:source-highlighter: highlightjs
+
+[[overview]]
+= Overview
+
+[[overview-http-verbs]]
+== HTTP verbs
+
+This API supports the following HTTP verbs.
+
+|===
+| Verb | Usage
+
+| `GET`
+| Used to retrieve a resource
+
+| `POST`
+| Used to persist a resource
+
+| `PUT`
+| Used to update a resource
+
+| `PATCH`
+| Used to partially update a resource
+
+| `DELETE`
+| Used to delete a resource
+|===
+
+[[overview-http-status-codes]]
+== HTTP status codes
+
+This API tries to adhere as closely as possible to standard HTTP and REST conventions in its
+use of HTTP status codes.
+
+|===
+| Status code | Usage
+
+| `200 OK`
+| The request completed successfully
+
+| `301 Moved Permanently`
+| The URL has moved permanently. GWAS REST API uses https protocol.
+
+| `400 Bad Request`
+| The request was malformed. The response body will include an error providing further information
+
+| `404 Not Found`
+| The requested resource did not exist
+
+| `500 Internal Server Error`
+| There was a System Exception/Error
+|===
+
+
+
+
+
+[[overview-hypermedia]]
+== Hypermedia
+
+This API uses hypermedia and resources include links to other resources in their
+responses. Responses are in http://stateless.co/hal_specification.html[Hypertext Application
+Language (HAL)] format. Links can be found benath the `_links` key. Users of the API should
+not created URIs themselves, instead they should use the above-described links to navigate
+from resource to resource.
+
+[[overview-pagination]]
+== Listing resources
+
+Requests that return multiple resources will be paginated to 20 items by default. You can change number of items
+returned using the `size` parameter up to a maximum of 500 for a single request. The API also supports the `page`
+parameter for accessing a specific page of items.
+
+=== Paging resources
+
+Links will be provided in the response to navigate the resources.
+
+==== Example request
+
+include::{snippets}/page-example/curl-request.adoc[]
+
+==== Example response
+
+include::{snippets}/page-example/http-response.adoc[]
+
+
+==== Response structure
+
+include::{snippets}/page-example/response-fields.adoc[]
+
+[[resources-page-links]]
+==== Links
+
+include::{snippets}/page-example/links.adoc[]
+
+[[overview-pagination-studies]]
+=== Paging Studies
+
+Links will be provided in the response to navigate the resources.
+
+==== Example request
+
+include::{snippets}/page-studies-example/curl-request.adoc[]
+
+==== Example response
+
+include::{snippets}/page-studies-example/http-response.adoc[]
+
+
+==== Response structure
+
+include::{snippets}/page-studies-example/response-fields.adoc[]
+
+[[resources-page-links]]
+==== Links
+
+include::{snippets}/page-studies-example/links.adoc[]
+
+[[resources]]
+= Resources
+
+
+
+[[resources-studies]]
+== Studies
+
+The Studies resources is used to list studies in the GWAS Catalog
+
+[[resources-studies-list]]
+=== Listing studies
+
+A `GET` request will list all of the Catalog diseaseTraits.
+
+==== Request Parameters
+include::{snippets}/studies-list-example/request-parameters.adoc[]
+
+==== Example request
+
+include::{snippets}/studies-list-example/curl-request.adoc[]
+
+==== Response structure
+
+The response is <<overview-pagination-studies,paginated>> where the individual <<resources-studies,studies resources>>  are in the `_embedded.studies` field.
+
+[[resources-studies-links]]
+==== Links
+
+include::{snippets}/studies-list-example/links.adoc[]
+
+
+[[resources-study]]
+== Study
+
+=== Retrieve a study
+
+==== Path Parameters
+
+include::{snippets}/get-study-example/path-parameters.adoc[]
+
+==== Example request
+
+include::{snippets}/get-study-example/curl-request.adoc[]
+
+==== Example response
+
+include::{snippets}/get-study-example/http-response.adoc[]
+
+==== Response structure
+
+include::{snippets}/get-study-example/response-fields.adoc[]
+
+=== Update a Study
+
+==== Path Parameters
+
+include::{snippets}/update-studies-example/path-parameters.adoc[]
+
+==== Example request
+
+include::{snippets}/update-studies-example/curl-request.adoc[]
+
+==== Example response
+
+include::{snippets}/update-studies-example/http-response.adoc[]
+
+==== Request structure
+
+include::{snippets}/update-studies-example/request-fields.adoc[]
+
+==== Response structure
+
+include::{snippets}/update-studies-example/response-fields.adoc[]
+
+=== Upload Study Traits
+
+==== Request structure
+
+include::{snippets}/upload-disease-traits-study-mappings-example/request-parts.adoc[]
+
+==== Example response
+
+include::{snippets}/upload-disease-traits-study-mappings-example/http-response.adoc[]
+
+==== Response structure
+
+include::{snippets}/upload-disease-traits-study-mappings-example/response-fields.adoc[]
+
+
+[[resource-efoTraits]]
+== EfoTraits
+
+The Studies resources is used to list studies in the GWAS Catalog
+
+[[resources-efoTraits-list]]
+=== Listing efoTraits
+
+A `GET` request will list all of the Catalog efo traits.
+
+==== Request Parameters
+include::{snippets}/efo-traits-list-example/request-parameters.adoc[]
+
+==== Example request
+
+include::{snippets}/efo-traits-list-example/curl-request.adoc[]
+
+==== Response structure
+
+The response is <<overview-pagination,paginated>> where the individual <<resources-efoTraits,efoTraits resources>>  are in the `_embedded.efoTraits` field.
+
+[[resources-efoTraits-links]]
+==== Links
+
+include::{snippets}/efo-traits-list-example/links.adoc[]
+
+
+
+[[resources-diseaseTraits]]
+== DiseaseTraits
+
+The DiseaseTraits resources is used to list diseaseTraits in the GWAS Catalog
+
+[[resources-diseaseTraits-list]]
+=== Listing diseaseTraits
+
+A `GET` request will list all of the Catalog diseaseTraits.
+
+==== Request Parameters
+include::{snippets}/disease-traits-list-example/request-parameters.adoc[]
+
+==== Example request
+
+include::{snippets}/disease-traits-list-example/curl-request.adoc[]
+
+==== Response structure
+
+The response is <<overview-pagination,paginated>> where the individual <<resources-diseaseTraits,diseaseTraits resources>>  are in the `_embedded.diseaseTraits` field.
+
+[[resources-diseaseTraits-links]]
+==== Links
+
+include::{snippets}/disease-traits-list-example/links.adoc[]
+
+
+
+[[resources-diseaseTrait]]
+== Disease Trait
+
+=== Retrieve a diseaseTrait
+
+==== Path Parameters
+
+include::{snippets}/get-disease-trait-example/path-parameters.adoc[]
+
+==== Example request
+
+include::{snippets}/get-disease-trait-example/curl-request.adoc[]
+
+==== Example response
+
+include::{snippets}/get-disease-trait-example/http-response.adoc[]
+
+==== Response structure
+
+include::{snippets}/get-disease-trait-example/response-fields.adoc[]
+
+=== Insert a diseaseTrait
+
+==== Example request
+
+include::{snippets}/add-disease-trait-example/curl-request.adoc[]
+
+==== Example response
+
+include::{snippets}/add-disease-trait-example/http-response.adoc[]
+
+==== Request structure
+
+include::{snippets}/add-disease-trait-example/request-fields.adoc[]
+
+==== Response structure
+
+include::{snippets}/add-disease-trait-example/response-fields.adoc[]
+
+=== Update a diseaseTrait
+
+==== Path Parameters
+
+include::{snippets}/update-disease-trait-example/path-parameters.adoc[]
+
+==== Example request
+
+include::{snippets}/update-disease-trait-example/curl-request.adoc[]
+
+==== Example response
+
+include::{snippets}/update-disease-trait-example/http-response.adoc[]
+
+==== Request structure
+
+include::{snippets}/update-disease-trait-example/request-fields.adoc[]
+
+==== Response structure
+
+include::{snippets}/update-disease-trait-example/response-fields.adoc[]
+
+=== Upload diseaseTraits
+
+==== Request structure
+
+include::{snippets}/upload-disease-traits-example/request-parts.adoc[]
+
+==== Example response
+
+include::{snippets}/upload-disease-traits-example/http-response.adoc[]
+
+==== Response structure
+
+include::{snippets}/upload-disease-traits-example/response-fields.adoc[]
+
+[[resources-diseaseTrait-links]]
+
+=== Delete a diseaseTrait
+
+==== Path Parameters
+
+include::{snippets}/delete-disease-trait-example/path-parameters.adoc[]
+
+==== Example request
+
+include::{snippets}/delete-disease-trait-example/curl-request.adoc[]
+
+=== Links
+
+include::{snippets}/get-disease-trait-example/links.adoc[]
+include::{snippets}/add-disease-trait-example/links.adoc[]
+include::{snippets}/update-disease-trait-example/links.adoc[]
