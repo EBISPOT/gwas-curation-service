@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.SubmissionRepository;
 import uk.ac.ebi.spot.gwas.curation.service.CuratorAuthService;
 import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
+import uk.ac.ebi.spot.gwas.deposition.constants.Status;
 import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.SubmissionDto;
@@ -133,21 +134,26 @@ public class SubmissionServiceImpl implements SubmissionService {
 
 
     @Override
-    public Submission patchSubmission(SubmissionDto submissionDto) {
+    public Submission patchSubmission(SubmissionDto submissionDto, String submissionId) {
 
-        Optional<Submission> submissionOptional = submissionRepository.findById(submissionDto.getSubmissionId());
+        Optional<Submission> submissionOptional = submissionRepository.findById(submissionId);
         if (!submissionOptional.isPresent()) {
-            log.error("Unable to find submission: {}", submissionDto.getSubmissionId());
-            throw new EntityNotFoundException("Unable to find submission: " + submissionDto.getSubmissionId());
+            log.error("Unable to find submission: {}", submissionId);
+            throw new EntityNotFoundException("Unable to find submission: " + submissionId);
         }
         Submission submission = submissionOptional.get();
+
+        log.info(" Submission status for {} is {}",submissionId, submissionDto.getSubmissionStatus());
+
+        Optional.ofNullable(submissionDto.getSubmissionStatus()).ifPresent(status -> submission.setOverallStatus(submissionDto.getSubmissionStatus()));
+
         if (submissionDto.getOpenTargetsFlag() != null) {
             submission.setOpenTargetsFlag(submissionDto.getOpenTargetsFlag());
         }
         if (submissionDto.getUserRequestedFlag() != null) {
             submission.setUserRequestedFlag(submissionDto.getUserRequestedFlag());
         }
-        submissionRepository.save(submission);
-        return submission;
+        return submissionRepository.save(submission);
+
     }
 }
