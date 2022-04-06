@@ -17,5 +17,5 @@ public interface SubmissionService {
     public Submission getSubmission(String submissionId);
 
 
-    Submission patchSubmission(SubmissionDto submissionDto);
+    Submission patchSubmission(SubmissionDto submissionDto, String submissionId);
 }

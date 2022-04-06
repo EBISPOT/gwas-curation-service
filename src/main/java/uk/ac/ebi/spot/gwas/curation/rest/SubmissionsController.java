@@ -82,7 +82,7 @@ public class SubmissionsController {
     @PatchMapping(value = "/{submissionId}")
     public Resource<SubmissionDto> patchSubmission(@PathVariable String submissionId, @RequestBody SubmissionDto submissionDto) {
 
-        return submissionAssemblyService.toResource(submissionService.patchSubmission(submissionDto));
+        return submissionAssemblyService.toResource(submissionService.patchSubmission(submissionDto, submissionId));
     }
 
 }
