@@ -65,8 +65,8 @@ public class StudySampleDescPatchRequestAssembler implements ResourceAssembler<S
 
     public Study disassemble(StudySampleDescPatchRequest studySampleDescPatchRequest, String studyId){
         Study study = studiesService.getStudy(studyId);
-        Optional.ofNullable(studySampleDescPatchRequest.getInitialSampleDescription()).ifPresent(initialSample -> study.setInitialSampleDescription(initialSample));
-        Optional.ofNullable(studySampleDescPatchRequest.getReplicateSampleDescription()).ifPresent(replicateSample -> study.setReplicateSampleDescription(replicateSample));
+        Optional.ofNullable(studySampleDescPatchRequest.getInitialSampleDescription()).ifPresent(initialSample -> study.setInitialSampleDescription(initialSample.trim()));
+        Optional.ofNullable(studySampleDescPatchRequest.getReplicateSampleDescription()).ifPresent(replicateSample -> study.setReplicateSampleDescription(replicateSample.trim()));
         return study;
     }
 

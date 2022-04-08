@@ -96,11 +96,11 @@ public class StudiesServiceImpl implements StudiesService {
         List<TraitUploadReport> report = new ArrayList<>();
         studyPatchRequests.forEach((studyPatchRequest) -> {
             boolean invalidStudyTag = false;
-            Study study = getStudyByAccession(studyPatchRequest.getGcst(), submissionId);
-            if(!study.getStudyTag().equalsIgnoreCase(studyPatchRequest.getStudyTag())){
+            Study study = getStudyByAccession(studyPatchRequest.getGcst().trim(), submissionId);
+            if(!study.getStudyTag().equalsIgnoreCase(studyPatchRequest.getStudyTag().trim())){
                 invalidStudyTag = true;
             }
-            Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTraitByTraitName(studyPatchRequest.getCuratedReportedTrait());
+            Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTraitByTraitName(studyPatchRequest.getCuratedReportedTrait().trim());
             if(study != null && !invalidStudyTag) {
                 if (optionalDiseaseTrait.isPresent()) {
                     DiseaseTrait diseaseTrait = optionalDiseaseTrait.get();
@@ -127,10 +127,10 @@ public class StudiesServiceImpl implements StudiesService {
         List<TraitUploadReport> report = new ArrayList<>();
         efoTraitStudyMappingDtos.forEach((efoTraitStudyMappingDto -> {
             boolean invalidStudyTag = false;
-            Study study = getStudyByAccession(efoTraitStudyMappingDto.getGcst(), submissionId);
-            if(!efoTraitStudyMappingDto.getStudyTag().equalsIgnoreCase(study.getStudyTag()))
+            Study study = getStudyByAccession(efoTraitStudyMappingDto.getGcst().trim(), submissionId);
+            if(!efoTraitStudyMappingDto.getStudyTag().trim().equalsIgnoreCase(study.getStudyTag()))
                 invalidStudyTag = true;
-            Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findByShortForm(efoTraitStudyMappingDto.getShortForm());
+            Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findByShortForm(efoTraitStudyMappingDto.getShortForm().trim());
             if(study != null && !invalidStudyTag) {
                 if (efoTraitOptional.isPresent()) {
                     EfoTrait efoTrait = efoTraitOptional.get();
@@ -160,7 +160,7 @@ public class StudiesServiceImpl implements StudiesService {
     @Override
     public List<StudySampleDescPatchRequest> updateSampleDescription(List<StudySampleDescPatchRequest> studySampleDescPatchRequests, String submissionId) {
         return studySampleDescPatchRequests.stream().map((studySampleDescPatchRequest) ->
-                     Optional.ofNullable(getStudyByAccession(studySampleDescPatchRequest.getGcst(), submissionId))
+                     Optional.ofNullable(getStudyByAccession(studySampleDescPatchRequest.getGcst().trim(), submissionId))
                             .map(study -> studySampleDescPatchRequestAssembler.disassemble(studySampleDescPatchRequest, study.getId()))
                             .map(this::updateStudies)
                             .map(studySampleDescPatchRequestAssembler::assemble).orElse(null)
