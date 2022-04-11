@@ -114,7 +114,7 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
         List<DiseaseTrait> diseaseTraits = new ArrayList<>();
         diseaseTraitDtos.forEach(diseaseTraitDTO -> {
             DiseaseTrait diseaseTrait = new DiseaseTrait();
-            diseaseTrait.setTrait(diseaseTraitDTO.getTrait());
+            diseaseTrait.setTrait(diseaseTraitDTO.getTrait().trim());
             diseaseTraits.add(diseaseTrait);
         });
         return diseaseTraits;

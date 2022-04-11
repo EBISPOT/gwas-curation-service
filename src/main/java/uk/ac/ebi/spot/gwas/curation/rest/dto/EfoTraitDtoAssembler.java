@@ -101,9 +101,9 @@ public class EfoTraitDtoAssembler implements ResourceAssembler<EfoTrait, Resourc
     public EfoTrait disassemble(EfoTraitDto efoTraitDto) {
         EfoTrait efoTrait = new EfoTrait();
         Optional.ofNullable(efoTraitDto.getEfoTraitId()).ifPresent(id -> efoTrait.setId(efoTraitDto.getEfoTraitId()));
-        Optional.ofNullable(efoTraitDto.getTrait()).ifPresent(trait -> efoTrait.setTrait(efoTraitDto.getTrait()));
-        Optional.ofNullable(efoTraitDto.getUri()).ifPresent(uri -> efoTrait.setUri(efoTraitDto.getUri()));
-        Optional.ofNullable(efoTraitDto.getShortForm()).ifPresent(studies -> efoTrait.setShortForm(efoTraitDto.getShortForm()));
+        Optional.ofNullable(efoTraitDto.getTrait()).ifPresent(trait -> efoTrait.setTrait(efoTraitDto.getTrait().trim()));
+        Optional.ofNullable(efoTraitDto.getUri()).ifPresent(uri -> efoTrait.setUri(efoTraitDto.getUri().trim()));
+        Optional.ofNullable(efoTraitDto.getShortForm()).ifPresent(studies -> efoTrait.setShortForm(efoTraitDto.getShortForm().trim()));
         return efoTrait;
     }
 
