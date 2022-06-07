@@ -187,16 +187,6 @@ public class StudiesServiceImpl implements StudiesService {
                     ArrayList<String> addedEfos = new ArrayList<>();
                     // oldEfos that arent in newEfos will be added to deletedEfos
                     // newEfos that arent in oldEfos will be added to addedEfos
-                    for (String newEfo : newEfos) {
-                        if (!oldEfos.contains(newEfo)) {
-                            addedEfos.add(newEfo);
-                        }
-                        else {
-                            oldEfos.remove(newEfo);
-                        }
-                    }
-                    ArrayList<String> removedEfos = new ArrayList<>(oldEfos);
-
                     ArrayList<String> studyEfoTraitsIds = new ArrayList<>();
                     ArrayList<String> studyEfoTraitsShortForms = new ArrayList<>();
                     for (String shortForm : newEfos) {
@@ -204,12 +194,20 @@ public class StudiesServiceImpl implements StudiesService {
                         if (efoTraitOptional.isPresent()) {
                             studyEfoTraitsIds.add(efoTraitOptional.get().getId());
                             studyEfoTraitsShortForms.add(efoTraitOptional.get().getShortForm());
+                            if (!oldEfos.contains(shortForm)) {
+                                addedEfos.add(shortForm);
+                            }
+                            else {
+                                System.out.println(oldEfos);
+                                oldEfos.remove(shortForm);
+                            }
                         } else {
                             efoTraitComments = efoTraitComments.concat("\n" + shortForm + " not found in DB.");
                         }
                     }
                     study.setEfoTraits(studyEfoTraitsIds);
                     studyRepository.save(study);
+                    ArrayList<String> removedEfos = new ArrayList<>(oldEfos);
                     efoTraitComments = efoTraitComments.concat("\nCurrent: " + StringUtils.join(studyEfoTraitsShortForms, "|"));
                     efoTraitComments = efoTraitComments.concat("\nOld: " + StringUtils.join(oldEfosForReport, "|"));
                     efoTraitComments = efoTraitComments.concat("\nAdded: " + StringUtils.join(addedEfos, "|"));
