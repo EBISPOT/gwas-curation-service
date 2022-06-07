@@ -1,5 +1,6 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +18,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -154,6 +153,84 @@ public class StudiesServiceImpl implements StudiesService {
                 report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study not present in DB", efoTraitStudyMappingDto.getGcst()));
             }
         }));
+        return report;
+    }
+
+    @Override
+    public List<MultiTraitStudyMappingReport> updateMultiTraitsForStudies(List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos, String submissionId) {
+
+        List<MultiTraitStudyMappingReport> report = new ArrayList<>();
+        multiTraitStudyMappingDtos.forEach(multiTraitStudyMappingDto -> {
+            boolean invalidStudyTag = false;
+            Study study = getStudyByAccession(multiTraitStudyMappingDto.getGcst().trim(), submissionId);
+            if (study == null) {
+                report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
+            }
+            else {
+                if(!multiTraitStudyMappingDto.getStudyTag().trim().equalsIgnoreCase(study.getStudyTag())) {
+                    invalidStudyTag = true;
+                }
+                String efoTraitComments = "";
+                if (!invalidStudyTag) {
+                    // Get already existing EFOs for study
+                    HashSet<String> oldEfos = new HashSet<>();
+                    List<String> oldEfosForReport = new ArrayList<>();
+                    if (study.getEfoTraits() != null) {
+                        for (String efoId: study.getEfoTraits()) {
+                            Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findById(efoId);
+                            efoTraitOptional.ifPresent(efoTrait -> oldEfos.add(efoTrait.getShortForm()));
+                        }
+                        oldEfosForReport = new ArrayList<>(oldEfos);
+                    }
+                    // Get pipe separated short forms from template
+                    HashSet<String> newEfos = new HashSet<>(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getEfoTraitShortForm().trim()).split("\\|")));
+                    ArrayList<String> addedEfos = new ArrayList<>();
+                    // oldEfos that arent in newEfos will be added to deletedEfos
+                    // newEfos that arent in oldEfos will be added to addedEfos
+                    for (String newEfo : newEfos) {
+                        if (!oldEfos.contains(newEfo)) {
+                            addedEfos.add(newEfo);
+                        }
+                        else {
+                            oldEfos.remove(newEfo);
+                        }
+                    }
+                    ArrayList<String> removedEfos = new ArrayList<>(oldEfos);
+
+                    ArrayList<String> studyEfoTraitsIds = new ArrayList<>();
+                    ArrayList<String> studyEfoTraitsShortForms = new ArrayList<>();
+                    for (String shortForm : newEfos) {
+                        Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findByShortForm(shortForm.trim());
+                        if (efoTraitOptional.isPresent()) {
+                            studyEfoTraitsIds.add(efoTraitOptional.get().getId());
+                            studyEfoTraitsShortForms.add(efoTraitOptional.get().getShortForm());
+                        } else {
+                            efoTraitComments = efoTraitComments.concat("\n" + shortForm + " not found in DB.");
+                        }
+                    }
+                    study.setEfoTraits(studyEfoTraitsIds);
+                    studyRepository.save(study);
+                    efoTraitComments = efoTraitComments.concat("\nCurrent: " + StringUtils.join(studyEfoTraitsShortForms, "|"));
+                    efoTraitComments = efoTraitComments.concat("\nOld: " + StringUtils.join(oldEfosForReport, "|"));
+                    efoTraitComments = efoTraitComments.concat("\nAdded: " + StringUtils.join(addedEfos, "|"));
+                    efoTraitComments = efoTraitComments.concat("\nRemoved: " + StringUtils.join(removedEfos, "|"));
+
+                    Optional<DiseaseTrait> diseaseTraitOptional = diseaseTraitService.getDiseaseTraitByTraitName(multiTraitStudyMappingDto.getReportedTrait().trim());
+                    String reportedTraitComments = "";
+                    if (diseaseTraitOptional.isPresent()) {
+                        study.setDiseaseTrait(diseaseTraitOptional.get().getId());
+                        studyRepository.save(study);
+                        reportedTraitComments = reportedTraitComments.concat("Reported trait set to: " + diseaseTraitOptional.get().getTrait());
+                    } else {
+                        reportedTraitComments = reportedTraitComments.concat("Reported trait " + multiTraitStudyMappingDto.getReportedTrait() + " not found in DB");
+                    }
+                    report.add(new MultiTraitStudyMappingReport(study.getAccession(), study.getStudyTag(), efoTraitComments.trim(), reportedTraitComments.trim()));
+                }
+                else {
+                    report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
+                }
+            }
+        });
         return report;
     }
 

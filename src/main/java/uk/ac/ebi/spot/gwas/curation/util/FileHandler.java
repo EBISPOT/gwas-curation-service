@@ -107,6 +107,10 @@ public class FileHandler {
             List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = new ArrayList<>();
             efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().studyTag("example_tag").gcst("GCSTxxxxxxxx").shortForm("EFO_xxxxxx").build());
             return new String(serializePojoToTsv(efoTraitStudyMappingDtos));
+        } else if (fileUploadType.equals(FileUploadType.STUDY_MULTI_TRAIT_FILE)) {
+            List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = new ArrayList<>();
+            multiTraitStudyMappingDtos.add(MultiTraitStudyMappingDto.builder().gcst("GCSTxxxxxxxx").studyTag("example_tag").efoTraitShortForm("EFO_111 | EFO_222 | EFO_333").reportedTrait("Example_Trait").build());
+            return new String(serializePojoToTsv(multiTraitStudyMappingDtos));
         }
         else {
             return null;
