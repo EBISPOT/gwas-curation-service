@@ -1,6 +1,7 @@
 package uk.ac.ebi.spot.gwas.curation.rest.dto;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
@@ -18,18 +19,19 @@ import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.DiseaseTraitController;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
+import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitWrapperDTO;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait, Resource<DiseaseTraitDto>> {
@@ -37,6 +39,9 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
     private static final Logger log = LoggerFactory.getLogger(DiseaseTraitDtoAssembler.class);
     @Autowired
     UserService userService;
+
+    @Autowired
+    FileHandler fileHandler;
 
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
@@ -101,14 +106,23 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
 
     public  List<DiseaseTrait> disassemble(MultipartFile multipartFile)  {
         CsvMapper mapper = new CsvMapper();
-         CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
+        CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
+
         List<DiseaseTraitDto> diseaseTraitDtos;
         try {
             InputStream inputStream = multipartFile.getInputStream();
-            MappingIterator<DiseaseTraitDto> iterator = mapper.readerFor(DiseaseTraitDto.class).with(csvSchema).readValues(inputStream);
+            // Validate File Separator , API doesn't seem to have logic so writing custom code to look for blocks based on file separator & whether it matches the class definition
+            DiseaseTraitWrapperDTO diseaseTraitWrapperDTO = new DiseaseTraitWrapperDTO("");
+            String validationSepMessage = fileHandler.parseFileforSeparators(inputStream,"\t" , diseaseTraitWrapperDTO);
+            log.info("validationSepMessage ->"+validationSepMessage);
+            if(!validationSepMessage.equals("Done"))
+                throw new FileProcessingException(validationSepMessage);
+            MappingIterator<DiseaseTraitDto> iterator = mapper.readerFor(DiseaseTraitDto.class)
+                    .with(csvSchema).readValues(multipartFile.getInputStream());
             diseaseTraitDtos = iterator.readAll();
         }catch (IOException ex){
-            throw new FileProcessingException("Could not read the file");
+            log.error("Exception in Csv Mapping"+ ex.getMessage(),ex);
+            throw new FileProcessingException("Could not read the file"+ex.getMessage());
         }
 
         List<DiseaseTrait> diseaseTraits = new ArrayList<>();

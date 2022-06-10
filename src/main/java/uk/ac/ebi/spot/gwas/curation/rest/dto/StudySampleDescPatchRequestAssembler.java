@@ -14,6 +14,7 @@ import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.StudiesController;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
+import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
@@ -82,18 +83,6 @@ public class StudySampleDescPatchRequestAssembler implements ResourceAssembler<S
         return studySampleDescPatchWrapper;
     }
 
-    public List<StudyPatchRequest> disassemble(MultipartFile multipartFile) {
-        CsvMapper mapper = new CsvMapper();
-        CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
-        List<StudyPatchRequest> studyPatchRequestList;
-        try {
-            InputStream inputStream = multipartFile.getInputStream();
-            MappingIterator<StudyPatchRequest> iterator = mapper.readerFor(StudySampleDescPatchRequest.class).with(csvSchema).readValues(inputStream);
-            studyPatchRequestList = iterator.readAll();
-        }catch (IOException ex){
-            throw new FileProcessingException("Could not read the file");
-        }
-        return studyPatchRequestList;
-    }
+
 
 }

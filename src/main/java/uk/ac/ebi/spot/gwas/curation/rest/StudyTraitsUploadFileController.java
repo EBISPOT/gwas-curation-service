@@ -64,7 +64,9 @@ public class StudyTraitsUploadFileController {
             throw new FileProcessingException("File not found");
         }
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        List<StudyPatchRequest> studyPatchRequests = studyPatchRequestAssembler.disassemble(multipartFile);
+        //List<StudyPatchRequest> studyPatchRequests = studyPatchRequestAssembler.disassemble(multipartFile);
+        StudyPatchRequest studyPatchRequest = new StudyPatchRequest("", "", "");
+        List<StudyPatchRequest>  studyPatchRequests =  (List<StudyPatchRequest>) fileHandler.disassemble(multipartFile, StudyPatchRequest.class, studyPatchRequest);
         List<TraitUploadReport> traitUploadReport = studiesService.updateTraitsForStudies(studyPatchRequests, submissionId );
         byte[] result = fileHandler.serializePojoToTsv(traitUploadReport);
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -82,7 +84,9 @@ public class StudyTraitsUploadFileController {
             throw new FileProcessingException("File not found");
         }
         userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForEfoMapping(multipartFile);
+        //List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForEfoMapping(multipartFile);
+        EfoTraitStudyMappingDto efoTraitStudyMappingDto = new EfoTraitStudyMappingDto("","","");
+        List<EfoTraitStudyMappingDto>  efoTraitStudyMappingDtos =  (List<EfoTraitStudyMappingDto>) fileHandler.disassemble(multipartFile, EfoTraitStudyMappingDto.class,efoTraitStudyMappingDto);
         List<TraitUploadReport> traitUploadReport = studiesService.updateEfoTraitsForStudies(efoTraitStudyMappingDtos, submissionId);
         byte[] result = fileHandler.serializePojoToTsv(traitUploadReport);
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -119,7 +123,8 @@ public class StudyTraitsUploadFileController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public HttpEntity<byte[]> uploadSampleDescriptions(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile) {
-         List<StudySampleDescPatchRequest>  sampleDescPatchRequests =  (List<StudySampleDescPatchRequest>) fileHandler.disassemble(multipartFile, StudySampleDescPatchRequest.class);
+        StudySampleDescPatchRequest studySampleDescPatchRequest = new StudySampleDescPatchRequest("","","","");
+        List<StudySampleDescPatchRequest>  sampleDescPatchRequests =  (List<StudySampleDescPatchRequest>) fileHandler.disassemble(multipartFile, StudySampleDescPatchRequest.class,studySampleDescPatchRequest);
         byte[] result = studiesService.uploadSampleDescriptions(sampleDescPatchRequests, submissionId);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studySampleDescriptions_Extract");

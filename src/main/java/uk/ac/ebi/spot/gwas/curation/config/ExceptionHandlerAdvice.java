@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.ErrorResponseDto;
 import uk.ac.ebi.spot.gwas.deposition.exception.*;
 
 import java.io.IOException;
@@ -43,12 +44,12 @@ public class ExceptionHandlerAdvice {
     }
 
     @ExceptionHandler(FileProcessingException.class)
-    public ResponseEntity<String> handleFileProcessingException(FileProcessingException ex) {
+    public ResponseEntity<ErrorResponseDto> handleFileProcessingException(FileProcessingException ex) {
         log.error("FileProcessingException :"+ex.getLocalizedMessage(),ex);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.TEXT_PLAIN);
-        return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new ErrorResponseDto(ex.getMessage()), headers, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(NoVersionSummaryException.class)
