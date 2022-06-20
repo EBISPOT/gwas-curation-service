@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitStudyMappingDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.MultiTraitStudyMappingDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyPatchRequest;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 
@@ -40,6 +41,21 @@ public class StudyPatchRequestAssembler {
         try {
             InputStream inputStream = multipartFile.getInputStream();
             MappingIterator<EfoTraitStudyMappingDto> iterator = mapper.readerFor(EfoTraitStudyMappingDto.class).with(csvSchema).readValues(inputStream);
+            studyPatchRequestList = iterator.readAll();
+        } catch (IOException ex){
+            throw new FileProcessingException("Could not read the file");
+        }
+        return studyPatchRequestList;
+    }
+
+    public List<MultiTraitStudyMappingDto> disassembleForMultiTraitMapping(MultipartFile multipartFile) {
+
+        CsvMapper mapper = new CsvMapper();
+        CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
+        List<MultiTraitStudyMappingDto> studyPatchRequestList;
+        try {
+            InputStream inputStream = multipartFile.getInputStream();
+            MappingIterator<MultiTraitStudyMappingDto> iterator = mapper.readerFor(MultiTraitStudyMappingDto.class).with(csvSchema).readValues(inputStream);
             studyPatchRequestList = iterator.readAll();
         } catch (IOException ex){
             throw new FileProcessingException("Could not read the file");
