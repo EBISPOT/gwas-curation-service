@@ -97,7 +97,7 @@ public class StudiesServiceImpl implements StudiesService {
         studyPatchRequests.forEach((studyPatchRequest) -> {
             boolean invalidStudyTag = false;
             Study study = getStudyByAccession(studyPatchRequest.getGcst().trim(), submissionId);
-            if(!study.getStudyTag().equalsIgnoreCase(studyPatchRequest.getStudyTag().trim())){
+            if(study != null && !study.getStudyTag().equalsIgnoreCase(studyPatchRequest.getStudyTag().trim())){
                 invalidStudyTag = true;
             }
             Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTraitByTraitName(studyPatchRequest.getCuratedReportedTrait().trim());
@@ -179,7 +179,7 @@ public class StudiesServiceImpl implements StudiesService {
             boolean invalidStudyTag = false;
             boolean sampleDescChanged = false;
             Study study = getStudyByAccession(studySampleDescPatchRequest.getGcst(), submissionId);
-            if(!studySampleDescPatchRequest.getStudyTag().equalsIgnoreCase(study.getStudyTag()))
+            if(study != null && !studySampleDescPatchRequest.getStudyTag().equalsIgnoreCase(study.getStudyTag()))
                 invalidStudyTag = true;
             if(study != null && !invalidStudyTag) {
                 if(studySampleDescPatchRequest.getInitialSampleDescription() != null && !study.getInitialSampleDescription().equalsIgnoreCase(studySampleDescPatchRequest.getInitialSampleDescription())) {

@@ -29,19 +29,13 @@ import java.util.stream.Collectors;
 public class FileHandler {
 
     private static final Logger log = LoggerFactory.getLogger(FileHandler.class);
-    private FileHandler() {
-        // Hide implicit default constructor
-    }
+
 
     public static CsvSchema getSchemaFromMultiPartFile(MultipartFile multipartFile){
         CsvSchema.Builder builder = CsvSchema.builder();
         CsvSchema schema = builder.build().withHeader();
-
-        if (FilenameUtils.getExtension(multipartFile.getOriginalFilename()).equals("tsv")) {
+        if (FilenameUtils.getExtension(multipartFile.getOriginalFilename()).equals("tsv"))
             schema = schema.withColumnSeparator('\t');
-        } else {
-            throw new FileProcessingException("File Uploaded should be of tsv format");
-        }
         return schema;
     }
 
@@ -51,12 +45,6 @@ public class FileHandler {
         CsvSchema schema = getSchemaFromMultiPartFile(multipartFile);
         List<AnalysisDTO> analysisDTOS;
         try {
-            InputStream inputStream = multipartFile.getInputStream();
-            AnalysisDTO analysisDTO = new AnalysisDTO("","",0.0);
-            String validationSepMessage = parseFileforSeparators(inputStream,"\t" , analysisDTO);
-            log.info("validationSepMessage ->"+validationSepMessage);
-            if(!validationSepMessage.equals("Done"))
-                throw new FileProcessingException(validationSepMessage);
             MappingIterator<AnalysisDTO> iterator =
                     mapper.readerFor(AnalysisDTO.class).with(schema).readValues(multipartFile.getInputStream());
             analysisDTOS = iterator.readAll();
@@ -132,11 +120,6 @@ public class FileHandler {
         CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
         List<?> objectList =null;
         try {
-            InputStream inputStream = multipartFile.getInputStream();
-            String validationSepMessage = parseFileforSeparators(inputStream,"\t" , O);
-            log.info("validationSepMessage ->"+validationSepMessage);
-            if(!validationSepMessage.equals("Done"))
-                throw new FileProcessingException(validationSepMessage);
             MappingIterator<?> iterator = mapper.readerFor(T).with(csvSchema).readValues(multipartFile.getInputStream());
             objectList = iterator.readAll();
         }catch (IOException ex){
@@ -146,58 +129,6 @@ public class FileHandler {
         return objectList;
     }
 
-    public static String parseFileforSeparators(InputStream is, String sep, Object T) {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-        String str = "";
-        int counter = 0;
-        CsvMapper csvMapper = new CsvMapper();
-        Map<String, Object> dataList = csvMapper.convertValue(T, new TypeReference<Object>() {
-        });
-        List<String> headers = new ArrayList<>();
-        dataList.forEach((key, value) ->
-                headers.add(key));
-        headers.forEach(header -> log.info("Header is ->"+ header));
-        try {
-            while ((str = bufferedReader.readLine()) != null) {
-                counter++;
-                //log.info("File Line number " + counter + "->" + str);
-                String[] props = str.split(sep);
-                AtomicBoolean invalidHeader = new AtomicBoolean();
-                invalidHeader.set(false);
-                if(counter == 1){
-                    if(props != null) {
-                        Arrays.stream(props).forEach(prop -> {
-                            if (!headers.contains(prop)){
-                                invalidHeader.set(true);
-                                return;
-                            }
-                        });
-                    }
-                }
-                if(invalidHeader.get()){
-                    return "Headers are not valid , the expected headers->"+headers.stream().collect(Collectors.joining("\t"));
-                }
-                //log.info("props length " + props.length);
-                //log.info("allFields length " + headers.size());
-                if(props != null ) {
-                    if (props.length != headers.size() ) {
-                        return "Line Number " + counter + " doesn't have valid file separator or number of fields";
-                    }
-                }else{
-                    return "Line Number " + counter + " doesn't have valid file separator or number of fields";
-                }
-            }
-        } catch(IOException ex ){
-            log.error("IO Exception in reading file "+ ex, ex.getMessage());
-        } finally{
-            try{
-                if(is != null)
-                    is.close();
-            }catch(IOException ex){
-                log.error("IO Exception in closing file "+ ex, ex.getMessage());
-            }
-        }
-        return "Done";
-    }
+
 
 }

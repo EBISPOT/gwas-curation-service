@@ -107,16 +107,9 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
     public  List<DiseaseTrait> disassemble(MultipartFile multipartFile)  {
         CsvMapper mapper = new CsvMapper();
         CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
-
         List<DiseaseTraitDto> diseaseTraitDtos;
         try {
-            InputStream inputStream = multipartFile.getInputStream();
             // Validate File Separator , API doesn't seem to have logic so writing custom code to look for blocks based on file separator & whether it matches the class definition
-            DiseaseTraitWrapperDTO diseaseTraitWrapperDTO = new DiseaseTraitWrapperDTO("");
-            String validationSepMessage = fileHandler.parseFileforSeparators(inputStream,"\t" , diseaseTraitWrapperDTO);
-            log.info("validationSepMessage ->"+validationSepMessage);
-            if(!validationSepMessage.equals("Done"))
-                throw new FileProcessingException(validationSepMessage);
             MappingIterator<DiseaseTraitDto> iterator = mapper.readerFor(DiseaseTraitDto.class)
                     .with(csvSchema).readValues(multipartFile.getInputStream());
             diseaseTraitDtos = iterator.readAll();

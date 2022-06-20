@@ -121,13 +121,6 @@ public class EfoTraitDtoAssembler implements ResourceAssembler<EfoTrait, Resourc
         List<EfoTraitDto> efoTraitDtos;
 
         try {
-            InputStream inputStream = multipartFile.getInputStream();
-            // Validate File Separator , API doesn't seem to have logic so writing custom code to look for blocks based on file separator & whether it matches the class definition
-            EFOTraitWrapperDTO efoTraitWrapperDTO = new EFOTraitWrapperDTO("","");
-            String validationSepMessage = FileHandler.parseFileforSeparators(inputStream,"\t", efoTraitWrapperDTO);
-            log.info("validationSepMessage ->"+validationSepMessage);
-            if(!validationSepMessage.equals("Done"))
-                throw new FileProcessingException(validationSepMessage);
             MappingIterator<EfoTraitDto> iterator = csvMapper.readerFor(EfoTraitDto.class).with(csvSchema).readValues(multipartFile.getInputStream());
             efoTraitDtos = iterator.readAll();
         } catch (IOException e) {
