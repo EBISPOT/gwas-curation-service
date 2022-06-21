@@ -291,7 +291,7 @@ public class APIDocumentation {
         when(diseaseTraitService.getDiseaseTraits( any(), any(), any())).thenReturn((TestUtil.mockDiseaseTraits()));
         when(diseaseTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResource());
         when(diseaseTraitDtoAssembler.disassemble(any(MultipartFile.class))).thenReturn(TestUtil.mockDiseaseTraitsList());
-        when(diseaseTraitService.createDiseaseTrait(any(),any())).thenReturn(TestUtil.mockTraitUploadReports());
+        // when(diseaseTraitService.createDiseaseTrait(any(),any())).thenReturn(TestUtil.mockTraitUploadReports());
         when(diseaseTraitDtoAssembler.disassemble(any(DiseaseTraitDto.class))).thenReturn(TestUtil.mockDiseaseTrait());
         when(efoTraitService.getEfoTraits(any(), any())).thenReturn(TestUtil.mockEfoTraits());
         when(efoTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockEfoTraitAssemblyResource());
