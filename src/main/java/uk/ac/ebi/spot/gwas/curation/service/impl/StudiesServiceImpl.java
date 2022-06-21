@@ -13,6 +13,7 @@ import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
+import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
@@ -41,6 +42,9 @@ public class StudiesServiceImpl implements StudiesService {
 
     @Autowired
     private EfoTraitRepository efoTraitRepository;
+
+    @Autowired
+    private FileHandler fileHandler;
 
     @Override
     public Study updateStudies(Study study) {
@@ -157,13 +161,15 @@ public class StudiesServiceImpl implements StudiesService {
     }
 
     @Override
-    public List<MultiTraitStudyMappingReport> updateMultiTraitsForStudies(List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos, String submissionId) {
+    public UploadReportWrapper updateMultiTraitsForStudies(List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos, String submissionId) {
 
         List<MultiTraitStudyMappingReport> report = new ArrayList<>();
+        UploadReportWrapper uploadReportWrapper = new UploadReportWrapper();
         multiTraitStudyMappingDtos.forEach(multiTraitStudyMappingDto -> {
             boolean invalidStudyTag = false;
             Study study = getStudyByAccession(multiTraitStudyMappingDto.getGcst().trim(), submissionId);
             if (study == null) {
+                uploadReportWrapper.setHasErrors(true);
                 report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
             }
             else {
@@ -198,10 +204,10 @@ public class StudiesServiceImpl implements StudiesService {
                                 addedEfos.add(shortForm);
                             }
                             else {
-                                System.out.println(oldEfos);
                                 oldEfos.remove(shortForm);
                             }
                         } else {
+                            uploadReportWrapper.setHasErrors(true);
                             efoTraitComments = efoTraitComments.concat("\n" + shortForm + " not found in DB.");
                         }
                     }
@@ -220,16 +226,19 @@ public class StudiesServiceImpl implements StudiesService {
                         studyRepository.save(study);
                         reportedTraitComments = reportedTraitComments.concat("Reported trait set to: " + diseaseTraitOptional.get().getTrait());
                     } else {
+                        uploadReportWrapper.setHasErrors(true);
                         reportedTraitComments = reportedTraitComments.concat("Reported trait " + multiTraitStudyMappingDto.getReportedTrait() + " not found in DB");
                     }
                     report.add(new MultiTraitStudyMappingReport(study.getAccession(), study.getStudyTag(), efoTraitComments.trim(), reportedTraitComments.trim()));
                 }
                 else {
+                    uploadReportWrapper.setHasErrors(true);
                     report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
                 }
             }
         });
-        return report;
+        uploadReportWrapper.setUploadReport(fileHandler.serializePojoToTsv(report));
+        return uploadReportWrapper;
     }
 
     @Override

@@ -92,7 +92,7 @@ public class StudyTraitsUploadFileController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_MULTI_TRAITS + "/files")
-    public HttpEntity<byte[]> uploadMultiTraitStudyMapping(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile, HttpServletRequest request) {
+    public HttpEntity<UploadReportWrapper> uploadMultiTraitStudyMapping(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile, HttpServletRequest request) {
 
         if(multipartFile.isEmpty()){
             throw new FileProcessingException("File not found");
@@ -101,13 +101,10 @@ public class StudyTraitsUploadFileController {
         MultiTraitStudyMappingDto multiTraitStudyMappingDto = new MultiTraitStudyMappingDto("","","","");
         List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = (List<MultiTraitStudyMappingDto>) fileHandler.disassemble(multipartFile, MultiTraitStudyMappingDto.class,  multiTraitStudyMappingDto);
         //List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForMultiTraitMapping(multipartFile);
-        List<MultiTraitStudyMappingReport> traitUploadReport = studiesService.updateMultiTraitsForStudies(multiTraitStudyMappingDtos, submissionId);
-        byte[] result = fileHandler.serializePojoToTsv(traitUploadReport);
+        UploadReportWrapper traitUploadReport = studiesService.updateMultiTraitsForStudies(multiTraitStudyMappingDtos, submissionId);
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studyMultiTraitUploadReports.tsv");
-        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
-        return new HttpEntity<>(result, responseHeaders);
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        return new HttpEntity<>(traitUploadReport, responseHeaders);
     }
 
     @ResponseStatus(HttpStatus.OK)
