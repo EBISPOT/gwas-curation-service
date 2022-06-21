@@ -32,6 +32,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.FileUploadRequest;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.UploadReportWrapper;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileValidationException;
 
@@ -94,8 +95,8 @@ public class EfoTraitController {
 
     @PostMapping(value = "/bulk-upload")
     @ResponseStatus(HttpStatus.CREATED)
-    public HttpEntity<byte[]> createEfoTraits(@Valid FileUploadRequest fileUploadRequest,
-                                                                   HttpServletRequest request, BindingResult result) {
+    public HttpEntity<UploadReportWrapper> createEfoTraits(@Valid FileUploadRequest fileUploadRequest,
+                                                           HttpServletRequest request, BindingResult result) {
 
         if (result.hasErrors()) {
             throw new FileValidationException(result);
@@ -103,12 +104,10 @@ public class EfoTraitController {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         MultipartFile multipartFile = fileUploadRequest.getMultipartFile();
         List<EfoTrait> efoTraits = efoTraitDtoAssembler.disassemble(multipartFile);
-        byte[] tsvReport = efoTraitService.createEfoTraits(efoTraits, user);
+        UploadReportWrapper reportWrapper = efoTraitService.createEfoTraits(efoTraits, user);
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=efo-bulk-upload-report.tsv");
-        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(tsvReport.length));
-        return new HttpEntity<>(tsvReport, responseHeaders);
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        return new HttpEntity<>(reportWrapper, responseHeaders);
     }
 
     @GetMapping(value = "/{traitId}")

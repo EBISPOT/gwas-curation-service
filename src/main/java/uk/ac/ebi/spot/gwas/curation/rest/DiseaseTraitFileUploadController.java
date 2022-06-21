@@ -1,13 +1,11 @@
 package uk.ac.ebi.spot.gwas.curation.rest;
 
-import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.*;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
@@ -24,19 +22,14 @@ import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
-import uk.ac.ebi.spot.gwas.deposition.exception.FileValidationException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @RestController
 @RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_DISEASE_TRAITS)
@@ -65,20 +58,17 @@ public class DiseaseTraitFileUploadController {
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public HttpEntity<byte[]> uploadDiseaseTraits(@RequestParam MultipartFile multipartFile,
+    public HttpEntity<UploadReportWrapper> uploadDiseaseTraits(@RequestParam MultipartFile multipartFile,
                                                                         HttpServletRequest request) {
         if(multipartFile.isEmpty()){
             throw new FileProcessingException("File not found");
         }
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         List<DiseaseTrait> diseaseTraits = diseaseTraitDtoAssembler.disassemble(multipartFile);
-        List<TraitUploadReport> traitUploadReports = diseaseTraitService.createDiseaseTrait(diseaseTraits, user);
-        byte[] result = fileHandler.serializePojoToTsv(traitUploadReports);
+        UploadReportWrapper uploadReportWrapper = diseaseTraitService.createDiseaseTrait(diseaseTraits, user);
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=traitUploadReports.tsv");
-        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
-        return new HttpEntity<>(result, responseHeaders);
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        return new HttpEntity<>(uploadReportWrapper, responseHeaders);
     }
 
     @ResponseStatus(HttpStatus.OK)
