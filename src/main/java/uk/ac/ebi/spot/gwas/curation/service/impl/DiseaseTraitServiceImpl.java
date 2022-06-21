@@ -18,14 +18,12 @@ import uk.ac.ebi.spot.gwas.curation.config.RestInteractionConfig;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
+import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisCacheDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisDTO;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import uk.ac.ebi.spot.gwas.deposition.exception.CannotCreateTraitWithDuplicateNameException;
 import uk.ac.ebi.spot.gwas.deposition.exception.CannotDeleteTraitException;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
@@ -56,6 +54,9 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
     @Autowired
     private StudyRepository studyRepository;
 
+    @Autowired
+    FileHandler fileHandler;
+
     public DiseaseTraitServiceImpl(DiseaseTraitRepository diseaseTraitRepository) {
         this.diseaseTraitRepository = diseaseTraitRepository;
     }
@@ -69,8 +70,9 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
     }
 
 
-        public List<TraitUploadReport> createDiseaseTrait(List<DiseaseTrait> diseaseTraits,User user) {
+        public UploadReportWrapper createDiseaseTrait(List<DiseaseTrait> diseaseTraits, User user) {
         List<TraitUploadReport> report = new ArrayList<>();
+        UploadReportWrapper uploadReportWrapper = new UploadReportWrapper();
         diseaseTraits.forEach(diseaseTrait -> {
             try {
                 Optional<DiseaseTrait> optDiseaseTrait = getDiseaseTraitByTraitName(diseaseTrait.getTrait());
@@ -79,14 +81,14 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
                 diseaseTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
                 diseaseTraitRepository.insert(diseaseTrait);
                 report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait successfully Inserted : "+diseaseTrait.getTrait(),null));
-            } catch(DataAccessException ex){
-                report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait Insertion failed as Trait already exists : "+diseaseTrait.getTrait(),null));
-            } catch(CannotCreateTraitWithDuplicateNameException ex){
+            } catch(DataAccessException | CannotCreateTraitWithDuplicateNameException ex) {
+                uploadReportWrapper.setHasErrors(true);
                 report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait Insertion failed as Trait already exists : "+diseaseTrait.getTrait(),null));
             }
         });
         //DiseaseTrait diseaseTraitInserted = diseaseTraitRepository.insert(diseaseTrait);
-        return report;
+        uploadReportWrapper.setUploadReport(fileHandler.serializePojoToTsv(report));
+        return uploadReportWrapper;
     }
 
     public DiseaseTrait updateDiseaseTrait(DiseaseTrait diseaseTrait) {
