@@ -2,7 +2,6 @@
 package uk.ac.ebi.spot.gwas.curation.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -11,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
-import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.JWTService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
@@ -19,7 +17,6 @@ import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
-import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
@@ -38,9 +35,6 @@ public class StudyTraitsUploadFileController {
 
     @Autowired
     JWTService jwtService;
-
-    @Autowired
-    StudyPatchRequestAssembler studyPatchRequestAssembler;
 
     @Autowired
     StudySampleDescPatchRequestAssembler studySampleDescPatchRequestAssembler;
@@ -64,7 +58,9 @@ public class StudyTraitsUploadFileController {
             throw new FileProcessingException("File not found");
         }
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        List<StudyPatchRequest> studyPatchRequests = studyPatchRequestAssembler.disassemble(multipartFile);
+        //List<StudyPatchRequest> studyPatchRequests = studyPatchRequestAssembler.disassemble(multipartFile);
+        StudyPatchRequest studyPatchRequest = new StudyPatchRequest("", "", "");
+        List<StudyPatchRequest>  studyPatchRequests =  (List<StudyPatchRequest>) fileHandler.disassemble(multipartFile, StudyPatchRequest.class, studyPatchRequest);
         List<TraitUploadReport> traitUploadReport = studiesService.updateTraitsForStudies(studyPatchRequests, submissionId );
         byte[] result = fileHandler.serializePojoToTsv(traitUploadReport);
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -82,7 +78,9 @@ public class StudyTraitsUploadFileController {
             throw new FileProcessingException("File not found");
         }
         userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForEfoMapping(multipartFile);
+        //List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForEfoMapping(multipartFile);
+        EfoTraitStudyMappingDto efoTraitStudyMappingDto = new EfoTraitStudyMappingDto("","","");
+        List<EfoTraitStudyMappingDto>  efoTraitStudyMappingDtos =  (List<EfoTraitStudyMappingDto>) fileHandler.disassemble(multipartFile, EfoTraitStudyMappingDto.class,efoTraitStudyMappingDto);
         List<TraitUploadReport> traitUploadReport = studiesService.updateEfoTraitsForStudies(efoTraitStudyMappingDtos, submissionId);
         byte[] result = fileHandler.serializePojoToTsv(traitUploadReport);
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -100,7 +98,9 @@ public class StudyTraitsUploadFileController {
             throw new FileProcessingException("File not found");
         }
         userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForMultiTraitMapping(multipartFile);
+        MultiTraitStudyMappingDto multiTraitStudyMappingDto = new MultiTraitStudyMappingDto("","","","");
+        List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = (List<MultiTraitStudyMappingDto>) fileHandler.disassemble(multipartFile, MultiTraitStudyMappingDto.class,  multiTraitStudyMappingDto);
+        //List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForMultiTraitMapping(multipartFile);
         UploadReportWrapper traitUploadReport = studiesService.updateMultiTraitsForStudies(multiTraitStudyMappingDtos, submissionId);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -133,7 +133,8 @@ public class StudyTraitsUploadFileController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public HttpEntity<byte[]> uploadSampleDescriptions(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile) {
-         List<StudySampleDescPatchRequest>  sampleDescPatchRequests =  (List<StudySampleDescPatchRequest>) fileHandler.disassemble(multipartFile, StudySampleDescPatchRequest.class);
+        StudySampleDescPatchRequest studySampleDescPatchRequest = new StudySampleDescPatchRequest("","","","");
+        List<StudySampleDescPatchRequest>  sampleDescPatchRequests =  (List<StudySampleDescPatchRequest>) fileHandler.disassemble(multipartFile, StudySampleDescPatchRequest.class,studySampleDescPatchRequest);
         byte[] result = studiesService.uploadSampleDescriptions(sampleDescPatchRequests, submissionId);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studySampleDescriptions_Extract");

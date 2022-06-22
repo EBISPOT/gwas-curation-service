@@ -1,12 +1,26 @@
 package uk.ac.ebi.spot.gwas.curation.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.*;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public class CurationUtil {
+
+    private static final Logger log = LoggerFactory.getLogger(CurationUtil.class);
 
     public static List<String> sToList(String s) {
         List<String> list = new ArrayList<>();
@@ -31,5 +45,6 @@ public class CurationUtil {
         }
         return null;
     }
+
 
 }
