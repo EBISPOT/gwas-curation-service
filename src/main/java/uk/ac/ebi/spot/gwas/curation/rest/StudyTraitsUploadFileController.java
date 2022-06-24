@@ -133,8 +133,9 @@ public class StudyTraitsUploadFileController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public HttpEntity<byte[]> uploadSampleDescriptions(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile) {
-        StudySampleDescPatchRequest studySampleDescPatchRequest = new StudySampleDescPatchRequest("","","","");
-        List<StudySampleDescPatchRequest>  sampleDescPatchRequests =  (List<StudySampleDescPatchRequest>) fileHandler.disassemble(multipartFile, StudySampleDescPatchRequest.class,studySampleDescPatchRequest);
+        StudySampleDescPatchWrapper studySampleDescPatchWrapper = new StudySampleDescPatchWrapper("","","","");
+        List<StudySampleDescPatchWrapper>  sampleDescPatchWrapperRequests =  (List<StudySampleDescPatchWrapper>) fileHandler.disassemble(multipartFile, StudySampleDescPatchWrapper.class,studySampleDescPatchWrapper);
+        List<StudySampleDescPatchRequest> sampleDescPatchRequests = sampleDescPatchWrapperRequests.stream().map(studySampleDescPatchRequestAssembler::disassembleWrapper).collect(Collectors.toList());
         byte[] result = studiesService.uploadSampleDescriptions(sampleDescPatchRequests, submissionId);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studySampleDescriptions_Extract");
