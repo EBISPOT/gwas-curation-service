@@ -84,5 +84,17 @@ public class StudySampleDescPatchRequestAssembler implements ResourceAssembler<S
     }
 
 
+    public StudySampleDescPatchRequest disassembleWrapper(StudySampleDescPatchWrapper studySampleDescPatchWrapper) {
+        StudySampleDescPatchRequest studySampleDescPatchRequest = StudySampleDescPatchRequest.builder()
+                .gcst(studySampleDescPatchWrapper.getGcst())
+                .studyTag(studySampleDescPatchWrapper.getStudyTag())
+                .initialSampleDescription(studySampleDescPatchWrapper.getInitialSampleDescription())
+                .replicateSampleDescription(studySampleDescPatchWrapper.getReplicateSampleDescription())
+                .build();
+
+        return studySampleDescPatchRequest;
+    }
+
+
 
 }
