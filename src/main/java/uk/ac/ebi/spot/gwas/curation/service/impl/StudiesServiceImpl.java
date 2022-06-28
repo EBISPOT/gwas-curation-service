@@ -170,14 +170,17 @@ public class StudiesServiceImpl implements StudiesService {
             Study study = getStudyByAccession(multiTraitStudyMappingDto.getGcst().trim(), submissionId);
             if (study == null) {
                 uploadReportWrapper.setHasErrors(true);
-                report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
+                report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
             }
             else {
                 if(!multiTraitStudyMappingDto.getStudyTag().trim().equalsIgnoreCase(study.getStudyTag())) {
                     invalidStudyTag = true;
                 }
-                String efoTraitComments = "";
+                 String efoTraitComments = "";
+                String bgEfoTraitComments = "";
                 if (!invalidStudyTag) {
+                    // --- EFO Traits ---
+
                     // Get already existing EFOs for study
                     HashSet<String> oldEfos = new HashSet<>();
                     List<String> oldEfosForReport = new ArrayList<>();
@@ -212,12 +215,54 @@ public class StudiesServiceImpl implements StudiesService {
                         }
                     }
                     study.setEfoTraits(studyEfoTraitsIds);
-                    studyRepository.save(study);
+
                     ArrayList<String> removedEfos = new ArrayList<>(oldEfos);
                     efoTraitComments = efoTraitComments.concat("\nCurrent: " + StringUtils.join(studyEfoTraitsShortForms, "|"));
                     efoTraitComments = efoTraitComments.concat("\nOld: " + StringUtils.join(oldEfosForReport, "|"));
                     efoTraitComments = efoTraitComments.concat("\nAdded: " + StringUtils.join(addedEfos, "|"));
                     efoTraitComments = efoTraitComments.concat("\nRemoved: " + StringUtils.join(removedEfos, "|"));
+
+                    // --- Background EFO traits
+
+                    // Get already existing EFOs for study
+                    HashSet<String> oldBgEfos = new HashSet<>();
+                    List<String> oldBgEfosForReport = new ArrayList<>();
+                    if (study.getBackgroundEfoTraits() != null) {
+                        for (String efoId: study.getBackgroundEfoTraits()) {
+                            Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findById(efoId);
+                            efoTraitOptional.ifPresent(efoTrait -> oldBgEfos.add(efoTrait.getShortForm()));
+                        }
+                        oldBgEfosForReport = new ArrayList<>(oldBgEfos);
+                    }
+                    HashSet<String> newBgEfos = new HashSet<>(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getBackgroundEfoShortForm().trim()).split("\\|")));
+                    ArrayList<String> addedBgEfos = new ArrayList<>();
+                    ArrayList<String> studyBgEfoTraitsIds = new ArrayList<>();
+                    ArrayList<String> studyBgEfoTraitsShortForms = new ArrayList<>();
+                    for (String shortForm : newBgEfos) {
+                        Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findByShortForm(shortForm.trim());
+                        if (efoTraitOptional.isPresent()) {
+                            studyBgEfoTraitsIds.add(efoTraitOptional.get().getId());
+                            studyBgEfoTraitsShortForms.add(efoTraitOptional.get().getShortForm());
+                            if (!oldBgEfos.contains(shortForm)) {
+                                addedBgEfos.add(shortForm);
+                            }
+                            else {
+                                oldBgEfos.remove(shortForm);
+                            }
+                        } else {
+                            uploadReportWrapper.setHasErrors(true);
+                            bgEfoTraitComments = bgEfoTraitComments.concat("\n" + shortForm + " not found in DB.");
+                        }
+                    }
+                    study.setBackgroundEfoTraits(studyBgEfoTraitsIds);
+
+                    ArrayList<String> removedBgEfos = new ArrayList<>(oldBgEfos);
+                    bgEfoTraitComments = bgEfoTraitComments.concat("\nCurrent: " + StringUtils.join(studyBgEfoTraitsShortForms, "|"));
+                    bgEfoTraitComments = bgEfoTraitComments.concat("\nOld: " + StringUtils.join(oldBgEfosForReport, "|"));
+                    bgEfoTraitComments = bgEfoTraitComments.concat("\nAdded: " + StringUtils.join(addedBgEfos, "|"));
+                    bgEfoTraitComments = bgEfoTraitComments.concat("\nRemoved: " + StringUtils.join(removedBgEfos, "|"));
+
+                    studyRepository.save(study);
 
                     Optional<DiseaseTrait> diseaseTraitOptional = diseaseTraitService.getDiseaseTraitByTraitName(multiTraitStudyMappingDto.getReportedTrait().trim());
                     String reportedTraitComments = "";
@@ -229,11 +274,11 @@ public class StudiesServiceImpl implements StudiesService {
                         uploadReportWrapper.setHasErrors(true);
                         reportedTraitComments = reportedTraitComments.concat("Reported trait " + multiTraitStudyMappingDto.getReportedTrait() + " not found in DB");
                     }
-                    report.add(new MultiTraitStudyMappingReport(study.getAccession(), study.getStudyTag(), efoTraitComments.trim(), reportedTraitComments.trim()));
+                    report.add(new MultiTraitStudyMappingReport(study.getAccession(), study.getStudyTag(), efoTraitComments.trim(), bgEfoTraitComments.trim(), reportedTraitComments.trim()));
                 }
                 else {
                     uploadReportWrapper.setHasErrors(true);
-                    report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
+                    report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
                 }
             }
         });
