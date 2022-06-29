@@ -110,6 +110,11 @@ public class StudiesController {
                 efoTraitIds = studyDto.getEfoTraits().stream().map(EfoTraitDto::getEfoTraitId).collect(Collectors.toList());
                 study.setEfoTraits(efoTraitIds);
             }
+            if (studyDto.getBackgroundEfoTraits() != null) {
+                efoTraitIds = studyDto.getBackgroundEfoTraits().stream().map(EfoTraitDto::getEfoTraitId).collect(Collectors.toList());
+                study.setBackgroundEfoTraits(efoTraitIds);
+            }
+
             Study studyUpdated = studiesService.updateStudies(study);
             return studyDtoAssembler.toResource(studyUpdated);
         } else {
