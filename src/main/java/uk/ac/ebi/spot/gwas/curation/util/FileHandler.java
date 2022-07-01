@@ -40,13 +40,13 @@ public class FileHandler {
     }
 
 
-    public  List<AnalysisDTO> serializeDiseaseTraitAnalysisFile(MultipartFile multipartFile) {
+    public  List<AnalysisRequestDTO> serializeDiseaseTraitAnalysisFile(MultipartFile multipartFile) {
         CsvMapper mapper = new CsvMapper();
         CsvSchema schema = getSchemaFromMultiPartFile(multipartFile);
-        List<AnalysisDTO> analysisDTOS;
+        List<AnalysisRequestDTO> analysisDTOS;
         try {
-            MappingIterator<AnalysisDTO> iterator =
-                    mapper.readerFor(AnalysisDTO.class).with(schema).readValues(multipartFile.getInputStream());
+            MappingIterator<AnalysisRequestDTO> iterator =
+                    mapper.readerFor(AnalysisRequestDTO.class).with(schema).readValues(multipartFile.getInputStream());
             analysisDTOS = iterator.readAll();
         } catch (IOException e) {
             throw new FileProcessingException("Could not read the file");
