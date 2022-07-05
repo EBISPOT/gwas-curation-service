@@ -169,8 +169,8 @@ public class StudiesServiceImpl implements StudiesService {
             boolean invalidStudyTag = false;
             Study study = getStudyByAccession(multiTraitStudyMappingDto.getGcst().trim(), submissionId);
             if (study == null) {
-                uploadReportWrapper.setHasErrors(true);
-                report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
+                    uploadReportWrapper.setHasErrors(true);
+                    report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
             }
             else {
                 if(!multiTraitStudyMappingDto.getStudyTag().trim().equalsIgnoreCase(study.getStudyTag())) {
@@ -274,11 +274,11 @@ public class StudiesServiceImpl implements StudiesService {
                         uploadReportWrapper.setHasErrors(true);
                         reportedTraitComments = reportedTraitComments.concat("Reported trait " + multiTraitStudyMappingDto.getReportedTrait() + " not found in DB");
                     }
-                    report.add(new MultiTraitStudyMappingReport(study.getAccession(), study.getStudyTag(), efoTraitComments.trim(), bgEfoTraitComments.trim(), reportedTraitComments.trim()));
-                }
+                        report.add(new MultiTraitStudyMappingReport(study.getAccession(), study.getStudyTag(), efoTraitComments.trim(), bgEfoTraitComments.trim(), reportedTraitComments.trim()));
+                 }
                 else {
-                    uploadReportWrapper.setHasErrors(true);
-                    report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
+                        uploadReportWrapper.setHasErrors(true);
+                        report.add(new MultiTraitStudyMappingReport(multiTraitStudyMappingDto.getGcst(), multiTraitStudyMappingDto.getStudyTag(), "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag.", "Study not found. Please check accession and tag."));
                 }
             }
         });
@@ -303,11 +303,13 @@ public class StudiesServiceImpl implements StudiesService {
         AtomicInteger replicatedSampleDescCnt = new AtomicInteger();
         StringBuilder sampleChangesBuilder = new StringBuilder();
         StringBuilder finalUploadBuilder = new StringBuilder();
+        Map<String, List<Study>> studyMap = studyRepository.findBySubmissionId(submissionId, Pageable.unpaged()).stream().collect(Collectors.groupingBy(Study::getAccession));
         studySampleDescPatchRequests.forEach((studySampleDescPatchRequest) ->
         {
             boolean invalidStudyTag = false;
             boolean sampleDescChanged = false;
-            Study study = getStudyByAccession(studySampleDescPatchRequest.getGcst(), submissionId);
+            //Study study = getStudyByAccession(studySampleDescPatchRequest.getGcst(), submissionId);
+            Study study = studyMap.get(studySampleDescPatchRequest.getGcst()).get(0);
             if(study != null && !studySampleDescPatchRequest.getStudyTag().equalsIgnoreCase(study.getStudyTag()))
                 invalidStudyTag = true;
             if(study != null && !invalidStudyTag) {
