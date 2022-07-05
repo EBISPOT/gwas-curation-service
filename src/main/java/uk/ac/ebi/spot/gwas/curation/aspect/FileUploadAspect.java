@@ -64,6 +64,16 @@ public class FileUploadAspect {
 
     }
 
+    @Pointcut("execution(* uk.ac.ebi.spot.gwas.curation.service.StudiesService.updateMultiTraitsForStudies(..)) ")
+    public void updateMultiTraitsForStudies() {
+
+    }
+
+    @Pointcut("execution(* uk.ac.ebi.spot.gwas.curation.service.StudiesService.uploadSampleDescriptions(..)) ")
+    public void uploadSampleDescriptions() {
+
+    }
+
 
     @SuppressWarnings("unchecked")
     @Around("disassembleDiseaseTraitsAnalysis()")
@@ -139,6 +149,25 @@ public class FileUploadAspect {
         long startTime = timeNow();
         Object object= joinPoint.proceed();
         log.info("Time taken for Similarity Analysis is ->"+(timeNow() - startTime));
+        return object;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Around("updateMultiTraitsForStudies()")
+    public Object updateMultiTraitsForStudiesResponseTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        long startTime = timeNow();
+        Object object= joinPoint.proceed();
+        log.info("Time taken for updateMultiTraitsForStudies is ->"+(timeNow() - startTime));
+        return object;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Around("uploadSampleDescriptions()")
+    public Object uploadSampleDescriptionsResponseTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        long startTime = timeNow();
+        Object object= joinPoint.proceed();
+        log.info("Time taken for uploadSampleDescriptions is ->"+(timeNow() - startTime));
         return object;
     }
 
