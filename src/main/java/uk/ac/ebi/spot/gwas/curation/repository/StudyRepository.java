@@ -20,6 +20,8 @@ public interface StudyRepository extends MongoRepository<Study, String> {
 
     Page<Study> findBySubmissionId(String submissionId, Pageable page);
 
+    Stream<Study> findBySubmissionId(String submissionId);
+
     List<Study> findByDiseaseTrait(String traitId);
 
     Stream<Study> findByEfoTraitsContains(String traitId);
