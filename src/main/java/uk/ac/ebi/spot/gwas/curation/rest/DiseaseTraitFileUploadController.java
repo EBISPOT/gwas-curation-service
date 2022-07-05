@@ -79,9 +79,8 @@ public class DiseaseTraitFileUploadController {
             throw new FileProcessingException("File not found");
         }
         String analysisId = UUID.randomUUID().toString();
-        List<AnalysisRequestDTO> analysisDTOS = fileHandler.serializeDiseaseTraitAnalysisFile(multipartFile);
+        List<AnalysisDTO> analysisDTOS = fileHandler.serializeDiseaseTraitAnalysisFile(multipartFile);
         log.info("{} disease traits were ingested for analysis", analysisDTOS.size());
-        //AnalysisCacheDto  analysisCacheDto = new AnalysisCacheDto(analysisId,DepositionCurationConstants.ANALYSIS_STATUS_PROCESSING,null);
         AnalysisCacheDto  analysisCacheDto = diseaseTraitService.similaritySearch(analysisDTOS, analysisId, 50);
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
                 ControllerLinkBuilder.methodOn(DiseaseTraitFileUploadController.class).similaritySearchAnalysisCsvDownload(analysisId));
@@ -99,7 +98,7 @@ public class DiseaseTraitFileUploadController {
         log.info("Retrieving Cached Analysis with ID  : {}", analysisId);
 
         double threshold = 50.0;
-        List<AnalysisRequestDTO> analysisDTO = new ArrayList<>();
+        List<AnalysisDTO> analysisDTO = new ArrayList<>();
         AnalysisCacheDto cache = diseaseTraitService.similaritySearch(analysisDTO, analysisId, threshold);
         List<AnalysisDTO> analysisDTOs = cache.getAnalysisResult();
         analysisDTOs.sort(Comparator.comparingDouble(AnalysisDTO::getDegree).reversed());
@@ -107,7 +106,7 @@ public class DiseaseTraitFileUploadController {
         //log.info(result);
 
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=analysis.tsv");
+        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=analysis.csv");
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
 
