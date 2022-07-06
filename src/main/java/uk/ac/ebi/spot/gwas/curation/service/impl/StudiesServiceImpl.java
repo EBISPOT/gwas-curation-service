@@ -1,8 +1,5 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
-import com.mongodb.MongoClient;
-import com.mongodb.bulk.BulkWriteResult;
-import com.mongodb.client.MongoDatabase;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,7 +126,7 @@ public class StudiesServiceImpl implements StudiesService {
                 if(invalidStudyTag)
                     report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study tag is not matched with DB entry "+study.getStudyTag(), studyPatchRequest.getGcst()));
                 else
-                report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study not present in DB", studyPatchRequest.getGcst()));
+                    report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study not present in DB", studyPatchRequest.getGcst()));
             }
         });
         return report;
@@ -165,7 +162,7 @@ public class StudiesServiceImpl implements StudiesService {
                 if(invalidStudyTag)
                     report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study tag is not matched with DB entry "+study.getStudyTag(), efoTraitStudyMappingDto.getGcst()));
                 else
-                report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study not present in DB", efoTraitStudyMappingDto.getGcst()));
+                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study not present in DB", efoTraitStudyMappingDto.getGcst()));
             }
         }));
         return report;
@@ -174,20 +171,21 @@ public class StudiesServiceImpl implements StudiesService {
     @Override
     public UploadReportWrapper updateMultiTraitsForStudies(List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos, String submissionId) {
         Set<String> shortForms = new HashSet<>();
-        Set<String> bgShortForms = new HashSet<>();
+        Set<String> backgroundShortForms = new HashSet<>();
         Set<String> reportedTraits = new HashSet<>();
         multiTraitStudyMappingDtos.forEach(multiTraitStudyMappingDto -> {
             shortForms.addAll(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getEfoTraitShortForm()).split("\\|")));
-            bgShortForms.addAll(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getBackgroundEfoShortForm()).split("\\|")));
+            backgroundShortForms.addAll(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getBackgroundEfoShortForm()).split("\\|")));
             reportedTraits.add(multiTraitStudyMappingDto.getReportedTrait());
         });
         Map<String, EfoTrait> retrievedEfoTraits = efoTraitRepository.findByShortFormIn(shortForms).collect(Collectors.toMap(EfoTrait::getShortForm, e -> e));
-        Map<String, EfoTrait> retrievedBgEfoTraits = efoTraitRepository.findByShortFormIn(bgShortForms).collect(Collectors.toMap(EfoTrait::getShortForm, e -> e));
+        Map<String, EfoTrait> retrievedBackgroundEfoTraits = efoTraitRepository.findByShortFormIn(backgroundShortForms).collect(Collectors.toMap(EfoTrait::getShortForm, e -> e));
         Map<String, DiseaseTrait> retrievedReportedTraits = diseaseTraitRepository.findByTraitIgnoreCaseIn(reportedTraits).collect(Collectors.toMap(DiseaseTrait::getTrait, d -> d));
         Map<String, Study> studies = studyRepository.findBySubmissionId(submissionId).collect(Collectors.toMap(Study::getAccession, s -> s));
         Map<String, Study> studiesToSave = new HashMap<>();
         List<MultiTraitStudyMappingReport> report = new ArrayList<>();
         UploadReportWrapper uploadReportWrapper = new UploadReportWrapper();
+
         multiTraitStudyMappingDtos.forEach(multiTraitStudyMappingDto -> {
             boolean invalidStudyTag = false;
             Study study = studies.get(multiTraitStudyMappingDto.getGcst().trim());
@@ -199,19 +197,17 @@ public class StudiesServiceImpl implements StudiesService {
                 if(!multiTraitStudyMappingDto.getStudyTag().trim().equalsIgnoreCase(study.getStudyTag())) {
                     invalidStudyTag = true;
                 }
-                String efoTraitComments = "";
-                String bgEfoTraitComments = "";
+
                 if (!invalidStudyTag) {
-                    HashSet<String> newEfos = new HashSet<>(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getEfoTraitShortForm().trim()).split("\\|")));
+                    String efoTraitComments = "";
+                    HashSet<String> newStudyEfos = new HashSet<>(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getEfoTraitShortForm().trim()).split("\\|")));
                     ArrayList<String> studyEfoTraitsIds = new ArrayList<>();
                     ArrayList<String> studyEfoTraitsShortForms = new ArrayList<>();
-                    for (String shortForm : newEfos) {
-                        Optional<EfoTrait> efoTraitOptional;
-                        efoTraitOptional = Optional.ofNullable(retrievedEfoTraits.get(shortForm.trim()));
-                        if (efoTraitOptional.isPresent()) {
-                            retrievedEfoTraits.put(efoTraitOptional.get().getId(), efoTraitOptional.get());
-                            studyEfoTraitsIds.add(efoTraitOptional.get().getId());
-                            studyEfoTraitsShortForms.add(efoTraitOptional.get().getShortForm());
+                    for (String shortForm : newStudyEfos) {
+                        if (retrievedEfoTraits.containsKey(shortForm.trim())) {
+                            EfoTrait efoTrait = retrievedEfoTraits.get(shortForm.trim());
+                            studyEfoTraitsIds.add(efoTrait.getId());
+                            studyEfoTraitsShortForms.add(efoTrait.getShortForm());
                         } else {
                             uploadReportWrapper.setHasErrors(true);
                             efoTraitComments = efoTraitComments.concat("\n" + shortForm + " not found in DB.");
@@ -220,36 +216,36 @@ public class StudiesServiceImpl implements StudiesService {
                     study.setEfoTraits(studyEfoTraitsIds);
                     efoTraitComments = efoTraitComments.concat("\nCurrent: " + StringUtils.join(studyEfoTraitsShortForms, "|"));
 
-                    HashSet<String> newBgEfos = new HashSet<>(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getBackgroundEfoShortForm().trim()).split("\\|")));
-                    ArrayList<String> studyBgEfoTraitsIds = new ArrayList<>();
-                    ArrayList<String> studyBgEfoTraitsShortForms = new ArrayList<>();
-                    for (String shortForm : newBgEfos) {
-                        Optional<EfoTrait> bgEfoTraitOptional;
-                        bgEfoTraitOptional = Optional.ofNullable(retrievedBgEfoTraits.get(shortForm.trim()));
-                        if (bgEfoTraitOptional.isPresent()) {
-                            studyBgEfoTraitsIds.add(bgEfoTraitOptional.get().getId());
-                            studyBgEfoTraitsShortForms.add(bgEfoTraitOptional.get().getShortForm());
+                    String backgroundEfoTraitComments = "";
+                    HashSet<String> newBackgroundStudyEfos = new HashSet<>(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getBackgroundEfoShortForm().trim()).split("\\|")));
+                    ArrayList<String> studyBackgroundEfoTraitsIds = new ArrayList<>();
+                    ArrayList<String> studyBackgroundEfoTraitsShortForms = new ArrayList<>();
+                    for (String shortForm : newBackgroundStudyEfos) {
+                        if (retrievedBackgroundEfoTraits.containsKey(shortForm.trim())) {
+                            EfoTrait efoTrait = retrievedBackgroundEfoTraits.get(shortForm.trim());
+                            studyBackgroundEfoTraitsIds.add(efoTrait.getId());
+                            studyBackgroundEfoTraitsShortForms.add(efoTrait.getShortForm());
                         } else {
                             uploadReportWrapper.setHasErrors(true);
-                            bgEfoTraitComments = bgEfoTraitComments.concat("\n" + shortForm + " not found in DB.");
+                            backgroundEfoTraitComments = backgroundEfoTraitComments.concat("\n" + shortForm + " not found in DB.");
                         }
                     }
-                    study.setBackgroundEfoTraits(studyBgEfoTraitsIds);
-                    bgEfoTraitComments = bgEfoTraitComments.concat("\nCurrent: " + StringUtils.join(studyBgEfoTraitsShortForms, "|"));
+                    study.setBackgroundEfoTraits(studyBackgroundEfoTraitsIds);
+                    backgroundEfoTraitComments = backgroundEfoTraitComments.concat("\nCurrent: " + StringUtils.join(studyBackgroundEfoTraitsShortForms, "|"));
+
                     studiesToSave.put(study.getId(), study);
-                    Optional<DiseaseTrait> diseaseTraitOptional;
-                    diseaseTraitOptional = Optional.ofNullable(retrievedReportedTraits.get(multiTraitStudyMappingDto.getReportedTrait().trim()));
 
                     String reportedTraitComments = "";
-                    if (diseaseTraitOptional.isPresent()) {
-                        study.setDiseaseTrait(diseaseTraitOptional.get().getId());
+                    if (retrievedReportedTraits.containsKey(multiTraitStudyMappingDto.getReportedTrait().trim())) {
+                        DiseaseTrait diseaseTrait = retrievedReportedTraits.get(multiTraitStudyMappingDto.getReportedTrait().trim());
+                        study.setDiseaseTrait(diseaseTrait.getId());
                         studiesToSave.put(study.getId(), study);
-                        reportedTraitComments = reportedTraitComments.concat("Reported trait set to: " + diseaseTraitOptional.get().getTrait());
+                        reportedTraitComments = reportedTraitComments.concat("Reported trait set to: " + diseaseTrait.getTrait());
                     } else {
                         uploadReportWrapper.setHasErrors(true);
                         reportedTraitComments = reportedTraitComments.concat("Reported trait " + multiTraitStudyMappingDto.getReportedTrait() + " not found in DB");
                     }
-                    report.add(new MultiTraitStudyMappingReport(study.getAccession(), study.getStudyTag(), efoTraitComments.trim(), bgEfoTraitComments.trim(), reportedTraitComments.trim()));
+                    report.add(new MultiTraitStudyMappingReport(study.getAccession(), study.getStudyTag(), efoTraitComments.trim(), backgroundEfoTraitComments.trim(), reportedTraitComments.trim()));
                 }
                 else {
                     uploadReportWrapper.setHasErrors(true);
@@ -274,11 +270,11 @@ public class StudiesServiceImpl implements StudiesService {
     @Override
     public List<StudySampleDescPatchRequest> updateSampleDescription(List<StudySampleDescPatchRequest> studySampleDescPatchRequests, String submissionId) {
         return studySampleDescPatchRequests.stream().map((studySampleDescPatchRequest) ->
-                     Optional.ofNullable(getStudyByAccession(studySampleDescPatchRequest.getGcst().trim(), submissionId))
-                            .map(study -> studySampleDescPatchRequestAssembler.disassemble(studySampleDescPatchRequest, study.getId()))
-                            .map(this::updateStudies)
-                            .map(studySampleDescPatchRequestAssembler::assemble).orElse(null)
-                ).collect(Collectors.toList());
+                Optional.ofNullable(getStudyByAccession(studySampleDescPatchRequest.getGcst().trim(), submissionId))
+                        .map(study -> studySampleDescPatchRequestAssembler.disassemble(studySampleDescPatchRequest, study.getId()))
+                        .map(this::updateStudies)
+                        .map(studySampleDescPatchRequestAssembler::assemble).orElse(null)
+        ).collect(Collectors.toList());
 
     }
 
