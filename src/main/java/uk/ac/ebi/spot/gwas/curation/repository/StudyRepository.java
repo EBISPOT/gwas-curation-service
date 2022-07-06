@@ -14,6 +14,8 @@ public interface StudyRepository extends MongoRepository<Study, String> {
 
     Stream<Study> readByIdIn(List<String> ids);
 
+    Stream<Study> findBySubmissionId(String submissionId);
+
     Optional<Study> findByAccession(String accession);
 
     Optional<Study> findByAccessionAndSubmissionId(String accession, String submissionId);

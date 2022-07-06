@@ -98,7 +98,7 @@ public class StudyTraitsUploadFileController {
             throw new FileProcessingException("File not found");
         }
         userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        MultiTraitStudyMappingDto multiTraitStudyMappingDto = new MultiTraitStudyMappingDto("","","","", "");
+        MultiTraitStudyMappingDto multiTraitStudyMappingDto = new MultiTraitStudyMappingDto("","","","");
         List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = (List<MultiTraitStudyMappingDto>) fileHandler.disassemble(multipartFile, MultiTraitStudyMappingDto.class,  multiTraitStudyMappingDto);
         //List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForMultiTraitMapping(multipartFile);
         UploadReportWrapper traitUploadReport = studiesService.updateMultiTraitsForStudies(multiTraitStudyMappingDtos, submissionId);

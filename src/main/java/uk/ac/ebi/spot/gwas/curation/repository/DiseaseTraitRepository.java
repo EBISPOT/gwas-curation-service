@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public interface DiseaseTraitRepository extends MongoRepository<DiseaseTrait, String> {
 
@@ -15,4 +17,5 @@ public interface DiseaseTraitRepository extends MongoRepository<DiseaseTrait, St
 
     Optional<DiseaseTrait> findByTraitIgnoreCase(String trait);
 
+    Stream<DiseaseTrait> findByTraitIgnoreCaseIn(Set<String> traits);
 }
