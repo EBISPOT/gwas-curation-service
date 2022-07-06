@@ -126,7 +126,7 @@ public class StudiesServiceImpl implements StudiesService {
                 if(invalidStudyTag)
                     report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study tag is not matched with DB entry "+study.getStudyTag(), studyPatchRequest.getGcst()));
                 else
-                report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study not present in DB", studyPatchRequest.getGcst()));
+                    report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study not present in DB", studyPatchRequest.getGcst()));
             }
         });
         return report;
@@ -162,7 +162,7 @@ public class StudiesServiceImpl implements StudiesService {
                 if(invalidStudyTag)
                     report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study tag is not matched with DB entry "+study.getStudyTag(), efoTraitStudyMappingDto.getGcst()));
                 else
-                report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study not present in DB", efoTraitStudyMappingDto.getGcst()));
+                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study not present in DB", efoTraitStudyMappingDto.getGcst()));
             }
         }));
         return report;
@@ -182,6 +182,7 @@ public class StudiesServiceImpl implements StudiesService {
         Map<String, Study> studiesToSave = new HashMap<>();
         List<MultiTraitStudyMappingReport> report = new ArrayList<>();
         UploadReportWrapper uploadReportWrapper = new UploadReportWrapper();
+
         multiTraitStudyMappingDtos.forEach(multiTraitStudyMappingDto -> {
             boolean invalidStudyTag = false;
             Study study = studies.get(multiTraitStudyMappingDto.getGcst().trim());
@@ -193,15 +194,15 @@ public class StudiesServiceImpl implements StudiesService {
                 if(!multiTraitStudyMappingDto.getStudyTag().trim().equalsIgnoreCase(study.getStudyTag())) {
                     invalidStudyTag = true;
                 }
-                String efoTraitComments = "";
+
                 if (!invalidStudyTag) {
-                    HashSet<String> newEfos = new HashSet<>(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getEfoTraitShortForm().trim()).split("\\|")));
+                    String efoTraitComments = "";
+                    HashSet<String> newStudyEfos = new HashSet<>(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getEfoTraitShortForm().trim()).split("\\|")));
                     ArrayList<String> studyEfoTraitsIds = new ArrayList<>();
                     ArrayList<String> studyEfoTraitsShortForms = new ArrayList<>();
-                    for (String shortForm : newEfos) {
+                    for (String shortForm : newStudyEfos) {
                         if (retrievedEfoTraits.containsKey(shortForm.trim())) {
                             EfoTrait efoTrait = retrievedEfoTraits.get(shortForm.trim());
-                            retrievedEfoTraits.put(efoTrait.getId(), efoTrait);
                             studyEfoTraitsIds.add(efoTrait.getId());
                             studyEfoTraitsShortForms.add(efoTrait.getShortForm());
                         } else {
@@ -211,6 +212,8 @@ public class StudiesServiceImpl implements StudiesService {
                     }
                     study.setEfoTraits(studyEfoTraitsIds);
                     efoTraitComments = efoTraitComments.concat("\nCurrent: " + StringUtils.join(studyEfoTraitsShortForms, "|"));
+
+                    studiesToSave.put(study.getId(), study);
 
                     String reportedTraitComments = "";
                     if (retrievedReportedTraits.containsKey(multiTraitStudyMappingDto.getReportedTrait().trim())) {
@@ -246,11 +249,11 @@ public class StudiesServiceImpl implements StudiesService {
     @Override
     public List<StudySampleDescPatchRequest> updateSampleDescription(List<StudySampleDescPatchRequest> studySampleDescPatchRequests, String submissionId) {
         return studySampleDescPatchRequests.stream().map((studySampleDescPatchRequest) ->
-                     Optional.ofNullable(getStudyByAccession(studySampleDescPatchRequest.getGcst().trim(), submissionId))
-                            .map(study -> studySampleDescPatchRequestAssembler.disassemble(studySampleDescPatchRequest, study.getId()))
-                            .map(this::updateStudies)
-                            .map(studySampleDescPatchRequestAssembler::assemble).orElse(null)
-                ).collect(Collectors.toList());
+                Optional.ofNullable(getStudyByAccession(studySampleDescPatchRequest.getGcst().trim(), submissionId))
+                        .map(study -> studySampleDescPatchRequestAssembler.disassemble(studySampleDescPatchRequest, study.getId()))
+                        .map(this::updateStudies)
+                        .map(studySampleDescPatchRequestAssembler::assemble).orElse(null)
+        ).collect(Collectors.toList());
 
     }
 
