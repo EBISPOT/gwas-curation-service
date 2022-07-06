@@ -45,50 +45,6 @@ public class StudyTraitsUploadFileController {
     @Autowired
     FileHandler fileHandler;
 
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_DISEASE_TRAITS + "/files",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-            produces = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public HttpEntity<byte[]> uploadDiseaseTraitsStudyMappings(@RequestParam MultipartFile multipartFile,@PathVariable String submissionId,
-                                                                       HttpServletRequest request) {
-       /* if (result.hasErrors()) {
-            throw   new FileValidationException(result);
-        }*/
-        if(multipartFile.isEmpty()){
-            throw new FileProcessingException("File not found");
-        }
-        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        //List<StudyPatchRequest> studyPatchRequests = studyPatchRequestAssembler.disassemble(multipartFile);
-        StudyPatchRequest studyPatchRequest = new StudyPatchRequest("", "", "");
-        List<StudyPatchRequest>  studyPatchRequests =  (List<StudyPatchRequest>) fileHandler.disassemble(multipartFile, StudyPatchRequest.class, studyPatchRequest);
-        List<TraitUploadReport> traitUploadReport = studiesService.updateTraitsForStudies(studyPatchRequests, submissionId );
-        byte[] result = fileHandler.serializePojoToTsv(traitUploadReport);
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studyTraitUploadReports.tsv");
-        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
-        return new HttpEntity<>(result, responseHeaders);
-    }
-
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_EFO_TRAITS + "/files")
-    public HttpEntity<byte[]> uploadEfoStudyMapping(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile, HttpServletRequest request) {
-
-        if(multipartFile.isEmpty()){
-            throw new FileProcessingException("File not found");
-        }
-        userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        //List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForEfoMapping(multipartFile);
-        EfoTraitStudyMappingDto efoTraitStudyMappingDto = new EfoTraitStudyMappingDto("","","");
-        List<EfoTraitStudyMappingDto>  efoTraitStudyMappingDtos =  (List<EfoTraitStudyMappingDto>) fileHandler.disassemble(multipartFile, EfoTraitStudyMappingDto.class,efoTraitStudyMappingDto);
-        List<TraitUploadReport> traitUploadReport = studiesService.updateEfoTraitsForStudies(efoTraitStudyMappingDtos, submissionId);
-        byte[] result = fileHandler.serializePojoToTsv(traitUploadReport);
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studyTraitUploadReports.tsv");
-        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
-        return new HttpEntity<>(result, responseHeaders);
-    }
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_MULTI_TRAITS + "/files")
