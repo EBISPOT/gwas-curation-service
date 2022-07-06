@@ -15,6 +15,7 @@ import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisDTO;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisRequestDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitWrapperDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
@@ -58,6 +59,22 @@ public class FileUploadAspect {
 
     }
 
+    @Pointcut("execution(* uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService.similaritySearch(..)) ")
+    public void similaritySearch(){
+
+    }
+
+    @Pointcut("execution(* uk.ac.ebi.spot.gwas.curation.service.StudiesService.updateMultiTraitsForStudies(..)) ")
+    public void updateMultiTraitsForStudies() {
+
+    }
+
+    @Pointcut("execution(* uk.ac.ebi.spot.gwas.curation.service.StudiesService.uploadSampleDescriptions(..)) ")
+    public void uploadSampleDescriptions() {
+
+    }
+
+
     @SuppressWarnings("unchecked")
     @Around("disassembleDiseaseTraitsAnalysis()")
     public Object disassembleMultipartFileTraitsAnalysis(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -65,7 +82,7 @@ public class FileUploadAspect {
         List<AnalysisDTO> analysisDTOS;
         MultipartFile  multipartFile = (MultipartFile) args.get(0);
         validateFileExtension(multipartFile);
-        AnalysisDTO obj = new AnalysisDTO("","",0.0);
+        AnalysisRequestDTO obj = new AnalysisRequestDTO("");
         String validationSepMessage = parseFileForSeparators(multipartFile.getInputStream(), "\t",  obj);
         log.info("validationSepMessage -> "+ validationSepMessage);
         if(!validationSepMessage.equals("Done"))
@@ -119,12 +136,41 @@ public class FileUploadAspect {
         String validationSepMessage = parseFileForSeparators(multipartFile.getInputStream(), "\t",  obj);
         log.info("validationSepMessage -> "+ validationSepMessage);
         if(!validationSepMessage.equals("Done"))
-            throw new FileProcessingException(validationSepMessage);
+            throw   new FileProcessingException(validationSepMessage);
         else
           objects =  (List<T>)  joinPoint.proceed();
 
         return objects;
     }
+
+    @SuppressWarnings("unchecked")
+    @Around("similaritySearch()")
+    public Object similaritySearchResponseTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        long startTime = timeNow();
+        Object object= joinPoint.proceed();
+        log.info("Time taken for Similarity Analysis is ->"+(timeNow() - startTime));
+        return object;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Around("updateMultiTraitsForStudies()")
+    public Object updateMultiTraitsForStudiesResponseTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        long startTime = timeNow();
+        Object object= joinPoint.proceed();
+        log.info("Time taken for updateMultiTraitsForStudies is ->"+(timeNow() - startTime));
+        return object;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Around("uploadSampleDescriptions()")
+    public Object uploadSampleDescriptionsResponseTime(ProceedingJoinPoint joinPoint) throws Throwable {
+        long startTime = timeNow();
+        Object object= joinPoint.proceed();
+        log.info("Time taken for uploadSampleDescriptions is ->"+(timeNow() - startTime));
+        return object;
+    }
+
 
 
     public  String parseFileForSeparators(InputStream is, String sep, Object T) {
@@ -186,6 +232,10 @@ public class FileUploadAspect {
         if (!FilenameUtils.getExtension(multipartFile.getOriginalFilename()).equals("tsv")) {
             throw new FileProcessingException("File Uploaded should be of tsv format");
         }
+    }
+
+    private long timeNow(){
+        return System.currentTimeMillis();
     }
 
 }

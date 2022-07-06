@@ -102,71 +102,6 @@ public class StudiesServiceImpl implements StudiesService {
         return null;
     }
 
-    @Override
-    public List<TraitUploadReport> updateTraitsForStudies(List<StudyPatchRequest> studyPatchRequests, String submissionId) {
-        List<TraitUploadReport> report = new ArrayList<>();
-        studyPatchRequests.forEach((studyPatchRequest) -> {
-            boolean invalidStudyTag = false;
-            Study study = getStudyByAccession(studyPatchRequest.getGcst().trim(), submissionId);
-            if(study != null && !study.getStudyTag().equalsIgnoreCase(studyPatchRequest.getStudyTag().trim())){
-                invalidStudyTag = true;
-            }
-            Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTraitByTraitName(studyPatchRequest.getCuratedReportedTrait().trim());
-            if(study != null && !invalidStudyTag) {
-                if (optionalDiseaseTrait.isPresent()) {
-                    DiseaseTrait diseaseTrait = optionalDiseaseTrait.get();
-
-                    study.setDiseaseTrait(diseaseTrait.getId());
-                    studyRepository.save(study);
-                    report.add(new TraitUploadReport(diseaseTrait.getTrait(), "Study for accession " + studyPatchRequest.getGcst() + " successfully Updated with trait : " + studyPatchRequest.getCuratedReportedTrait(), studyPatchRequest.getGcst()));
-                }else {
-                    report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " failed with trait : " + studyPatchRequest.getCuratedReportedTrait()+" not present in DB", studyPatchRequest.getGcst()));
-                }
-            } else {
-                if(invalidStudyTag)
-                    report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study tag is not matched with DB entry "+study.getStudyTag(), studyPatchRequest.getGcst()));
-                else
-                    report.add(new TraitUploadReport(studyPatchRequest.getCuratedReportedTrait(), "Study for accession " + studyPatchRequest.getGcst() + " with trait : " + studyPatchRequest.getCuratedReportedTrait()+" failed as study not present in DB", studyPatchRequest.getGcst()));
-            }
-        });
-        return report;
-    }
-
-    @Override
-    public List<TraitUploadReport> updateEfoTraitsForStudies(List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos, String submissionId) {
-
-        List<TraitUploadReport> report = new ArrayList<>();
-        efoTraitStudyMappingDtos.forEach((efoTraitStudyMappingDto -> {
-            boolean invalidStudyTag = false;
-            Study study = getStudyByAccession(efoTraitStudyMappingDto.getGcst().trim(), submissionId);
-            if(!efoTraitStudyMappingDto.getStudyTag().trim().equalsIgnoreCase(study.getStudyTag()))
-                invalidStudyTag = true;
-            Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findByShortForm(efoTraitStudyMappingDto.getShortForm().trim());
-            if(study != null && !invalidStudyTag) {
-                if (efoTraitOptional.isPresent()) {
-                    EfoTrait efoTrait = efoTraitOptional.get();
-                    List<String> traitsList = study.getEfoTraits();
-                    if (traitsList == null) {
-                        traitsList = new ArrayList<>();
-                    }
-                    if (!traitsList.contains(efoTrait.getId())) {
-                        traitsList.add(efoTrait.getId());
-                    }
-                    study.setEfoTraits(traitsList);
-                    studyRepository.save(study);
-                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " successfully updated with trait : " + efoTraitStudyMappingDto.getShortForm(), efoTraitStudyMappingDto.getGcst()));
-                } else {
-                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " failed as trait : " + efoTraitStudyMappingDto.getShortForm()+" not present in DB", efoTraitStudyMappingDto.getGcst()));
-                }
-            } else {
-                if(invalidStudyTag)
-                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study tag is not matched with DB entry "+study.getStudyTag(), efoTraitStudyMappingDto.getGcst()));
-                else
-                    report.add(new TraitUploadReport(efoTraitStudyMappingDto.getShortForm(), "Study for accession " + efoTraitStudyMappingDto.getGcst() + " with trait : " + efoTraitStudyMappingDto.getShortForm()+" failed as study not present in DB", efoTraitStudyMappingDto.getGcst()));
-            }
-        }));
-        return report;
-    }
 
     @Override
     public UploadReportWrapper updateMultiTraitsForStudies(List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos, String submissionId) {
@@ -246,6 +181,7 @@ public class StudiesServiceImpl implements StudiesService {
         return uploadReportWrapper;
     }
 
+
     @Override
     public List<StudySampleDescPatchRequest> updateSampleDescription(List<StudySampleDescPatchRequest> studySampleDescPatchRequests, String submissionId) {
         return studySampleDescPatchRequests.stream().map((studySampleDescPatchRequest) ->
@@ -263,11 +199,13 @@ public class StudiesServiceImpl implements StudiesService {
         AtomicInteger replicatedSampleDescCnt = new AtomicInteger();
         StringBuilder sampleChangesBuilder = new StringBuilder();
         StringBuilder finalUploadBuilder = new StringBuilder();
+        Map<String, Study> studyMap = studyRepository.findBySubmissionId(submissionId).collect(Collectors.toMap(Study::getAccession, s -> s));
         studySampleDescPatchRequests.forEach((studySampleDescPatchRequest) ->
         {
             boolean invalidStudyTag = false;
             boolean sampleDescChanged = false;
-            Study study = getStudyByAccession(studySampleDescPatchRequest.getGcst(), submissionId);
+            //Study study = getStudyByAccession(studySampleDescPatchRequest.getGcst(), submissionId);
+            Study study = studyMap.get(studySampleDescPatchRequest.getGcst());
             if(study != null && !studySampleDescPatchRequest.getStudyTag().equalsIgnoreCase(study.getStudyTag()))
                 invalidStudyTag = true;
             if(study != null && !invalidStudyTag) {

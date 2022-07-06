@@ -27,4 +27,6 @@ public class DepositionCurationConstants {
     public static final String PARAM_SS_STATUS = "ssStatus";
     public static final String PARAM_SUBMISSION_STATUS = "submissionStatus";
     public static final String PARAM_LOCK_STATUS = "lockStatus";
+    public static final String ANALYSIS_STATUS_PROCESSING = "PROCESSING";
+    public static final String ANALYSIS_STATUS_DONE = "DONE";
 }

@@ -20,7 +20,7 @@ public interface DiseaseTraitService {
 
     public DiseaseTrait saveDiseaseTrait(String traitId, DiseaseTraitDto diseaseTraitDto, User user);
 
-    public AnalysisCacheDto similaritySearch(List<AnalysisDTO> diseaseTraitAnalysisDTOS, String analysisId, double threshold);
+    public AnalysisCacheDto similaritySearch(List<AnalysisRequestDTO> diseaseTraitAnalysisDTOS, String analysisId, double threshold);
 
     public DiseaseTrait updateDiseaseTrait(DiseaseTrait diseaseTrait);
 

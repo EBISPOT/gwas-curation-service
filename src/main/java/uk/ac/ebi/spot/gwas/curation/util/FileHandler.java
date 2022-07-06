@@ -40,13 +40,13 @@ public class FileHandler {
     }
 
 
-    public  List<AnalysisDTO> serializeDiseaseTraitAnalysisFile(MultipartFile multipartFile) {
+    public  List<AnalysisRequestDTO> serializeDiseaseTraitAnalysisFile(MultipartFile multipartFile) {
         CsvMapper mapper = new CsvMapper();
         CsvSchema schema = getSchemaFromMultiPartFile(multipartFile);
-        List<AnalysisDTO> analysisDTOS;
+        List<AnalysisRequestDTO> analysisDTOS;
         try {
-            MappingIterator<AnalysisDTO> iterator =
-                    mapper.readerFor(AnalysisDTO.class).with(schema).readValues(multipartFile.getInputStream());
+            MappingIterator<AnalysisRequestDTO> iterator =
+                    mapper.readerFor(AnalysisRequestDTO.class).with(schema).readValues(multipartFile.getInputStream());
             analysisDTOS = iterator.readAll();
         } catch (IOException e) {
             throw new FileProcessingException("Could not read the file");
@@ -111,7 +111,9 @@ public class FileHandler {
             return new String(serializePojoToTsv(efoTraitStudyMappingDtos));
         } else if (fileUploadType.equals(FileUploadType.STUDY_MULTI_TRAIT_FILE)) {
             List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = new ArrayList<>();
-            multiTraitStudyMappingDtos.add(MultiTraitStudyMappingDto.builder().gcst("GCSTxxxxxxxx").studyTag("example_tag").efoTraitShortForm("EFO_111 | EFO_222 | EFO_333").reportedTrait("Example_Trait").build());
+            multiTraitStudyMappingDtos.add(MultiTraitStudyMappingDto.builder().gcst("GCSTxxxxxxxx").studyTag("example_tag").efoTraitShortForm("EFO_111 | EFO_222 | EFO_333")
+                    //.backgroundEfoShortForm("EFO_444 | EFO_555 | EFO_666")
+                    .reportedTrait("Example_Trait").build());
             return new String(serializePojoToTsv(multiTraitStudyMappingDtos));
         }
         else {
