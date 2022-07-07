@@ -4,47 +4,49 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.constants.FileUploadType;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
-import uk.ac.ebi.spot.gwas.deposition.exception.FileValidationException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Component
 public class FileHandler {
 
-    private FileHandler() {
-        // Hide implicit default constructor
-    }
+    private static final Logger log = LoggerFactory.getLogger(FileHandler.class);
+
 
     public static CsvSchema getSchemaFromMultiPartFile(MultipartFile multipartFile){
         CsvSchema.Builder builder = CsvSchema.builder();
         CsvSchema schema = builder.build().withHeader();
-        if (FilenameUtils.getExtension(multipartFile.getOriginalFilename()).equals("tsv")) {
+        if (FilenameUtils.getExtension(multipartFile.getOriginalFilename()).equals("tsv"))
             schema = schema.withColumnSeparator('\t');
-        }
         return schema;
     }
 
 
-    public  List<AnalysisDTO> serializeDiseaseTraitAnalysisFile(MultipartFile multipartFile) {
+    public  List<AnalysisRequestDTO> serializeDiseaseTraitAnalysisFile(MultipartFile multipartFile) {
         CsvMapper mapper = new CsvMapper();
         CsvSchema schema = getSchemaFromMultiPartFile(multipartFile);
-        List<AnalysisDTO> analysisDTOS;
+        List<AnalysisRequestDTO> analysisDTOS;
         try {
-            InputStream inputStream = multipartFile.getInputStream();
-            MappingIterator<AnalysisDTO> iterator =
-                    mapper.readerFor(AnalysisDTO.class).with(schema).readValues(inputStream);
+            MappingIterator<AnalysisRequestDTO> iterator =
+                    mapper.readerFor(AnalysisRequestDTO.class).with(schema).readValues(multipartFile.getInputStream());
             analysisDTOS = iterator.readAll();
         } catch (IOException e) {
             throw new FileProcessingException("Could not read the file");
@@ -97,7 +99,7 @@ public class FileHandler {
             return new String(serializePojoToTsv(diseaseTraitDtos));
         } else if (fileUploadType.equals(FileUploadType.STUDY_TRAIT_FILE)){
             List<StudyPatchRequest> studyPatchRequestList = new ArrayList<>();
-            studyPatchRequestList.add(StudyPatchRequest.builder().gcst("GCSTxxxxxxxx").curatedReportedTrait("Example_Trait").studyTag("example_tag").build());
+            studyPatchRequestList.add(StudyPatchRequest.builder().studyTag("example_tag").gcst("GCSTxxxxxxxx").curatedReportedTrait("Example_Trait").build());
             return new String(serializePojoToTsv(studyPatchRequestList));
         } else if (fileUploadType.equals(FileUploadType.EFO_TRAIT_FILE)) {
             List<EFOTraitWrapperDTO> efoTraitDtos = new ArrayList<>();
@@ -105,11 +107,34 @@ public class FileHandler {
             return new String(serializePojoToTsv(efoTraitDtos));
         } else if (fileUploadType.equals(FileUploadType.STUDY_EFO_TRAIT_FILE)) {
             List<EfoTraitStudyMappingDto> efoTraitStudyMappingDtos = new ArrayList<>();
-            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().gcst("GCSTxxxxxxxx").shortForm("EFO_xxxxxx").studyTag("example_tag").build());
+            efoTraitStudyMappingDtos.add(EfoTraitStudyMappingDto.builder().studyTag("example_tag").gcst("GCSTxxxxxxxx").shortForm("EFO_xxxxxx").build());
             return new String(serializePojoToTsv(efoTraitStudyMappingDtos));
+        } else if (fileUploadType.equals(FileUploadType.STUDY_MULTI_TRAIT_FILE)) {
+            List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = new ArrayList<>();
+            multiTraitStudyMappingDtos.add(MultiTraitStudyMappingDto.builder().gcst("GCSTxxxxxxxx").studyTag("example_tag").efoTraitShortForm("EFO_111 | EFO_222 | EFO_333")
+                    //.backgroundEfoShortForm("EFO_444 | EFO_555 | EFO_666")
+                    .reportedTrait("Example_Trait").build());
+            return new String(serializePojoToTsv(multiTraitStudyMappingDtos));
         }
         else {
             return null;
         }
     }
+
+    public List<?> disassemble(MultipartFile multipartFile, Class<?> T, Object O) {
+        CsvMapper mapper = new CsvMapper();
+        CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
+        List<?> objectList =null;
+        try {
+            MappingIterator<?> iterator = mapper.readerFor(T).with(csvSchema).readValues(multipartFile.getInputStream());
+            objectList = iterator.readAll();
+        }catch (IOException ex){
+            log.error("Exception in EFOTrait disassemble "+ex.getMessage(),ex);
+            throw new FileProcessingException("Could not read the file");
+        }
+        return objectList;
+    }
+
+
+
 }

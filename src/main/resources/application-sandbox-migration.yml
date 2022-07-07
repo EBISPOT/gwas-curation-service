@@ -29,6 +29,7 @@ quartz:
     #dbName: deposition-backend-sandbox
     dbName: gwasdepo
 
+
 gwas-curation:
   auth:
     enabled: true

@@ -51,21 +51,32 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
 
     @Override
     public Resource<StudyDto>  toResource(Study study) {
+
         String traitSeqId = null;
         DiseaseTrait diseaseTrait = null;
-        if(study.getDiseaseTrait() != null  ) {
+        if(study.getDiseaseTrait() != null  ){
             traitSeqId = study.getDiseaseTrait();
             Optional<DiseaseTrait> optDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitSeqId);
             diseaseTrait = optDiseaseTrait.isPresent() ? optDiseaseTrait.get() :null;
         }
 
+
         List<EfoTrait> efoTraits = null;
         if(study.getEfoTraits() != null && !study.getEfoTraits().isEmpty() ){
             efoTraits = study.getEfoTraits().stream().map((traitId) ->
                     efoTraitService.getEfoTrait(traitId))
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .collect(Collectors.toList());;
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());;
+        }
+
+        List<EfoTrait> backgroundEfoTraits = null;
+        if(study.getBackgroundEfoTraits() != null && !study.getBackgroundEfoTraits().isEmpty() ){
+            backgroundEfoTraits = study.getBackgroundEfoTraits().stream().map((traitId) ->
+                    efoTraitService.getEfoTrait(traitId))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());;
         }
 
         StudyDto studyDto = StudyDto.builder().
@@ -75,6 +86,11 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 .accession(study.getAccession())
                 .diseaseTrait(diseaseTrait != null ? diseaseTraitDtoAssembler.assemble(diseaseTrait) : null)
                 .efoTraits(EfoTraitDtoAssembler.assemble(efoTraits))
+                //.backgroundEfoTraits(EfoTraitDtoAssembler.assemble(backgroundEfoTraits))
+                .backgroundEfoTrait(study.getBackgroundEfoTrait())
+                .summaryStatisticsFile(study.getSummaryStatisticsFile())
+                .statisticalModel(study.getStatisticalModel())
+                .imputation(study.getImputation())
                 .arrayInformation(study.getArrayManufacturer())
                 .efoTrait(study.getEfoTrait())
                 .arrayManufacturer(study.getArrayManufacturer())
@@ -83,6 +99,11 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 .genotypingTechnology(study.getGenotypingTechnology())
                 .cohort(study.getCohort())
                 .variantCount(study.getVariantCount())
+                .initialSampleDescription(study.getInitialSampleDescription())
+                .replicateSampleDescription(study.getReplicateSampleDescription())
+                .sumstatsFlag(study.getSumstatsFlag())
+                .gxeFlag(study.getGxeFlag())
+                .pooledFlag(study.getPooledFlag())
                 .build();
 
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
@@ -133,7 +154,12 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 null,
                 study.isAgreedToCc0(),
                 null,
-                null);
+                null,
+                study.getInitialSampleDescription(),
+                study.getReplicateSampleDescription(),
+                study.getSumstatsFlag(),
+                study.getPooledFlag(),
+                study.getGxeFlag());
     }
 
     public static Study disassemble(StudyDto studyDto) {
@@ -159,7 +185,9 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
         study.setChecksum(studyDto.getChecksum());
         study.setCohort(studyDto.getCohort());
         study.setCohortId(studyDto.getCohortId());
-
+        study.setSumstatsFlag(studyDto.getSumstatsFlag());
+        study.setGxeFlag(studyDto.getGxeFlag());
+        study.setPooledFlag(studyDto.getPooledFlag());
         return study;
     }
 
@@ -185,7 +213,9 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
         Optional.ofNullable(studyDto.getChecksum()).ifPresent(checkSum -> study.setChecksum(checkSum));
         Optional.ofNullable(studyDto.getCohort()).ifPresent(cohort -> study.setCohort(cohort));
         Optional.ofNullable(studyDto.getCohortId()).ifPresent(cohortId -> study.setCohort(cohortId));
-
+        Optional.ofNullable(studyDto.getSumstatsFlag()).ifPresent(sumstatsFlag -> study.setSumstatsFlag(sumstatsFlag));
+        Optional.ofNullable(studyDto.getGxeFlag()).ifPresent(gxeFlag -> study.setGxeFlag(gxeFlag));
+        Optional.ofNullable(studyDto.getPooledFlag()).ifPresent(pooledFlag -> study.setPooledFlag(pooledFlag));
         return study;
     }
 }

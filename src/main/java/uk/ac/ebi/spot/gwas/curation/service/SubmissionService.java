@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
+import uk.ac.ebi.spot.gwas.deposition.dto.SubmissionDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchSubmissionDTO;
 
 public interface SubmissionService {
@@ -16,5 +17,5 @@ public interface SubmissionService {
     public Submission getSubmission(String submissionId);
 
 
-
+    Submission patchSubmission(SubmissionDto submissionDto, String submissionId);
 }

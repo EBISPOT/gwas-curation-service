@@ -17,6 +17,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.UploadReportWrapper;
 import uk.ac.ebi.spot.gwas.deposition.exception.CannotCreateTraitWithDuplicateUriException;
 import uk.ac.ebi.spot.gwas.deposition.exception.CannotDeleteTraitException;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
@@ -62,19 +63,21 @@ public class EfoTraitServiceImpl implements EfoTraitService {
     }
 
     @Override
-    public byte[] createEfoTraits(List<EfoTrait> efoTraits, User user) {
+    public UploadReportWrapper createEfoTraits(List<EfoTrait> efoTraits, User user) {
 
         List<TraitUploadReport> report = new ArrayList<>();
+        UploadReportWrapper uploadReportWrapper = new UploadReportWrapper();
         efoTraits.forEach(efoTrait -> {
             try {
                 createEfoTrait(efoTrait, user);
                 report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait successfully added : " + efoTrait.getTrait(), null));
-
             }
             catch(CannotCreateTraitWithDuplicateUriException ex) {
+                uploadReportWrapper.setHasErrors(true);
                 report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait cannot be added because one with same URI already exists: " + efoTrait.getTrait(), null));
             }
             catch (ConstraintViolationException ex) {
+                uploadReportWrapper.setHasErrors(true);
                 if (efoTrait.getTrait() == null || efoTrait.getTrait().equals("")) {
                     report.add(new TraitUploadReport("Empty trait field", ex.getMessage(), null));
                 }
@@ -83,7 +86,8 @@ public class EfoTraitServiceImpl implements EfoTraitService {
                 }
             }
         });
-        return fileHandler.serializePojoToTsv(report);
+        uploadReportWrapper.setUploadReport(fileHandler.serializePojoToTsv(report));
+        return uploadReportWrapper;
     }
 
     @Override

@@ -21,6 +21,7 @@ import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
@@ -29,6 +30,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudySampleDescPatchRequest;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,6 +50,9 @@ public class StudiesController {
 
     @Autowired
     StudyDtoAssembler studyDtoAssembler;
+
+    @Autowired
+    StudySampleDescPatchRequestAssembler studySampleDescPatchRequestAssembler;
 
     @Autowired
     DiseaseTraitDtoAssembler diseaseTraitDtoAssembler;
@@ -105,6 +110,11 @@ public class StudiesController {
                 efoTraitIds = studyDto.getEfoTraits().stream().map(EfoTraitDto::getEfoTraitId).collect(Collectors.toList());
                 study.setEfoTraits(efoTraitIds);
             }
+            /*if (studyDto.getBackgroundEfoTraits() != null) {
+                efoTraitIds = studyDto.getBackgroundEfoTraits().stream().map(EfoTraitDto::getEfoTraitId).collect(Collectors.toList());
+                study.setBackgroundEfoTraits(efoTraitIds);
+            }*/
+
             Study studyUpdated = studiesService.updateStudies(study);
             return studyDtoAssembler.toResource(studyUpdated);
         } else {
@@ -128,5 +138,31 @@ public class StudiesController {
 
 
     }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+DepositionCurationConstants.API_SAMPLEDESCRIPTION,produces = MediaType.APPLICATION_JSON_VALUE)
+    public PagedResources<StudySampleDescPatchRequest> getSampleDescription(PagedResourcesAssembler assembler,
+                                                                            @PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID)  String submissionId,
+                                                                            @SortDefault(sort = "accession", direction = Sort.Direction.DESC)
+                                                         @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        Page<Study> studies =  studiesService.getStudies(submissionId, pageable);
+        final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
+                .methodOn(StudiesController.class).getSampleDescription(assembler, submissionId, pageable));
+
+        return assembler.toResource(studies, studySampleDescPatchRequestAssembler,
+                new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
+
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+DepositionCurationConstants.API_SAMPLEDESCRIPTION,produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<StudySampleDescPatchRequest> patchSampleDescription(@PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID) String submissionId,
+                                                                    @Valid @RequestBody List<StudySampleDescPatchRequest> studySampleDescPatchRequests){
+
+        return studiesService.updateSampleDescription(studySampleDescPatchRequests, submissionId);
+
+
+    }
+
 
 }

@@ -5,10 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisCacheDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.AnalysisDTO;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,12 +15,12 @@ public interface DiseaseTraitService {
 
     public DiseaseTrait createDiseaseTrait(DiseaseTrait diseaseTrait);
 
-    public List<TraitUploadReport> createDiseaseTrait(List<DiseaseTrait> diseaseTraits, User user);
+    public UploadReportWrapper createDiseaseTrait(List<DiseaseTrait> diseaseTraits, User user);
 
 
     public DiseaseTrait saveDiseaseTrait(String traitId, DiseaseTraitDto diseaseTraitDto, User user);
 
-    public AnalysisCacheDto similaritySearch(List<AnalysisDTO> diseaseTraitAnalysisDTOS, String analysisId, double threshold);
+    public AnalysisCacheDto similaritySearch(List<AnalysisRequestDTO> diseaseTraitAnalysisDTOS, String analysisId, double threshold);
 
     public DiseaseTrait updateDiseaseTrait(DiseaseTrait diseaseTrait);
 

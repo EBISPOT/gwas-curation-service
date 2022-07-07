@@ -1,5 +1,6 @@
 package uk.ac.ebi.spot.gwas.curation.rest.dto;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
@@ -15,18 +16,23 @@ import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.EfoTraitController;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
+import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 @Component
 public class EfoTraitDtoAssembler implements ResourceAssembler<EfoTrait, Resource<EfoTraitDto>> {
@@ -34,6 +40,7 @@ public class EfoTraitDtoAssembler implements ResourceAssembler<EfoTrait, Resourc
     private static final Logger log = LoggerFactory.getLogger(EfoTraitDtoAssembler.class);
 
     private final UserService userService;
+
 
     private final DepositionCurationConfig depositionCurationConfig;
 
@@ -112,15 +119,19 @@ public class EfoTraitDtoAssembler implements ResourceAssembler<EfoTrait, Resourc
         CsvMapper csvMapper = new CsvMapper();
         CsvSchema csvSchema = FileHandler.getSchemaFromMultiPartFile(multipartFile);
         List<EfoTraitDto> efoTraitDtos;
+
         try {
-            InputStream inputStream = multipartFile.getInputStream();
-            MappingIterator<EfoTraitDto> iterator = csvMapper.readerFor(EfoTraitDto.class).with(csvSchema).readValues(inputStream);
+            MappingIterator<EfoTraitDto> iterator = csvMapper.readerFor(EfoTraitDto.class).with(csvSchema).readValues(multipartFile.getInputStream());
             efoTraitDtos = iterator.readAll();
         } catch (IOException e) {
-            throw new FileProcessingException("Could not read the file");
+            log.error("Exception in EFOTrait disassemble "+e.getMessage(),e);
+            throw new FileProcessingException("Could not read the file "+e.getMessage());
         }
         List<EfoTrait> efoTraits = new ArrayList<>();
         efoTraitDtos.forEach(efoTraitDto -> efoTraits.add(disassemble(efoTraitDto)));
         return efoTraits;
     }
+
+
+
 }

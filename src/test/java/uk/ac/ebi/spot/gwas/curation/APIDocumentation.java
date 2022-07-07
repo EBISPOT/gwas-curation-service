@@ -2,22 +2,18 @@
 package uk.ac.ebi.spot.gwas.curation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import org.javers.core.Javers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.JUnitRestDocumentation;
@@ -28,11 +24,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
-import uk.ac.ebi.spot.gwas.curation.config.DiseaseTraitConfiguration;
 import uk.ac.ebi.spot.gwas.curation.config.JettyConfig;
 import uk.ac.ebi.spot.gwas.curation.config.MongoConfig;
 import uk.ac.ebi.spot.gwas.curation.config.security.AuthEntryPoint;
@@ -43,17 +37,13 @@ import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.ProvenanceDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
-import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.util.TestUtil;
 import uk.ac.ebi.spot.gwas.deposition.config.SystemConfigProperties;
-import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
-import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.FileUploadRequest;
 
-import java.net.URI;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -219,8 +209,7 @@ public class APIDocumentation {
     @MockBean
     StudyDtoAssembler studyDtoAssembler;
 
-    @MockBean
-    StudyPatchRequestAssembler studyPatchRequestAssembler;
+
 
 
 
@@ -291,7 +280,7 @@ public class APIDocumentation {
         when(diseaseTraitService.getDiseaseTraits( any(), any(), any())).thenReturn((TestUtil.mockDiseaseTraits()));
         when(diseaseTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResource());
         when(diseaseTraitDtoAssembler.disassemble(any(MultipartFile.class))).thenReturn(TestUtil.mockDiseaseTraitsList());
-        when(diseaseTraitService.createDiseaseTrait(any(),any())).thenReturn(TestUtil.mockTraitUploadReports());
+        // when(diseaseTraitService.createDiseaseTrait(any(),any())).thenReturn(TestUtil.mockTraitUploadReports());
         when(diseaseTraitDtoAssembler.disassemble(any(DiseaseTraitDto.class))).thenReturn(TestUtil.mockDiseaseTrait());
         when(efoTraitService.getEfoTraits(any(), any())).thenReturn(TestUtil.mockEfoTraits());
         when(efoTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockEfoTraitAssemblyResource());
@@ -301,8 +290,8 @@ public class APIDocumentation {
         when(studyDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResourceForStudy());
         when(bindingResult.hasErrors()).thenReturn(false);
         when(fileUploadRequest.getMultipartFile()).thenReturn(multipartFile);
-        when(studiesService.updateTraitsForStudies(any(),any())).thenReturn(TestUtil.mockTraitUploadReportsForStudyTraits());
-        when(studyPatchRequestAssembler.disassemble(any())).thenReturn(TestUtil.mockStudyPatchRequests());
+        //when(studiesService.updateTraitsForStudies(any(),any())).thenReturn(TestUtil.mockTraitUploadReportsForStudyTraits());
+        //when(studyPatchRequestAssembler.disassemble(any())).thenReturn(TestUtil.mockStudyPatchRequests());
 
         when(studyDtoAssembler.disassembleForExsitingStudy(any(), any())).thenReturn(TestUtil.mockStudy());
         when(studiesService.updateStudies(any())).thenReturn(TestUtil.mockStudy());
