@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CurationUtil {
@@ -44,6 +46,41 @@ public class CurationUtil {
             return headerAuth.substring(7, headerAuth.length());
         }
         return null;
+    }
+
+
+    public static Boolean validateURLFormat(String uri) {
+        // Check if URI is a properly formatted URL
+        String URL_REGEX = "^((http|https)://(www|purl)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$";
+        Pattern pattern = Pattern.compile(URL_REGEX);
+        Matcher match = pattern.matcher(uri);
+        if (!match.find()) {
+            return false;
+        }
+        return true;
+    }
+
+
+    public static Boolean validateCURIEFormat(String uri) {
+        // Check format of CURIE
+        String[] uriSplit = uri.split("/");
+        String curie = uriSplit[uriSplit.length -1];
+        String ontologyPrefix = curie.split("_")[0].toLowerCase();
+        ArrayList<String> PREFIX_OUTLIERS = new ArrayList<>(Arrays.asList(
+                "orphanet", "hancestro", "ncit"));
+
+
+        // The CURIE should be formatted as: PREFIX_1234567 for OBO Foundry ontologies
+        String CURIE_REGEX = "^(([a-zA-Z])+_(\\d\\d\\d\\d\\d\\d\\d))$";
+        Pattern curiePattern = Pattern.compile(CURIE_REGEX);
+        Matcher curieMatch = curiePattern.matcher(curie);
+
+        if (!PREFIX_OUTLIERS.contains(ontologyPrefix)) {
+            if (!curieMatch.find()) {
+                return false;
+            }
+        }
+        return true;
     }
 
 
