@@ -1,5 +1,6 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
+import com.querydsl.core.types.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +18,13 @@ import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
+import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
+//import uk.ac.ebi.spot.gwas.deposition.domain.QStudy;
+import uk.ac.ebi.spot.gwas.deposition.domain.QStudy;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
@@ -38,6 +42,9 @@ public class StudiesServiceImpl implements StudiesService {
 
     @Autowired
     private DiseaseTraitService diseaseTraitService;
+
+    @Autowired
+    private EfoTraitService efoTraitService;
 
     @Autowired
     StudySampleDescPatchRequestAssembler studySampleDescPatchRequestAssembler;
@@ -76,7 +83,40 @@ public class StudiesServiceImpl implements StudiesService {
 
     @Override
     public Page<Study> getStudies(String submissionId,  Pageable page) {
+
         return studyRepository.findBySubmissionId(submissionId, page);
+    }
+
+
+    @Override
+    public Page<Study> getStudies( Pageable page, SearchStudyDTO searchStudyDTO) {
+        QStudy qStudy = new QStudy("study");
+        Predicate studyPredicate = null;
+        if(searchStudyDTO != null) {
+            log.info("searchStudyDTO params trait ->"+searchStudyDTO.getReportedTrait());
+            if (searchStudyDTO.getReportedTrait() != null) {
+                log.info("searchStudyDTO params trait ->"+searchStudyDTO.getReportedTrait());
+                String traitId = diseaseTraitService.getDiseaseTraitByTraitName
+                        (searchStudyDTO.getReportedTrait()).
+                        map(trait -> trait.getId()).orElse(null);
+                if (traitId != null) {
+                    log.info("Inside Predicate condition");
+                    studyPredicate =  (qStudy.diseaseTrait.eq(traitId));
+                }
+            }
+
+            if (searchStudyDTO.getEfoTrait() != null) {
+                log.info("searchStudyDTO params trait ->"+searchStudyDTO.getReportedTrait());
+                String traitId = efoTraitService.getEfoTraits()
+                        (searchStudyDTO.getReportedTrait()).
+                        map(trait -> trait.getId()).orElse(null);
+                if (traitId != null) {
+                    log.info("Inside Predicate condition");
+                    studyPredicate =  (qStudy.diseaseTrait.eq(traitId));
+                }
+            }
+        }
+        return studyRepository.findAll(studyPredicate , page);
     }
 
     public DiseaseTrait getDiseaseTraitsByStudyId(String studyId) {

@@ -30,6 +30,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchStudyDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudySampleDescPatchRequest;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
@@ -124,14 +125,18 @@ public class StudiesController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES,produces = MediaType.APPLICATION_JSON_VALUE)
-    public PagedResources<StudyDto> getStudies(PagedResourcesAssembler assembler,
+    public PagedResources<StudyDto> getStudies(SearchStudyDTO searchStudyDTO,
+                                               PagedResourcesAssembler assembler,
                                                @PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID)  String submissionId,
                                                @SortDefault(sort = "accession", direction = Sort.Direction.DESC)
                                                    @PageableDefault(size = 10, page = 0) Pageable pageable) {
-        Page<Study> studies =  studiesService.getStudies(submissionId, pageable);
+        if(searchStudyDTO != null ) {
+            log.info("searchStudyDTO Params are ->"+ searchStudyDTO.getReportedTrait());
+        }
+        Page<Study> studies =  studiesService.getStudies(submissionId, pageable, searchStudyDTO);
 
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
-                .methodOn(StudiesController.class).getStudies(assembler, submissionId, pageable));
+                .methodOn(StudiesController.class).getStudies(searchStudyDTO,assembler, submissionId, pageable));
 
         return assembler.toResource(studies, studyDtoAssembler,
                 new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
@@ -145,7 +150,7 @@ public class StudiesController {
                                                                             @PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID)  String submissionId,
                                                                             @SortDefault(sort = "accession", direction = Sort.Direction.DESC)
                                                          @PageableDefault(size = 10, page = 0) Pageable pageable) {
-        Page<Study> studies =  studiesService.getStudies(submissionId, pageable);
+        Page<Study> studies =  studiesService.getStudies(submissionId, pageable, null);
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
                 .methodOn(StudiesController.class).getSampleDescription(assembler, submissionId, pageable));
 

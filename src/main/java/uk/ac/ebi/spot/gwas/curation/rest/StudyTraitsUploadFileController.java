@@ -113,7 +113,7 @@ public class StudyTraitsUploadFileController {
     public HttpEntity<byte[]> getSampleDescriptions(@PathVariable String submissionId) {
 
         List<StudySampleDescPatchWrapper> sampleDescPatchRequests =
-                Optional.ofNullable(studiesService.getStudies(submissionId, Pageable.unpaged()))
+                Optional.ofNullable(studiesService.getStudies(submissionId, Pageable.unpaged(), null))
                 .map(unpagedStudies -> unpagedStudies.stream().collect(Collectors.toList()))
                 .map(studies -> studies.stream().map(studySampleDescPatchRequestAssembler::assembleWrapper)
                         .collect(Collectors.toList()))
