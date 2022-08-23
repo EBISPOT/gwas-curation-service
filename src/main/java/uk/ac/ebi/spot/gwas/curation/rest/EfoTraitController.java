@@ -35,6 +35,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.UploadReportWrapper;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileValidationException;
+import uk.ac.ebi.spot.gwas.deposition.exception.InvalidEFOUriException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -73,8 +74,7 @@ public class EfoTraitController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Resource<EfoTraitDto> createEfoTrait(@Valid @RequestBody EfoTraitDto efoTraitDto, HttpServletRequest request) {
-
+    public Resource<EfoTraitDto> createEfoTrait(@Valid @RequestBody EfoTraitDto efoTraitDto, HttpServletRequest request)  {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         EfoTrait efoTrait = efoTraitDtoAssembler.disassemble(efoTraitDto);
         EfoTrait efoTraitCreated = efoTraitService.createEfoTrait(efoTrait, user);
