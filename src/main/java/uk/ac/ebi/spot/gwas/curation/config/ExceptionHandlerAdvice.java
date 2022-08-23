@@ -117,6 +117,14 @@ public class ExceptionHandlerAdvice {
         return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(InvalidEFOUriException.class)
+    public ResponseEntity<String> handleInvalidEFOUriException(InvalidEFOUriException ex) {
+        log.error("InvalidEFOUriException ->"+ex.getMessage(),ex);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(CannotCreateTraitWithDuplicateNameException.class)
     public ResponseEntity<String> handleCreateTraitWithDuplicateName(CannotCreateTraitWithDuplicateNameException e) {
         log.error("Exception -> " + e.getMessage(), e);
