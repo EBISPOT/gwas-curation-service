@@ -14,7 +14,6 @@ public interface EfoTraitRepository extends MongoRepository<EfoTrait, String> {
 
     Page<EfoTrait> findByTraitContainingIgnoreCase(String trait, Pageable page);
     List<EfoTrait> findByTraitContainingIgnoreCase(String trait);
-    List<EfoTrait> findByUri(String uri);
     Optional<EfoTrait> findByShortForm(String shortForm);
     Stream<EfoTrait> findByShortFormIn(Set<String> shortForms);
 }

@@ -10,7 +10,6 @@ import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
-import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
@@ -19,7 +18,9 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.TraitUploadReport;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.UploadReportWrapper;
-import uk.ac.ebi.spot.gwas.deposition.exception.*;
+import uk.ac.ebi.spot.gwas.deposition.exception.CannotCreateTraitWithDuplicateUriException;
+import uk.ac.ebi.spot.gwas.deposition.exception.CannotDeleteTraitException;
+import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
@@ -48,14 +49,12 @@ public class EfoTraitServiceImpl implements EfoTraitService {
     @Override
     public EfoTrait createEfoTrait(EfoTrait efoTrait, User user) {
 
-        EfoTrait efoTraitCreated = null;
+        EfoTrait efoTraitCreated;
         try {
-            if(validateEFOTraits(efoTrait)) {
-                efoTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
-                String uri = efoTrait.getUri();
-                efoTrait.setShortForm(uri.substring(uri.lastIndexOf('/') + 1));
-                efoTraitCreated = efoTraitRepository.insert(efoTrait);
-            }
+            efoTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
+            String uri = efoTrait.getUri();
+            efoTrait.setShortForm(uri.substring(uri.lastIndexOf('/') + 1));
+            efoTraitCreated = efoTraitRepository.insert(efoTrait);
         }
         catch (DuplicateKeyException e) {
             throw new CannotCreateTraitWithDuplicateUriException("Trait with same URI already exists.");
@@ -70,17 +69,14 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         UploadReportWrapper uploadReportWrapper = new UploadReportWrapper();
         efoTraits.forEach(efoTrait -> {
             try {
-                if(validateEFOTraits(efoTrait)) {
-                    createEfoTrait(efoTrait, user);
-                    report.add(new TraitUploadReport(efoTrait.getTrait(), "Trait successfully added : " + efoTrait.getTrait(), null));
-                }
-            } catch(CannotCreateTraitWithDuplicateUriException ex) {
+                createEfoTrait(efoTrait, user);
+                report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait successfully added : " + efoTrait.getTrait(), null));
+            }
+            catch(CannotCreateTraitWithDuplicateUriException ex) {
                 uploadReportWrapper.setHasErrors(true);
                 report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait cannot be added because one with same URI already exists: " + efoTrait.getTrait(), null));
-            } catch(InvalidEFOUriException ex) {
-                uploadReportWrapper.setHasErrors(true);
-                report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait cannot be added because the URI is not valid: " + efoTrait.getTrait(), null));
-            } catch (ConstraintViolationException ex) {
+            }
+            catch (ConstraintViolationException ex) {
                 uploadReportWrapper.setHasErrors(true);
                 if (efoTrait.getTrait() == null || efoTrait.getTrait().equals("")) {
                     report.add(new TraitUploadReport("Empty trait field", ex.getMessage(), null));
@@ -88,9 +84,6 @@ public class EfoTraitServiceImpl implements EfoTraitService {
                 else {
                     report.add(new TraitUploadReport(efoTrait.getTrait(), ex.getMessage(), null));
                 }
-            } catch(CannotCreateTraitWithDuplicateNameException ex){
-                uploadReportWrapper.setHasErrors(true);
-                report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait cannot be added because the trait name already exists: " + efoTrait.getTrait(), null));
             }
         });
         uploadReportWrapper.setUploadReport(fileHandler.serializePojoToTsv(report));
@@ -102,34 +95,6 @@ public class EfoTraitServiceImpl implements EfoTraitService {
 
         Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findById(traitId);
         if (efoTraitOptional.isPresent()) {
-            EfoTrait existingTrait = efoTraitOptional.get();
-            if(!existingTrait.getTrait().trim().equals(efoTraitDto.getTrait().trim())) {
-                List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitContainingIgnoreCase(efoTraitDto.getTrait().trim());
-                if (existingEfoTraits != null && !existingEfoTraits.isEmpty()) {
-                    String existingEFOsMessage = "EFO Traits already exists for trait -> " + existingTrait.getTrait().trim();
-                    throw new CannotCreateTraitWithDuplicateNameException(existingEFOsMessage);
-                }
-            }
-            if(!existingTrait.getUri().trim().equals(efoTraitDto.getUri().trim())) {
-                List<EfoTrait> existingEfoTraitsUri = efoTraitRepository.findByUri(efoTraitDto.getUri().trim());
-                if (existingEfoTraitsUri != null && !existingEfoTraitsUri.isEmpty()) {
-                    String existingEFOUriMessage = "EFO trait already exists for " +
-                            "the Uri ->" + existingTrait.getUri().trim();
-                    throw new CannotCreateTraitWithDuplicateUriException(existingEFOUriMessage);
-                }
-            }
-            if(!CurationUtil.validateURLFormat(efoTraitDto.getUri().trim())) {
-                String invalidURIMessage = "The URI value entered \"" + existingTrait.getUri() + "\" is not valid. " +
-                        "The URI value should be formatted similar to: http://www.ebi.ac.uk/efo/EFO_1234567.";
-                throw new InvalidEFOUriException(invalidURIMessage);
-            }
-            else if(!CurationUtil.validateCURIEFormat(efoTraitDto.getUri().trim())) {
-                String invalidCurieMessage = "The URI value entered \"" + existingTrait.getUri() + "\" is not valid. " +
-                        "The URI value for OBO Foundry ontologies should be formatted similar " +
-                        "to: http://www.ebi.ac.uk/efo/EFO_1234567. \n Did you copy-paste the entire URI?";
-                throw new InvalidEFOUriException(invalidCurieMessage);
-            }
-
             EfoTrait updatedEfoTrait = efoTraitDtoAssembler.disassemble(efoTraitDto);
             updatedEfoTrait.setId(traitId);
             String uri = updatedEfoTrait.getUri();
@@ -137,7 +102,6 @@ public class EfoTraitServiceImpl implements EfoTraitService {
             updatedEfoTrait.setCreated(efoTraitOptional.get().getCreated());
             updatedEfoTrait.setUpdated(new Provenance(DateTime.now(), user.getId()));
             try {
-
                 return efoTraitRepository.save(updatedEfoTrait);
             }
             catch (DuplicateKeyException e) {
@@ -186,34 +150,6 @@ public class EfoTraitServiceImpl implements EfoTraitService {
                 .map(efoTrait -> EFOTraitWrapperDTO.builder().trait(efoTrait.getTrait()).uri(efoTrait.getUri()).build())
                 .collect(Collectors.toList());
         return fileHandler.serializePojoToTsv(efoTraitWrapperDtos);
-    }
-
-
-    public Boolean validateEFOTraits(EfoTrait efoTrait) {
-
-        List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitContainingIgnoreCase(efoTrait.getTrait().trim());
-        List<EfoTrait> existingEfoTraitsUri = efoTraitRepository.findByUri(efoTrait.getUri().trim());
-        if(!CurationUtil.validateURLFormat(efoTrait.getUri().trim())) {
-            String invalidURIMessage = "The URI value entered \"" + efoTrait.getUri() + "\" is not valid. " +
-                    "The URI value should be formatted similar to: http://www.ebi.ac.uk/efo/EFO_1234567.";
-            throw new InvalidEFOUriException(invalidURIMessage);
-        }
-        else if(!CurationUtil.validateCURIEFormat(efoTrait.getUri().trim())) {
-            String invalidCurieMessage = "The URI value entered \"" + efoTrait.getUri() + "\" is not valid. " +
-                    "The URI value for OBO Foundry ontologies should be formatted similar " +
-                    "to: http://www.ebi.ac.uk/efo/EFO_1234567. \n Did you copy-paste the entire URI?";
-            throw new InvalidEFOUriException(invalidCurieMessage);
-        }
-        else if( existingEfoTraits != null && !existingEfoTraits.isEmpty()) {
-            String existingEFOsMessage = "EFO Traits already exists for trait -> "+efoTrait.getTrait().trim();
-            throw new CannotCreateTraitWithDuplicateNameException(existingEFOsMessage);
-        }
-        else if(existingEfoTraitsUri != null && !existingEfoTraitsUri.isEmpty()) {
-            String existingEFOUriMessage = "EFO trait already exists for " +
-                    "the Uri ->"+efoTrait.getUri().trim();
-            throw new CannotCreateTraitWithDuplicateUriException(existingEFOUriMessage);
-        }
-        return true;
     }
 
     @Override

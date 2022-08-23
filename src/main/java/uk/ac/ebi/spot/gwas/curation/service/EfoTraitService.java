@@ -6,8 +6,6 @@ import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.UploadReportWrapper;
-import uk.ac.ebi.spot.gwas.deposition.exception.CannotCreateTraitWithDuplicateNameException;
-import uk.ac.ebi.spot.gwas.deposition.exception.InvalidEFOUriException;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,8 +25,6 @@ public interface EfoTraitService {
     Page<EfoTrait> getEfoTraits(String trait, Pageable pageable);
 
     List<EfoTrait> getEfoTraits(String trait);
-
-    Boolean validateEFOTraits(EfoTrait efoTrait);
 
     byte[] getEfoTraitsTsv(String trait);
 
