@@ -64,7 +64,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
         List<EfoTrait> efoTraits = null;
         if(study.getEfoTraits() != null && !study.getEfoTraits().isEmpty() ){
             efoTraits = study.getEfoTraits().stream().map((traitId) ->
-                    efoTraitService.getEfoTrait(traitId))
+                            efoTraitService.getEfoTrait(traitId))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .collect(Collectors.toList());;
@@ -73,7 +73,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
         List<EfoTrait> backgroundEfoTraits = null;
         if(study.getBackgroundEfoTraits() != null && !study.getBackgroundEfoTraits().isEmpty() ){
             backgroundEfoTraits = study.getBackgroundEfoTraits().stream().map((traitId) ->
-                    efoTraitService.getEfoTrait(traitId))
+                            efoTraitService.getEfoTrait(traitId))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .collect(Collectors.toList());;
@@ -86,7 +86,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 .accession(study.getAccession())
                 .diseaseTrait(diseaseTrait != null ? diseaseTraitDtoAssembler.assemble(diseaseTrait) : null)
                 .efoTraits(EfoTraitDtoAssembler.assemble(efoTraits))
-                //.backgroundEfoTraits(EfoTraitDtoAssembler.assemble(backgroundEfoTraits))
+                .backgroundEfoTraits(EfoTraitDtoAssembler.assemble(backgroundEfoTraits))
                 .backgroundEfoTrait(study.getBackgroundEfoTrait())
                 .summaryStatisticsFile(study.getSummaryStatisticsFile())
                 .statisticalModel(study.getStatisticalModel())
@@ -153,6 +153,7 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 null,
                 null,
                 study.isAgreedToCc0(),
+                null,
                 null,
                 null,
                 study.getInitialSampleDescription(),
