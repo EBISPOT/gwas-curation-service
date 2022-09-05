@@ -1,4 +1,3 @@
-
 package uk.ac.ebi.spot.gwas.curation.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,6 @@ public class StudyTraitsUploadFileController {
     @Autowired
     FileHandler fileHandler;
 
-
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_MULTI_TRAITS + "/files")
     public HttpEntity<UploadReportWrapper> uploadMultiTraitStudyMapping(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile, HttpServletRequest request) {
@@ -54,7 +52,7 @@ public class StudyTraitsUploadFileController {
             throw new FileProcessingException("File not found");
         }
         userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        MultiTraitStudyMappingDto multiTraitStudyMappingDto = new MultiTraitStudyMappingDto("","","","");
+        MultiTraitStudyMappingDto multiTraitStudyMappingDto = new MultiTraitStudyMappingDto("","","","", "");
         List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = (List<MultiTraitStudyMappingDto>) fileHandler.disassemble(multipartFile, MultiTraitStudyMappingDto.class,  multiTraitStudyMappingDto);
         //List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForMultiTraitMapping(multipartFile);
         UploadReportWrapper traitUploadReport = studiesService.updateMultiTraitsForStudies(multiTraitStudyMappingDtos, submissionId);
