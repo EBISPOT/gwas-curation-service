@@ -38,7 +38,7 @@ ingress:
     # kubernetes.io/tls-acme: "true"
 
   host: chart-example.local
-  path: "/curation-traits(/|$)(.*)"
+  path: "/curation(/|$)(.*)"
 
   tls: []
 

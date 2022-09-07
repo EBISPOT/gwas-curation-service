@@ -64,10 +64,10 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
         List<EfoTrait> efoTraits = null;
         if(study.getEfoTraits() != null && !study.getEfoTraits().isEmpty() ){
             efoTraits = study.getEfoTraits().stream().map((traitId) ->
-                    efoTraitService.getEfoTrait(traitId))
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .collect(Collectors.toList());;
+                            efoTraitService.getEfoTrait(traitId))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());;
         }
 
         List<EfoTrait> backgroundEfoTraits = null;
