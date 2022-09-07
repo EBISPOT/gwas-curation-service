@@ -196,7 +196,6 @@ public class FileUploadAspect {
                         Arrays.stream(props).forEach(prop -> {
                             prop = prop.replace("\"","");
                             if (!headers.contains(prop)){
-                                System.out.println("PROP FAILED" +  prop);
                                 invalidHeader.set(true);
                                 return;
                             }
