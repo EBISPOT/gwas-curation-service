@@ -1,6 +1,6 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
-import com.querydsl.core.types.Predicate;
+//import com.querydsl.core.types.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
 //import uk.ac.ebi.spot.gwas.deposition.domain.QStudy;
-import uk.ac.ebi.spot.gwas.deposition.domain.QStudy;
+//import uk.ac.ebi.spot.gwas.deposition.domain.QStudy;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
@@ -88,7 +88,7 @@ public class StudiesServiceImpl implements StudiesService {
     }
 
 
-    @Override
+    /*@Override
     public Page<Study> getStudies( Pageable page, SearchStudyDTO searchStudyDTO) {
         QStudy qStudy = new QStudy("study");
         Predicate studyPredicate = null;
@@ -105,19 +105,9 @@ public class StudiesServiceImpl implements StudiesService {
                 }
             }
 
-            if (searchStudyDTO.getEfoTrait() != null) {
-                log.info("searchStudyDTO params trait ->"+searchStudyDTO.getReportedTrait());
-                String traitId = efoTraitService.getEfoTraits()
-                        (searchStudyDTO.getReportedTrait()).
-                        map(trait -> trait.getId()).orElse(null);
-                if (traitId != null) {
-                    log.info("Inside Predicate condition");
-                    studyPredicate =  (qStudy.diseaseTrait.eq(traitId));
-                }
-            }
         }
         return studyRepository.findAll(studyPredicate , page);
-    }
+    }*/
 
     public DiseaseTrait getDiseaseTraitsByStudyId(String studyId) {
         String  traitId = getStudy(studyId).getDiseaseTrait();

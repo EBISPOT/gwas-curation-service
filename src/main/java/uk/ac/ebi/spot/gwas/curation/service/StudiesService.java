@@ -20,7 +20,7 @@ public interface StudiesService {
 
     public Page<Study> getStudies(String submissionId,  Pageable page);
 
-    public Page<Study> getStudies( Pageable page, SearchStudyDTO searchStudyDTO);
+    //public Page<Study> getStudies( Pageable page, SearchStudyDTO searchStudyDTO);
 
     public DiseaseTrait getDiseaseTraitsByStudyId(String studyId);
 

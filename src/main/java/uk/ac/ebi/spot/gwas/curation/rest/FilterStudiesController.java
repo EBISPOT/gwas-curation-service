@@ -40,7 +40,7 @@ public class FilterStudiesController {
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
 
-    @ResponseStatus(HttpStatus.OK)
+   /* @ResponseStatus(HttpStatus.OK)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public PagedResources<StudyDto> getStudies(SearchStudyDTO searchStudyDTO,
                                                PagedResourcesAssembler assembler,
@@ -58,5 +58,5 @@ public class FilterStudiesController {
                 new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
 
 
-    }
+    }*/
 }

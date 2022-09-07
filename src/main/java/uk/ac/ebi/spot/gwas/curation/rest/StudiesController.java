@@ -125,18 +125,17 @@ public class StudiesController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES,produces = MediaType.APPLICATION_JSON_VALUE)
-    public PagedResources<StudyDto> getStudies(SearchStudyDTO searchStudyDTO,
-                                               PagedResourcesAssembler assembler,
+    public PagedResources<StudyDto> getStudies(PagedResourcesAssembler assembler,
                                                @PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID)  String submissionId,
                                                @SortDefault(sort = "accession", direction = Sort.Direction.DESC)
                                                    @PageableDefault(size = 10, page = 0) Pageable pageable) {
-        if(searchStudyDTO != null ) {
+        /*if(searchStudyDTO != null ) {
             log.info("searchStudyDTO Params are ->"+ searchStudyDTO.getReportedTrait());
-        }
-        Page<Study> studies =  studiesService.getStudies(submissionId, pageable, searchStudyDTO);
+        }*/
+        Page<Study> studies =  studiesService.getStudies(submissionId, pageable);
 
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
-                .methodOn(StudiesController.class).getStudies(searchStudyDTO,assembler, submissionId, pageable));
+                .methodOn(StudiesController.class).getStudies(assembler, submissionId, pageable));
 
         return assembler.toResource(studies, studyDtoAssembler,
                 new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
@@ -150,7 +149,7 @@ public class StudiesController {
                                                                             @PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID)  String submissionId,
                                                                             @SortDefault(sort = "accession", direction = Sort.Direction.DESC)
                                                          @PageableDefault(size = 10, page = 0) Pageable pageable) {
-        Page<Study> studies =  studiesService.getStudies(submissionId, pageable, null);
+        Page<Study> studies =  studiesService.getStudies(submissionId, pageable);
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
                 .methodOn(StudiesController.class).getSampleDescription(assembler, submissionId, pageable));
 

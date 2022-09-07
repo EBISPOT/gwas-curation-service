@@ -1,6 +1,7 @@
 #===============COMPULSORY PROGRAM ARGUMENTS=====#
 mongo-server:
 auth-enable:
+solr-server:
 #===============COMPULSORY PROGRAM ARGUMENTS=====#
 
 server:
@@ -10,6 +11,8 @@ spring:
   data:
     mongodb:
       uri: ${mongo-server}
+    solr:
+      host: ${solr-server}
 
 gwas-curation:
   #db: deposition-backend-sandbox
@@ -18,6 +21,8 @@ gwas-curation:
     enabled: ${auth-enable}
     curators:
       auth-mechanism: EMAIL_WHITELISTING
+  solr:
+    enabled: true
 
 quartz:
   scheduler:
