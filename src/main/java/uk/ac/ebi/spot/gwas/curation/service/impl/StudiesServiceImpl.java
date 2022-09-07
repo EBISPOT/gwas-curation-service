@@ -197,7 +197,9 @@ public class StudiesServiceImpl implements StudiesService {
                     .set("diseaseTrait", study.getDiseaseTrait());
             bulkOps.updateOne(query, update);
         }
-        bulkOps.execute();
+        if (!studiesToSave.isEmpty()) {
+            bulkOps.execute();
+        }
         uploadReportWrapper.setUploadReport(fileHandler.serializePojoToTsv(report));
         return uploadReportWrapper;
     }
