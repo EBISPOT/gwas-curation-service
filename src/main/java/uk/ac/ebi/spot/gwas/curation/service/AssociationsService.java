@@ -1,6 +1,7 @@
 package uk.ac.ebi.spot.gwas.curation.service;
 
 import uk.ac.ebi.spot.gwas.deposition.domain.Association;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.SnpStatusReportDto;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public interface AssociationsService {
 
     byte[] getSnpValidationReportTsv(String submissionId);
 
-    Integer getNumberOfValidSnps(String submissionId);
+    SnpStatusReportDto getSnpStatus(String submissionId);
 
     void approveSnps(String submissionId);
 }

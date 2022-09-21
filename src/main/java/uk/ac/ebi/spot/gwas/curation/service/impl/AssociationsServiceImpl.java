@@ -8,6 +8,7 @@ import uk.ac.ebi.spot.gwas.curation.repository.AssociationRepository;
 import uk.ac.ebi.spot.gwas.curation.service.AssociationsService;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.Association;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.SnpStatusReportDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.SnpValidationReport;
 
 import java.util.ArrayList;
@@ -59,17 +60,18 @@ public class AssociationsServiceImpl implements AssociationsService {
     }
 
     @Override
-    public Integer getNumberOfValidSnps(String submissionId) {
-        return associationRepository.countByIsValidAndSubmissionId(true, submissionId);
-    }
-
-    @Override
     public void approveSnps(String submissionId) {
         associationRepository.readBySubmissionId(submissionId).parallel().forEach(association -> {
-            association.setValid(true);
+            association.setApproved(true);
             associationRepository.save(association);
         });
     }
 
-
+    @Override
+    public SnpStatusReportDto getSnpStatus(String submissionId) {
+        SnpStatusReportDto snpStatusReportDto = new SnpStatusReportDto();
+        snpStatusReportDto.setNoApprovedSnps(associationRepository.countByIsApprovedAndSubmissionId(true, submissionId));
+        snpStatusReportDto.setNoValidSnps(associationRepository.countByIsValidAndSubmissionId(true, submissionId));
+        return snpStatusReportDto;
+    }
 }

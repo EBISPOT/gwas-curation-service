@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.service.AssociationsService;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.SnpStatusReportDto;
 
 import java.util.Objects;
 
@@ -31,9 +32,9 @@ public class AssociationController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping(value = "/{submissionId}" + DepositionCurationConstants.API_ASSOCIATIONS + "/no-valid-snps")
-    public HttpEntity<Integer> getNumberOfValidSnps(@PathVariable String submissionId) {
-        return new HttpEntity<>(associationsService.getNumberOfValidSnps(submissionId));
+    @GetMapping(value = "/{submissionId}" + DepositionCurationConstants.API_ASSOCIATIONS + "/snp-status")
+    public HttpEntity<SnpStatusReportDto> getSnpStatus(@PathVariable String submissionId) {
+        return new HttpEntity<>(associationsService.getSnpStatus(submissionId));
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
