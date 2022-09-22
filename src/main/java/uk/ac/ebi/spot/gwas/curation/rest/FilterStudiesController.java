@@ -19,6 +19,8 @@ import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
+import uk.ac.ebi.spot.gwas.curation.solr.domain.StudySolr;
+import uk.ac.ebi.spot.gwas.curation.solr.dto.StudySolrDTOAssembler;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
@@ -35,28 +37,28 @@ public class FilterStudiesController {
     StudiesService studiesService;
 
     @Autowired
-    StudyDtoAssembler studyDtoAssembler;
+    StudySolrDTOAssembler studySolrDTOAssembler;
 
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
 
-   /* @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public PagedResources<StudyDto> getStudies(SearchStudyDTO searchStudyDTO,
                                                PagedResourcesAssembler assembler,
-                                               @SortDefault(sort = "accession", direction = Sort.Direction.DESC)
+                                               @SortDefault(sort = "accessionId", direction = Sort.Direction.DESC)
                                                @PageableDefault(size = 10, page = 0) Pageable pageable) {
         if(searchStudyDTO != null ) {
             log.info("searchStudyDTO Params are ->"+ searchStudyDTO.getReportedTrait());
         }
-        Page<Study> studies =  studiesService.getStudies( pageable, searchStudyDTO);
+        Page<StudySolr> studies =  studiesService.getStudies( pageable, searchStudyDTO);
 
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
                 .methodOn(FilterStudiesController.class).getStudies(searchStudyDTO,assembler, pageable));
 
-        return assembler.toResource(studies, studyDtoAssembler,
+        return assembler.toResource(studies, studySolrDTOAssembler,
                 new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
 
 
-    }*/
+    }
 }

@@ -9,11 +9,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.*;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySolrAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.StudySolrIndexerService;
 import uk.ac.ebi.spot.gwas.curation.solr.domain.StudySolr;
 import uk.ac.ebi.spot.gwas.curation.solr.repository.StudySolrRepository;
 import uk.ac.ebi.spot.gwas.deposition.domain.*;
+import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,8 +50,11 @@ public class StudySolrIndexerServiceImpl implements StudySolrIndexerService {
     @Autowired
     BodyOfWorkRepository bodyOfWorkRepository;
 
+    @Autowired
+    StudyDtoAssembler studyDtoAssembler;
+
     @Override
-    //@Async
+    @Async
     public void populateStudyIngestEntries() {
         long cntStudies = studyRepository.count();
 
@@ -60,60 +65,7 @@ public class StudySolrIndexerServiceImpl implements StudySolrIndexerService {
             Pageable pageable = new PageRequest(i , 100);
             Page<Study> studies = studyRepository.findAll(pageable);
             List<Study> filterStudies = studies.stream().filter(study -> (study.getSubmissionId()!=null && !study.getSubmissionId().isEmpty()) && (study.getAccession() != null && !study.getAccession().isEmpty())).collect(Collectors.toList());
-            filterStudies.forEach((study) -> {
-
-                StudyIngestEntry studyIngestEntry = new StudyIngestEntry();
-                studyIngestEntry.setAccessionId(study.getAccession());
-                studyIngestEntry.setSubmissionId(study.getSubmissionId());
-                studyIngestEntry.setReportedTrait(Optional.ofNullable(study.getDiseaseTrait())
-                        .map((id) -> diseaseTraitRepository.findById(id))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .map(DiseaseTrait::getTrait).orElse(null));
-                studyIngestEntry.setEfoTraits(study.getEfoTraits() != null ?
-                                study.getEfoTraits().stream()
-                                .map(efoId -> efoTraitRepository.findById(efoId))
-                                .filter(Optional::isPresent)
-                                .map(Optional::get)
-                                .map(EfoTrait::getTrait)
-                                .collect(Collectors.toList()) :null);
-                studyIngestEntry.setGxeFlag(study.getGxeFlag());
-                studyIngestEntry.setPooledFlag(study.getPooledFlag());
-                studyIngestEntry.setSumstatsFlag(study.getSumstatsFlag());
-                studyIngestEntry.setNotes(Optional.ofNullable
-                        (noteRepository.findBySubmissionIdAndStudyTag(study.getSubmissionId(), study.getStudyTag()))
-                        .filter(notes -> !notes.isEmpty())
-                        .map(notes -> notes.stream()
-                        .map(note -> note.getNote())
-                        .collect(Collectors.toList())).orElse(null));
-
-                Publication publication = Optional.ofNullable(study.getPmids())
-                        .filter(pmids -> !pmids.isEmpty())
-                        .map(pmids -> pmids.get(0))
-                        .map(pmid -> publicationRepository.findByPmid(pmid))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .orElse(null);
-                if(publication != null) {
-                    studyIngestEntry.setFirstAuthor(publication.getFirstAuthor());
-                    studyIngestEntry.setPublicationDate(publication.getPublicationDate());
-                    studyIngestEntry.setTitle(publication.getTitle());
-                    studyIngestEntry.setPmid(publication.getPmid());
-                } else {
-                 BodyOfWork bodyOfWork =   Optional.ofNullable(study.getBodyOfWorkList())
-                            .filter(bows -> !bows.isEmpty() )
-                            .map(bows -> bows.get(0))
-                            .map(bowId -> bodyOfWorkRepository.findByBowId(bowId))
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .orElse(null);
-                 if(bodyOfWork != null){
-                     studyIngestEntry.setTitle(bodyOfWork.getTitle());
-                     studyIngestEntry.setBowId(bodyOfWork.getBowId());
-                 }
-                }
-                studyIngestEntryRepository.save(studyIngestEntry);
-            });
+            filterStudies.forEach((study) -> transformStudy(study));
 
         }
     }
@@ -130,10 +82,98 @@ public class StudySolrIndexerServiceImpl implements StudySolrIndexerService {
             Page<StudyIngestEntry> studyIngestEntries = studyIngestEntryRepository.findAll(pageable);
             studyIngestEntries.forEach(studyIngestEntry -> createSolrStudy(studyIngestEntry));
         }
+        studyIngestEntryRepository.deleteAll();
     }
 
     private void createSolrStudy(StudyIngestEntry studyIngestEntry) {
         StudySolr studySolr = StudySolrAssembler.assemble(studyIngestEntry);
         studySolrRepository.save(studySolr);
     }
+
+    private void deleteStudyIngestEntry(StudyIngestEntry studyIngestEntry){
+        studyIngestEntryRepository.delete(studyIngestEntry);
+    }
+
+    public void removeSolrStudies() {
+        studySolrRepository.deleteAll();
+    }
+
+    public void syncSolrWithStudies(StudyDto studyDto) {
+         Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyDto.getStudyId());
+         log.info("Accession Id"+study.getAccession());
+         log.info("Submission Id"+study.getSubmissionId());
+         log.info("Disease Trait Id"+study.getDiseaseTrait());
+         StudyIngestEntry studyIngestEntry =  transformStudy(study);
+         Optional<StudySolr> optionalStudySolr = studySolrRepository.findBySubmissionIdAndAccessionId(study.getSubmissionId(), study.getAccession());
+         if(optionalStudySolr.isPresent()) {
+             log.info("Study is present in Solr");
+             studySolrRepository.delete(optionalStudySolr.get());
+         }
+        createSolrStudy(studyIngestEntry);
+        deleteStudyIngestEntry(studyIngestEntry);
+    }
+
+    @Override
+    public StudySolr getDetailsFromSolr(String seqId) {
+        return Optional.ofNullable(studySolrRepository.findById(seqId)).filter(Optional::isPresent)
+                .map(Optional::get).orElse(null);
+    }
+
+    public StudyIngestEntry transformStudy(Study study ){
+
+
+            StudyIngestEntry studyIngestEntry = new StudyIngestEntry();
+            studyIngestEntry.setAccessionId(study.getAccession());
+            studyIngestEntry.setSubmissionId(study.getSubmissionId());
+            studyIngestEntry.setReportedTrait(Optional.ofNullable(study.getDiseaseTrait())
+                    .map((id) -> diseaseTraitRepository.findById(id))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(DiseaseTrait::getTrait).orElse(null));
+            studyIngestEntry.setEfoTraits(study.getEfoTraits() != null ?
+                            study.getEfoTraits().stream()
+                            .map(efoId -> efoTraitRepository.findById(efoId))
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .map(EfoTrait::getTrait)
+                            .collect(Collectors.toList()) :null);
+            studyIngestEntry.setGxeFlag(study.getGxeFlag());
+            studyIngestEntry.setPooledFlag(study.getPooledFlag());
+            studyIngestEntry.setSumstatsFlag(study.getSumstatsFlag());
+            studyIngestEntry.setNotes(Optional.ofNullable
+                    (noteRepository.findBySubmissionIdAndStudyTag(study.getSubmissionId(), study.getStudyTag()))
+                    .filter(notes -> !notes.isEmpty())
+                    .map(notes -> notes.stream()
+                            .map(note -> note.getNote())
+                            .collect(Collectors.toList())).orElse(null));
+
+            Publication publication = Optional.ofNullable(study.getPmids())
+                    .filter(pmids -> !pmids.isEmpty())
+                    .map(pmids -> pmids.get(0))
+                    .map(pmid -> publicationRepository.findByPmid(pmid))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .orElse(null);
+            if(publication != null) {
+                studyIngestEntry.setFirstAuthor(publication.getFirstAuthor());
+                studyIngestEntry.setPublicationDate(publication.getPublicationDate());
+                studyIngestEntry.setTitle(publication.getTitle());
+                studyIngestEntry.setPmid(publication.getPmid());
+            } else {
+                BodyOfWork bodyOfWork =   Optional.ofNullable(study.getBodyOfWorkList())
+                        .filter(bows -> !bows.isEmpty() )
+                        .map(bows -> bows.get(0))
+                        .map(bowId -> bodyOfWorkRepository.findByBowId(bowId))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .orElse(null);
+                if(bodyOfWork != null){
+                    studyIngestEntry.setTitle(bodyOfWork.getTitle());
+                    studyIngestEntry.setBowId(bodyOfWork.getBowId());
+                }
+            }
+            return studyIngestEntryRepository.save(studyIngestEntry);
+
+    }
+
 }

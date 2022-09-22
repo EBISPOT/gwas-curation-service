@@ -2,6 +2,7 @@ package uk.ac.ebi.spot.gwas.curation.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import uk.ac.ebi.spot.gwas.curation.solr.domain.StudySolr;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
@@ -20,7 +21,7 @@ public interface StudiesService {
 
     public Page<Study> getStudies(String submissionId,  Pageable page);
 
-    //public Page<Study> getStudies( Pageable page, SearchStudyDTO searchStudyDTO);
+    public Page<StudySolr> getStudies(Pageable page, SearchStudyDTO searchStudyDTO);
 
     public DiseaseTrait getDiseaseTraitsByStudyId(String studyId);
 

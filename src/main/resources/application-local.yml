@@ -13,6 +13,9 @@ spring:
       uri: ${mongo-server}
     solr:
       host: ${solr-server}
+    rabbitmq:
+      host: localhost
+      port: 5672
 
 gwas-curation:
   #db: deposition-backend-sandbox
@@ -29,7 +32,8 @@ quartz:
     dbName: gwasdepo
 
 gwas-deposition-service:
-  url: http://hh-rke-wp-webadmin-09-worker-2.caas.ebi.ac.uk:30183/gwas/deposition/api
+  #url: http://hh-rke-wp-webadmin-09-worker-2.caas.ebi.ac.uk:30183/gwas/deposition/api
+  url: http://localhost:8082
   fileupload:
     endpoints:
       submission: /v1/submissions/
