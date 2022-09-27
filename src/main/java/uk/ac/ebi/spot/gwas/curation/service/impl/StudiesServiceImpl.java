@@ -1,5 +1,6 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
+//import com.querydsl.core.types.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,15 +13,22 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.spot.gwas.curation.rabbitmq.StudyIngestPublisher;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
+import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
+import uk.ac.ebi.spot.gwas.curation.solr.domain.StudySolr;
+import uk.ac.ebi.spot.gwas.curation.solr.repository.StudySolrRepository;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
+//import uk.ac.ebi.spot.gwas.deposition.domain.QStudy;
+//import uk.ac.ebi.spot.gwas.deposition.domain.QStudy;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
@@ -40,6 +48,9 @@ public class StudiesServiceImpl implements StudiesService {
     private DiseaseTraitService diseaseTraitService;
 
     @Autowired
+    private EfoTraitService efoTraitService;
+
+    @Autowired
     StudySampleDescPatchRequestAssembler studySampleDescPatchRequestAssembler;
 
     @Autowired
@@ -54,10 +65,18 @@ public class StudiesServiceImpl implements StudiesService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    @Autowired
+    StudySolrRepository studySolrRepository;
+
+    @Autowired
+    StudyIngestPublisher studyIngestPublisher;
+
     @Override
     public Study updateStudies(Study study) {
         log.info("Inside updateStudies");
-        return studyRepository.save(study);
+        Study updatedStudy = studyRepository.save(study);
+        sendStudyChangeMessage(updatedStudy);
+        return updatedStudy;
     }
 
     @Override
@@ -76,7 +95,219 @@ public class StudiesServiceImpl implements StudiesService {
 
     @Override
     public Page<Study> getStudies(String submissionId,  Pageable page) {
+
         return studyRepository.findBySubmissionId(submissionId, page);
+    }
+
+
+    @Override
+    public Page<StudySolr> getStudies(Pageable page, SearchStudyDTO searchStudyDTO) {
+
+        if(searchStudyDTO != null) {
+
+            Boolean sumStatsFlag = searchStudyDTO.getSumstatsFlag();
+            Boolean pooledFlag = searchStudyDTO.getPooledFlag();
+            Boolean gxeFlag = searchStudyDTO.getGxeFlag();
+            String efo = searchStudyDTO.getEfoTrait();
+            String reportedTrait = searchStudyDTO.getReportedTrait();
+            String note = searchStudyDTO.getNote();
+
+            if (efo != null && reportedTrait != null && note != null &&
+                    sumStatsFlag != null && pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndNotesAndSumstatsFlagOrGxeFlagOrPooledFlag(efo, reportedTrait, note,
+                        sumStatsFlag, gxeFlag, pooledFlag, page);
+            } else if (efo != null && reportedTrait != null && note != null &&
+                    sumStatsFlag != null && pooledFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndNotesAndSumstatsFlagOrPooledFlag(efo, reportedTrait, note,
+                        sumStatsFlag, pooledFlag, page);
+            } else if (efo != null && reportedTrait != null && note != null &&
+                    sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndNotesAndSumstatsFlagOrGxeFlag(efo, reportedTrait, note,
+                        sumStatsFlag, gxeFlag, page);
+            } else if (efo != null && reportedTrait != null && note != null &&
+                    pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndNotesAndPooledFlagOrGxeFlag(efo, reportedTrait, note,
+                        pooledFlag, gxeFlag, page);
+            } else if (efo != null && reportedTrait != null && note != null &&
+                    sumStatsFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndNotesAndSumstatsFlag(efo, reportedTrait, note,
+                        sumStatsFlag, page);
+            } else if (efo != null && reportedTrait != null && note != null &&
+                    pooledFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndNotesAndPooledFlag(efo, reportedTrait, note,
+                        pooledFlag, page);
+            } else if (efo != null && reportedTrait != null && note != null &&
+                    gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndNotesAndGxeFlag(efo, reportedTrait, note,
+                        gxeFlag, page);
+            } else if (efo != null && reportedTrait != null
+                    && note != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndNotes(efo, reportedTrait, note, page);
+            } else if (efo != null && note != null && pooledFlag != null
+                    && sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndNotesAndSumstatsFlagOrGxeFlagOrPooledFlag(efo
+                        , note, pooledFlag, sumStatsFlag, gxeFlag, page);
+            } else if (efo != null && note != null && sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndNotesAndSumstatsFlagOrGxeFlag(efo,
+                        note, sumStatsFlag, gxeFlag, page);
+            } else if (efo != null && note != null && sumStatsFlag != null && pooledFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndNotesAndSumstatsFlagOrPooledFlag(efo,
+                        note, sumStatsFlag, pooledFlag, page);
+            } else if (efo != null && note != null && pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndNotesAndPooledFlagOrGxeFlag(efo,
+                        note, sumStatsFlag, pooledFlag, page);
+            } else if (efo != null && note != null && pooledFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndNotesAndPooledFlag(efo,
+                        note, pooledFlag, page);
+            } else if (efo != null && note != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndNotesAndGxeFlag(efo,
+                        note, gxeFlag, page);
+            } else if (efo != null && note != null && sumStatsFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndNotesAndSumstatsFlag(efo,
+                        note, sumStatsFlag, page);
+            } else if (efo != null && note != null) {
+                return studySolrRepository.findByEfoTraitsAndNotes(efo,
+                        note, page);
+            }else if (reportedTrait != null && note != null && pooledFlag != null
+                    && sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByReportedTraitAndNotesAndSumstatsFlagOrGxeFlagOrPooledFlag(reportedTrait
+                        , note, pooledFlag, sumStatsFlag, gxeFlag, page);
+            } else if (reportedTrait != null && note != null && sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByReportedTraitAndNotesAndSumstatsFlagOrGxeFlag(reportedTrait,
+                        note, sumStatsFlag, gxeFlag, page);
+            } else if (reportedTrait != null && note != null && sumStatsFlag != null && pooledFlag != null) {
+                return studySolrRepository.findByReportedTraitAndNotesAndSumstatsFlagOrPooledFlag(reportedTrait,
+                        note, sumStatsFlag, pooledFlag, page);
+            } else if (reportedTrait != null && note != null && pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByReportedTraitAndNotesAndPooledFlagOrGxeFlag(reportedTrait,
+                        note, pooledFlag, gxeFlag, page);
+            } else if (reportedTrait != null && note != null && pooledFlag != null) {
+                return studySolrRepository.findByReportedTraitAndNotesAndPooledFlag(reportedTrait,
+                        note, pooledFlag, page);
+            } else if (reportedTrait != null && note != null && gxeFlag != null) {
+                return studySolrRepository.findByReportedTraitAndNotesAndGxeFlag(reportedTrait,
+                        note, gxeFlag, page);
+            } else if (reportedTrait != null && note != null && sumStatsFlag != null) {
+                return studySolrRepository.findByReportedTraitAndNotesAndSumstatsFlag(reportedTrait,
+                        note, sumStatsFlag, page);
+            } else if (reportedTrait != null && note != null) {
+                return studySolrRepository.findByReportedTraitAndNotes(reportedTrait,
+                        note, page);
+            } else if (efo != null && reportedTrait != null && sumStatsFlag != null && pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndSumstatsFlagOrGxeFlagOrPooledFlag(efo, reportedTrait,
+                        sumStatsFlag, gxeFlag, pooledFlag, page);
+            } else if (efo != null && reportedTrait != null && sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndSumstatsFlagOrGxeFlag(efo, reportedTrait,
+                        sumStatsFlag, gxeFlag, page);
+            } else if (efo != null && reportedTrait != null && pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndPooledFlagOrGxeFlag(efo, reportedTrait,
+                        pooledFlag, gxeFlag, page);
+            } else if (efo != null && reportedTrait != null && pooledFlag != null && sumStatsFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndPooledFlagOrSumstatsFlag(efo, reportedTrait,
+                        pooledFlag, sumStatsFlag, page);
+            } else if (efo != null && reportedTrait != null && pooledFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndPooledFlag(efo, reportedTrait,
+                        pooledFlag, page);
+            } else if (efo != null && reportedTrait != null && sumStatsFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndSumstatsFlag(efo, reportedTrait,
+                        sumStatsFlag, page);
+            } else if (efo != null && reportedTrait != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTraitAndGxeFlag(efo, reportedTrait,
+                        gxeFlag, page);
+            } else if (efo != null && pooledFlag != null && sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndSumstatsFlagOrGxeFlagOrPooledFlag(efo
+                        , pooledFlag, sumStatsFlag, gxeFlag, page);
+            } else if (efo != null && pooledFlag != null && sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndSumstatsFlagOrGxeFlag(efo
+                        , sumStatsFlag, gxeFlag, page);
+            } else if (efo != null && pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndPooledFlagOrGxeFlag(efo
+                        , pooledFlag, gxeFlag, page);
+            } else if (efo != null && pooledFlag != null && sumStatsFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndPooledFlagOrSumstatsFlag(efo
+                        , pooledFlag, sumStatsFlag, page);
+            } else if (efo != null && pooledFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndPooledFlag(efo
+                        , pooledFlag, page);
+            } else if (efo != null && sumStatsFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndSumstatsFlag(efo
+                        , pooledFlag, page);
+            } else if (efo != null && gxeFlag != null) {
+                return studySolrRepository.findByEfoTraitsAndGxeFlag(efo
+                        , gxeFlag, page);
+            } else if (reportedTrait != null &&
+                    pooledFlag != null && sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByReportedTraitAndSumstatsFlagOrGxeFlagOrPooledFlag(reportedTrait
+                        , pooledFlag, sumStatsFlag, gxeFlag, page);
+            } else if (reportedTrait != null && sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByReportedTraitAndSumstatsFlagOrGxeFlag(reportedTrait
+                        , sumStatsFlag, gxeFlag, page);
+            } else if (reportedTrait != null && pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByReportedTraitAndPooledFlagOrGxeFlag(reportedTrait
+                        , pooledFlag, gxeFlag, page);
+            } else if (reportedTrait != null && pooledFlag != null && sumStatsFlag != null) {
+                return studySolrRepository.findByReportedTraitAndPooledFlagOrSumstatsFlag(reportedTrait
+                        , pooledFlag, sumStatsFlag, page);
+            } else if (reportedTrait != null && pooledFlag != null) {
+                return studySolrRepository.findByReportedTraitAndPooledFlag(reportedTrait
+                        , pooledFlag, page);
+            } else if (reportedTrait != null && sumStatsFlag != null) {
+                return studySolrRepository.findByReportedTraitAndSumstatsFlag(reportedTrait
+                        , sumStatsFlag, page);
+            } else if (reportedTrait != null && gxeFlag != null) {
+                return studySolrRepository.findByReportedTraitAndGxeFlag(reportedTrait
+                        , gxeFlag, page);
+            } else if (note != null && sumStatsFlag != null && gxeFlag != null && pooledFlag != null) {
+                return studySolrRepository.findByNotesAndSumstatsFlagOrGxeFlagOrPooledFlag(note, sumStatsFlag, gxeFlag, pooledFlag, page);
+            } else if (note != null && sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByNotesAndSumstatsFlagOrGxeFlag(note, sumStatsFlag, gxeFlag, page);
+            } else if (note != null && sumStatsFlag != null && pooledFlag != null) {
+                return studySolrRepository.findByNotesAndSumstatsFlagOrPooledFlag(note, sumStatsFlag, pooledFlag, page);
+            } else if (note != null && pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByNotesAndPooledFlagOrGxeFlag(note, pooledFlag, gxeFlag, page);
+            } else if (note != null && pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByNotesAndPooledFlagOrGxeFlag(note, pooledFlag, gxeFlag, page);
+            } else if (note != null && pooledFlag != null) {
+                return studySolrRepository.findByNotesAndPooledFlag(note, pooledFlag, page);
+            } else if (note != null && gxeFlag != null) {
+                return studySolrRepository.findByNotesAndGxeFlag(note, gxeFlag, page);
+            } else if (note != null && sumStatsFlag != null) {
+                return studySolrRepository.findByNotesAndSumstatsFlag(note, sumStatsFlag, page);
+            } else if (efo != null && reportedTrait != null) {
+                return studySolrRepository.findByEfoTraitsAndReportedTrait(efo, reportedTrait, page);
+            } else if (efo != null) {
+                return studySolrRepository.findByEfoTraits(efo, page);
+            } else if (reportedTrait != null) {
+                return studySolrRepository.findByReportedTrait(reportedTrait, page);
+            } else if (searchStudyDTO.getPmid() != null) {
+                return studySolrRepository.findByPmid(searchStudyDTO.getPmid(), page);
+            } else if (searchStudyDTO.getSubmissionId() != null) {
+                return studySolrRepository.findBySubmissionId(searchStudyDTO.getSubmissionId(), page);
+            } else if (searchStudyDTO.getBowId() != null) {
+                return studySolrRepository.findByBowId(searchStudyDTO.getBowId(), page);
+            } else if (searchStudyDTO.getAccessionId() != null) {
+                return studySolrRepository.findByAccessionId(searchStudyDTO.getAccessionId(), page);
+            } else if (sumStatsFlag != null && pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findBySumstatsFlagOrPooledFlagOrGxeFlag(sumStatsFlag, pooledFlag, gxeFlag, page);
+            } else if (sumStatsFlag != null && pooledFlag != null) {
+                return studySolrRepository.findBySumstatsFlagOrPooledFlag(sumStatsFlag, pooledFlag, page);
+            } else if (pooledFlag != null && gxeFlag != null) {
+                return studySolrRepository.findByPooledFlagOrGxeFlag(pooledFlag, gxeFlag, page);
+            } else if (sumStatsFlag != null && gxeFlag != null) {
+                return studySolrRepository.findBySumstatsFlagOrGxeFlag(sumStatsFlag, gxeFlag, page);
+            } else if (sumStatsFlag != null) {
+                return studySolrRepository.findBySumstatsFlag(sumStatsFlag, page);
+            } else if (pooledFlag != null) {
+                return studySolrRepository.findByPooledFlag(pooledFlag, page);
+            } else if (gxeFlag != null) {
+                return studySolrRepository.findByGxeFlag(gxeFlag, page);
+            } else if (note != null) {
+                log.info("Note Param ->" + note);
+                return studySolrRepository.findByNotes(note, page);
+            }
+        }
+        return studySolrRepository.findAll(page);
+
     }
 
     public DiseaseTrait getDiseaseTraitsByStudyId(String studyId) {
@@ -196,6 +427,7 @@ public class StudiesServiceImpl implements StudiesService {
                     .set("backgroundEfoTraits", study.getBackgroundEfoTraits())
                     .set("diseaseTrait", study.getDiseaseTrait());
             bulkOps.updateOne(query, update);
+            sendStudyChangeMessage(study);
         }
         if (!studiesToSave.isEmpty()) {
             bulkOps.execute();
@@ -278,5 +510,9 @@ public class StudiesServiceImpl implements StudiesService {
         return  finalUploadBuilder.toString().getBytes();
 
 
+    }
+
+    public void sendStudyChangeMessage(Study study){
+        studyIngestPublisher.send(StudyDtoAssembler.assemble(study));
     }
 }

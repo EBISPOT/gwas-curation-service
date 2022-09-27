@@ -30,4 +30,13 @@ public class DepositionCurationConstants {
     public static final String PARAM_LOCK_STATUS = "lockStatus";
     public static final String ANALYSIS_STATUS_PROCESSING = "PROCESSING";
     public static final String ANALYSIS_STATUS_DONE = "DONE";
+    public static final String STUDY_COLLECTION = "studies";
+    public static final String API_INGEST_STUDIES = "/ingest-studies";
+    public static final String API_SOLR_STUDIES ="/solr/studies";
+    public static final String API_POPULATE_SOLR_STUDIES = "/reindex-studies";
+    public static final String QUEUE_NAME = "study_change";
+    public static final String EXCHANGE_NAME = "study_change_exchange";
+    public static final String ROUTING_KEY = "study-ingest";
+    public static final String API_SOLR_REMOVE = "/remove-studies";
+
 }

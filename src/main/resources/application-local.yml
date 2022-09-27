@@ -1,6 +1,7 @@
 #===============COMPULSORY PROGRAM ARGUMENTS=====#
 mongo-server:
 auth-enable:
+solr-server:
 #===============COMPULSORY PROGRAM ARGUMENTS=====#
 
 server:
@@ -10,6 +11,11 @@ spring:
   data:
     mongodb:
       uri: ${mongo-server}
+    solr:
+      host: ${solr-server}
+    rabbitmq:
+      host: localhost
+      port: 5672
 
 gwas-curation:
   #db: deposition-backend-sandbox
@@ -18,13 +24,16 @@ gwas-curation:
     enabled: ${auth-enable}
     curators:
       auth-mechanism: EMAIL_WHITELISTING
+  solr:
+    enabled: true
 
 quartz:
   scheduler:
     dbName: gwasdepo
 
 gwas-deposition-service:
-  url: http://hh-rke-wp-webadmin-09-worker-2.caas.ebi.ac.uk:30183/gwas/deposition/api
+  #url: http://hh-rke-wp-webadmin-09-worker-2.caas.ebi.ac.uk:30183/gwas/deposition/api
+  url: http://localhost:8082
   fileupload:
     endpoints:
       submission: /v1/submissions/

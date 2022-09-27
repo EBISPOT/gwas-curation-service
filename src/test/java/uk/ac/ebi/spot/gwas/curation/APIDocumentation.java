@@ -285,7 +285,7 @@ public class APIDocumentation {
         when(efoTraitService.getEfoTraits(any(), any())).thenReturn(TestUtil.mockEfoTraits());
         when(efoTraitDtoAssembler.toResource(any())).thenReturn(TestUtil.mockEfoTraitAssemblyResource());
 
-        when(studiesService.getStudies(any(), any())).thenReturn(TestUtil.mockStudies());
+        //when(studiesService.getStudies(any(), any())).thenReturn(TestUtil.mockStudies());
         when(studiesService.getStudy(any())).thenReturn(TestUtil.mockStudy());
         when(studyDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResourceForStudy());
         when(bindingResult.hasErrors()).thenReturn(false);

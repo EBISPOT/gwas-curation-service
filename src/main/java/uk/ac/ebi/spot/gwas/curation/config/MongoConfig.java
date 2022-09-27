@@ -38,6 +38,9 @@ public class MongoConfig {
         @Autowired
         private DepositionCurationConfig depositionCurationConfig;
 
+
+
+
        /* @Override
         protected String getDatabaseName() {
             String serviceName = systemConfigProperties.getServerName();
