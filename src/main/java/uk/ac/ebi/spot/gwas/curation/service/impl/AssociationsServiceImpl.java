@@ -6,9 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.AssociationRepository;
 import uk.ac.ebi.spot.gwas.curation.service.AssociationsService;
+import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.Association;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.SnpStatusReportDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.SnpValidationReport;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AssociationsServiceImpl implements AssociationsService {
@@ -17,6 +23,9 @@ public class AssociationsServiceImpl implements AssociationsService {
 
     @Autowired
     private AssociationRepository associationRepository;
+
+    @Autowired
+    private FileHandler fileHandler;
 
 
 
@@ -32,6 +41,37 @@ public class AssociationsServiceImpl implements AssociationsService {
         return null;
     }
 
+    @Override
+    public List<Association> getAssociations(String submissionId) {
+        return associationRepository.readBySubmissionId(submissionId).collect(Collectors.toList());
+    }
 
+    @Override
+    public byte[] getSnpValidationReportTsv(String submissionId) {
+        List<Association> associations = getAssociations(submissionId);
+        List<SnpValidationReport> snpValidationReports = new ArrayList<>();
+        for (Association association: associations) {
+            if (association.getValid() == null || !association.getValid()) {
+                SnpValidationReport snpValidationReport = new SnpValidationReport(association.getVariantId(), "Not found in Ensembl");
+                snpValidationReports.add(snpValidationReport);
+            }
+        }
+        return fileHandler.serializePojoToTsv(snpValidationReports);
+    }
 
+    @Override
+    public void approveSnps(String submissionId) {
+        associationRepository.readBySubmissionId(submissionId).parallel().forEach(association -> {
+            association.setApproved(true);
+            associationRepository.save(association);
+        });
+    }
+
+    @Override
+    public SnpStatusReportDto getSnpStatus(String submissionId) {
+        SnpStatusReportDto snpStatusReportDto = new SnpStatusReportDto();
+        snpStatusReportDto.setNoApprovedSnps(associationRepository.countByIsApprovedAndSubmissionId(true, submissionId));
+        snpStatusReportDto.setNoValidSnps(associationRepository.countByIsValidAndSubmissionId(true, submissionId));
+        return snpStatusReportDto;
+    }
 }

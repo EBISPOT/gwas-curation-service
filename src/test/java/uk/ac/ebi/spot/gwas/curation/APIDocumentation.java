@@ -290,7 +290,7 @@ public class APIDocumentation {
         when(studyDtoAssembler.toResource(any())).thenReturn(TestUtil.mockAssemblyResourceForStudy());
         when(bindingResult.hasErrors()).thenReturn(false);
         when(fileUploadRequest.getMultipartFile()).thenReturn(multipartFile);
-        when(studiesService.updateTraitsForStudies(any(),any())).thenReturn(TestUtil.mockTraitUploadReportsForStudyTraits());
+        //when(studiesService.updateTraitsForStudies(any(),any())).thenReturn(TestUtil.mockTraitUploadReportsForStudyTraits());
         //when(studyPatchRequestAssembler.disassemble(any())).thenReturn(TestUtil.mockStudyPatchRequests());
 
         when(studyDtoAssembler.disassembleForExsitingStudy(any(), any())).thenReturn(TestUtil.mockStudy());
