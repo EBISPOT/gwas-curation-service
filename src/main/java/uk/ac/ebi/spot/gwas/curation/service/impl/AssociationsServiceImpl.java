@@ -1,8 +1,14 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
+import com.mongodb.bulk.BulkWriteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.BulkOperations;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.AssociationRepository;
 import uk.ac.ebi.spot.gwas.curation.service.AssociationsService;
@@ -14,6 +20,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.SnpValidationReport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +33,9 @@ public class AssociationsServiceImpl implements AssociationsService {
 
     @Autowired
     private FileHandler fileHandler;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
 
 
@@ -61,10 +71,22 @@ public class AssociationsServiceImpl implements AssociationsService {
 
     @Override
     public void approveSnps(String submissionId) {
+        log.info("Started approving SNPs for submission: {}", submissionId);
+        AtomicBoolean found = new AtomicBoolean(false);
+        BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, Association.class);
         associationRepository.readBySubmissionId(submissionId).parallel().forEach(association -> {
-            association.setApproved(true);
-            associationRepository.save(association);
+            Query query = new Query().addCriteria(new Criteria("id").is(association.getId()));
+            Update update = new Update().set("isApproved", true);
+            bulkOps.updateOne(query, update);
+            found.set(true);
         });
+        BulkWriteResult bulkWriteResult = null;
+        if (found.get()) {
+            bulkWriteResult = bulkOps.execute();
+        }
+        if (bulkWriteResult != null && bulkWriteResult.wasAcknowledged()) {
+            log.info("Finished approving SNPs for submission: {}", submissionId);
+        }
     }
 
     @Override
