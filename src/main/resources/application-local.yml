@@ -8,14 +8,15 @@ server:
   port: 8081
 
 spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
   data:
     mongodb:
       uri: ${mongo-server}
     solr:
       host: ${solr-server}
-    rabbitmq:
-      host: localhost
-      port: 5672
+
 
 gwas-curation:
   #db: deposition-backend-sandbox
