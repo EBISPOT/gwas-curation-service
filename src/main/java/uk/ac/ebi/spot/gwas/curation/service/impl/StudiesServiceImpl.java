@@ -421,7 +421,7 @@ public class StudiesServiceImpl implements StudiesService {
         });
         BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, Study.class);
         for (Study study: studiesToSave.values()) {
-            Query query = new Query().addCriteria(new Criteria("id").is(study.getId()));
+            Query query = new Query().addCriteria(new Criteria("id  ").is(study.getId()));
             Update update = new Update()
                     .set("efoTraits", study.getEfoTraits())
                     .set("backgroundEfoTraits", study.getBackgroundEfoTraits())
