@@ -39,5 +39,8 @@ public class DepositionCurationConstants {
     public static final String EXCHANGE_NAME = "study_change_exchange";
     public static final String ROUTING_KEY = "study-ingest";
     public static final String API_SOLR_REMOVE = "/remove-studies";
+    public static final String API_PUBLICATIONS = "/publications";
+    public static final String API_CURATORS = "/curators";
+    public static final String API_CURATORSTATUS = "/curator-status";
 
 }

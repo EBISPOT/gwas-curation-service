@@ -46,7 +46,7 @@ public class FilterStudiesController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public PagedResources<StudyDto> getStudies(SearchStudyDTO searchStudyDTO,
                                                PagedResourcesAssembler assembler,
-                                               @SortDefault(sort = "accessionId", direction = Sort.Direction.DESC)
+                                               //@SortDefault(sort = "accessionId", direction = Sort.Direction.DESC)
                                                @PageableDefault(size = 10, page = 0) Pageable pageable) {
         if(searchStudyDTO != null ) {
             log.info("searchStudyDTO Params are ->"+ searchStudyDTO.getReportedTrait());

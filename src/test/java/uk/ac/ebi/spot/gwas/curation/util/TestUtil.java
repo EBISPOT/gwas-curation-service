@@ -1151,6 +1151,9 @@ public class TestUtil {
     }
 
 
+
+
+
     public static List<DiseaseTrait> mockDiseaseTraitsList() {
 
         List<DiseaseTrait> traits = new ArrayList<>();
@@ -1317,63 +1320,74 @@ public class TestUtil {
         Study study = new Study();
         study.setId("jakjkjakjk");
         study.setAccession("GCST90000123");
+        study.setDiseaseTrait("xyz");
         String[] diseaseTraits1 = {"trait1","trait2","trait3"};
+        study.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         Study study1 = new Study();
         study1.setId("lkalklak");
         study1.setAccession("GCST90000124");
-        String[] diseaseTraits2 = {"trait1","trait2","trait3"};
+        study1.setDiseaseTrait("xyz");
+        study1.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         Study study2 = new Study();
         study2.setId("hdakhkdah");
         study2.setAccession("GCST90000125");
-        String[] diseaseTraits3 = {"trait1","trait2","trait3"};
+        study2.setDiseaseTrait("xyz");
+        study2.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         Study study3 = new Study();
         study3.setId("jhskkjskajkj");
         study3.setAccession("GCST90000126");
-        String[] diseaseTraits4 = {"trait1","trait2","trait3"};
+        study3.setDiseaseTrait("xyz");
+        study3.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
 
         Study study4 = new Study();
         study4.setId("uguaiuiadjgjh");
         study4.setAccession("GCST90000127");
-        String[] diseaseTraits5 = {"trait1","trait2","trait3"};
+        study4.setDiseaseTrait("xyz");
+        study4.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
 
         Study study5 = new Study();
         study5.setId("ajdgugajdkgjk");
         study5.setAccession("GCST90000128");
-        String[] diseaseTraits6 = {"trait1","trait2","trait3"};
+        study5.setDiseaseTrait("xyz");
+        study5.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         Study study6 = new Study();
         study6.setId("hkjhjhkjhjkhjh");
         study6.setAccession("GCST90000129");
-        String[] diseaseTraits7 = {"trait1","trait2","trait3"};
+        study6.setDiseaseTrait("xyz");
+        study6.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         Study study7 = new Study();
         study7.setId("sjhjshajhs");
         study7.setAccession("GCST90000130");
-        String[] diseaseTraits8 = {"trait1","trait2","trait3"};
+        study7.setDiseaseTrait("xyz");
+        study7.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         Study study8 = new Study();
         study8.setId("sjhjshajhs");
         study8.setAccession("GCST90000131");
-        String[] diseaseTraits9 = {"trait1","trait2","trait3"};
+        study8.setDiseaseTrait("xyz");
+        study8.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         Study study9 = new Study();
         study9.setId("akjakjkjak");
         study9.setAccession("GCST90000131");
-        String[] diseaseTraits10 = {"trait1","trait2","trait3"};
+        study9.setDiseaseTrait("xyz");
+        study9.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         Study study10 = new Study();
