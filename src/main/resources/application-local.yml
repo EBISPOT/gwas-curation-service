@@ -7,6 +7,12 @@ solr-server:
 server:
   port: 8081
 
+
+logging:
+  level:
+    org:
+      springframework: ERROR
+
 spring:
   rabbitmq:
     host: localhost
@@ -53,3 +59,9 @@ goci:
       reported-traits-upload: /api/v1/disease-traits/uploads
       reported-traits: /api/v1/disease-traits
       search-reported-traits: /api/v1/disease-traits/search
+
+
+rabbitmq:
+  queue-name: study_change_sandbox
+  exchange-name: study_change_exchange_sandbox
+  routing-key: study-ingest_sandbox

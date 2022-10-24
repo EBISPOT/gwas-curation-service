@@ -134,7 +134,8 @@
                     <doctype>book</doctype>
                     <attributes>
                         <!--<toc/>-->
-                        <!--<imagesdir>img</imagesdir>-->
+                        <!--<imagesdir>img</imagesdi
+                        r>-->
                         <snippets>${snippetsDirectory}</snippets>
                     </attributes>
                     <!--<headerFooter>false</headerFooter>-->

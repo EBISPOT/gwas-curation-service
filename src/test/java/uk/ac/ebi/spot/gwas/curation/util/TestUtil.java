@@ -23,6 +23,7 @@ import uk.ac.ebi.spot.gwas.curation.rest.StudiesController;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
 
 import uk.ac.ebi.spot.gwas.curation.rest.dto.ProvenanceDtoAssembler;
+import uk.ac.ebi.spot.gwas.curation.solr.domain.StudySolr;
 import uk.ac.ebi.spot.gwas.deposition.domain.*;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
@@ -1274,6 +1275,108 @@ public class TestUtil {
         return user;
     }
 
+    public static List<Note> mockNote() {
+        Note note = new Note();
+        note.setStudyTag("test");
+        note.setNoteSubject("test");
+        note.setSubmissionId("1234");
+        note.setNote("test");
+        note.setId("23");
+
+        Note note1 = new Note();
+        note1.setStudyTag("test1");
+        note1.setNoteSubject("test1");
+        note1.setSubmissionId("12345");
+        note1.setNote("test1");
+        note1.setId("234");
+
+        return Arrays.asList(new Note[]{note, note1});
+    }
+
+    public static Publication mockPublication() {
+        Publication publication = new Publication();
+        publication.setId("1234");
+        publication.setPublicationDate(DateTime.now().toLocalDate());
+        publication.setCorrespondingAuthor(null);
+        publication.setCurator("test");
+        publication.setCurationStatus("test");
+        publication.setPmid("12345678");
+        publication.setPushed(true);
+        publication.setTitle("test");
+        publication.setSubmitter("test");
+        publication.setJournal("test123");
+        return publication;
+    }
+
+    public static BodyOfWork mockBodyOfWork() {
+        BodyOfWork bodyOfWork = new BodyOfWork();
+        bodyOfWork.setArchived(false);
+        bodyOfWork.setBowId("GCP000034");
+        bodyOfWork.setId("1234");
+        bodyOfWork.setStatus("test");
+        bodyOfWork.setTitle("test");
+        return bodyOfWork;
+    }
+
+    public static StudyIngestEntry mockStudyIngestEntry() {
+        StudyIngestEntry studyIngestEntry = new StudyIngestEntry();
+        studyIngestEntry.setTitle("test");
+        studyIngestEntry.setPmid("12345678");
+        studyIngestEntry.setNotes(Arrays.asList(new String[] {"note1", "note2"}));
+        studyIngestEntry.setPublicationDate(DateTime.now().toLocalDate());
+        studyIngestEntry.setFirstAuthor("test");
+        studyIngestEntry.setReportedTrait("trait1");
+        studyIngestEntry.setEfoTraits(Arrays.asList(new String[] {"trait1", "trait2"}));
+        studyIngestEntry.setSumstatsFlag(false);
+        studyIngestEntry.setPooledFlag(true);
+        studyIngestEntry.setGxeFlag(true);
+        studyIngestEntry.setSubmissionId("1234abcd");
+        studyIngestEntry.setAccessionId("GCST123456");
+        return studyIngestEntry;
+    }
+
+    public static StudySolr mockStudySolr() {
+        StudySolr studySolr = new StudySolr();
+        studySolr.setTitle("test");
+        studySolr.setPmid("12345678");
+        studySolr.setNotes(Arrays.asList(new String[] {"note1", "note2"}));
+        studySolr.setPublicationDate(DateTime.now().toLocalDate());
+        studySolr.setFirstAuthor("test");
+        studySolr.setReportedTrait("trait1");
+        studySolr.setEfoTraits(Arrays.asList(new String[] {"trait1", "trait2"}));
+        studySolr.setSumstatsFlag(false);
+        studySolr.setPooledFlag(true);
+        studySolr.setGxeFlag(true);
+        studySolr.setSubmissionId("1234abcd");
+        studySolr.setAccessionId("GCST123456");
+        return studySolr;
+    }
+
+
+    public static Page<StudyIngestEntry> mockStudyIngestEntries() {
+        List<StudyIngestEntry>  studyIngestEntries = new ArrayList<>();
+        studyIngestEntries.add(mockStudyIngestEntry());
+        studyIngestEntries.add(mockStudyIngestEntry());
+        studyIngestEntries.add(mockStudyIngestEntry());
+        studyIngestEntries.add(mockStudyIngestEntry());
+        studyIngestEntries.add(mockStudyIngestEntry());
+        studyIngestEntries.add(mockStudyIngestEntry());
+        studyIngestEntries.add(mockStudyIngestEntry());
+        studyIngestEntries.add(mockStudyIngestEntry());
+        studyIngestEntries.add(mockStudyIngestEntry());
+        studyIngestEntries.add(mockStudyIngestEntry());
+        studyIngestEntries.add(mockStudyIngestEntry());
+        studyIngestEntries.add(mockStudyIngestEntry());
+
+        Pageable pageable = new PageRequest(0 , 10);
+
+        Page<StudyIngestEntry> traitStudyIngestEntries = new PageImpl<>(studyIngestEntries, pageable,  studyIngestEntries.size());
+        return traitStudyIngestEntries;
+    }
+
+
+
+
     public static List<TraitUploadReport> mockTraitUploadReports() {
         TraitUploadReport traitUploadReport1 = new TraitUploadReport("dummy1","Trait " +
                 "successfully Inserted : dummy1",null);
@@ -1321,6 +1424,7 @@ public class TestUtil {
         study.setId("jakjkjakjk");
         study.setAccession("GCST90000123");
         study.setDiseaseTrait("xyz");
+        study.setSubmissionId("1234");
         String[] diseaseTraits1 = {"trait1","trait2","trait3"};
         study.setEfoTraits(Arrays.asList(diseaseTraits1));
 
@@ -1329,12 +1433,14 @@ public class TestUtil {
         study1.setId("lkalklak");
         study1.setAccession("GCST90000124");
         study1.setDiseaseTrait("xyz");
+        study1.setSubmissionId("1234");
         study1.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         Study study2 = new Study();
         study2.setId("hdakhkdah");
         study2.setAccession("GCST90000125");
+        study2.setSubmissionId("1234");
         study2.setDiseaseTrait("xyz");
         study2.setEfoTraits(Arrays.asList(diseaseTraits1));
 
@@ -1343,6 +1449,7 @@ public class TestUtil {
         study3.setId("jhskkjskajkj");
         study3.setAccession("GCST90000126");
         study3.setDiseaseTrait("xyz");
+        study3.setSubmissionId("1234");
         study3.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
@@ -1351,6 +1458,7 @@ public class TestUtil {
         study4.setId("uguaiuiadjgjh");
         study4.setAccession("GCST90000127");
         study4.setDiseaseTrait("xyz");
+        study4.setSubmissionId("1234");
         study4.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
@@ -1359,6 +1467,7 @@ public class TestUtil {
         study5.setId("ajdgugajdkgjk");
         study5.setAccession("GCST90000128");
         study5.setDiseaseTrait("xyz");
+        study5.setSubmissionId("1234");
         study5.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
@@ -1366,6 +1475,7 @@ public class TestUtil {
         study6.setId("hkjhjhkjhjkhjh");
         study6.setAccession("GCST90000129");
         study6.setDiseaseTrait("xyz");
+        study6.setSubmissionId("1234");
         study6.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
@@ -1373,6 +1483,7 @@ public class TestUtil {
         study7.setId("sjhjshajhs");
         study7.setAccession("GCST90000130");
         study7.setDiseaseTrait("xyz");
+        study7.setSubmissionId("1234");
         study7.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
@@ -1380,6 +1491,7 @@ public class TestUtil {
         study8.setId("sjhjshajhs");
         study8.setAccession("GCST90000131");
         study8.setDiseaseTrait("xyz");
+        study8.setSubmissionId("1234");
         study8.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
@@ -1387,19 +1499,26 @@ public class TestUtil {
         study9.setId("akjakjkjak");
         study9.setAccession("GCST90000131");
         study9.setDiseaseTrait("xyz");
+        study9.setSubmissionId("1234");
         study9.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         Study study10 = new Study();
         study10.setId("haklhkhakhkhd");
         study10.setAccession("GCST90000131");
+        study10.setDiseaseTrait("xyz");
+        study10.setSubmissionId("1234");
         String[] diseaseTraits11 = {"trait1","trait2","trait3"};
+        study10.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         Study study11 = new Study();
         study11.setId("haklhkhakhkhd");
         study11.setAccession("GCST90000131");
+        study11.setDiseaseTrait("xyz");
+        study11.setSubmissionId("1234");
         String[] diseaseTraits12 = {"trait1","trait2","trait3"};
+        study11.setEfoTraits(Arrays.asList(diseaseTraits1));
 
 
         studies.add(study);
@@ -1448,8 +1567,10 @@ public class TestUtil {
                 .studyDescription("test123")
                 .accession("GCST9000123")
                 .diseaseTrait(mockDiseaseTraitDto())
+                .efoTraits(Arrays.asList(new EfoTraitDto[] { mockEfoTraitDto(), mockEfoTraitDto()}))
                 .cohort("GT")
                 .variantCount(1234)
+                .submissionId("123456")
                 .build();
 
         return studyDto;
