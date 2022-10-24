@@ -3,6 +3,12 @@ server:
   servlet:
     context-path: /gwas/depo-curation/api
 
+
+logging:
+  level:
+    org:
+      springframework: ERROR
+
 spring:
   main:
     allow-bean-definition-overriding: true

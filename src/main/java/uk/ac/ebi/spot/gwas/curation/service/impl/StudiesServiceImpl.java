@@ -276,9 +276,15 @@ public class StudiesServiceImpl implements StudiesService {
             } else if (efo != null && reportedTrait != null) {
                 return studySolrRepository.findByEfoTraitsAndReportedTrait(efo, reportedTrait, page);
             } else if (efo != null) {
-                return studySolrRepository.findByEfoTraits(efo, page);
+                if(efo.contains(" "))
+                    return studySolrRepository.findByEfoTraits(efo, page);
+                else
+                    return studySolrRepository.findByEfoTraitsWithoutSpaces(efo, page);
             } else if (reportedTrait != null) {
-                return studySolrRepository.findByReportedTrait(reportedTrait, page);
+                if(reportedTrait.contains(" "))
+                    return studySolrRepository.findByReportedTrait(reportedTrait, page);
+                else
+                    return studySolrRepository.findByReportedTraitWithoutSpaces(reportedTrait, page);
             } else if (searchStudyDTO.getPmid() != null) {
                 return studySolrRepository.findByPmid(searchStudyDTO.getPmid(), page);
             } else if (searchStudyDTO.getSubmissionId() != null) {
@@ -303,7 +309,10 @@ public class StudiesServiceImpl implements StudiesService {
                 return studySolrRepository.findByGxeFlag(gxeFlag, page);
             } else if (note != null) {
                 log.info("Note Param ->" + note);
-                return studySolrRepository.findByNotes(note, page);
+                if(note.contains(" "))
+                    return studySolrRepository.findByNotes(note, page);
+                else
+                    return studySolrRepository.findByNotesWithoutSpaces(note, page);
             }
         }
         return studySolrRepository.findAll(page);

@@ -82,7 +82,7 @@ public class StudySolrIndexerServiceImpl implements StudySolrIndexerService {
             Page<StudyIngestEntry> studyIngestEntries = studyIngestEntryRepository.findAll(pageable);
             studyIngestEntries.forEach(studyIngestEntry -> createSolrStudy(studyIngestEntry));
         }
-        studyIngestEntryRepository.deleteAll();
+        //studyIngestEntryRepository.deleteAll();
     }
 
     private void createSolrStudy(StudyIngestEntry studyIngestEntry) {
