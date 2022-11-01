@@ -17,9 +17,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.Association;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.SnpStatusReportDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.SnpValidationReport;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -59,14 +57,20 @@ public class AssociationsServiceImpl implements AssociationsService {
     @Override
     public byte[] getSnpValidationReportTsv(String submissionId) {
         List<Association> associations = getAssociations(submissionId);
-        List<SnpValidationReport> snpValidationReports = new ArrayList<>();
+        Map<String, SnpValidationReport> snpValidationReportMap = new HashMap<>();
         for (Association association: associations) {
-            if (association.getValid() == null || !association.getValid()) {
-                SnpValidationReport snpValidationReport = new SnpValidationReport(association.getVariantId(), "Not found in Ensembl");
-                snpValidationReports.add(snpValidationReport);
+            if (!association.getValid()) {
+                SnpValidationReport snpValidationReport;
+                if (snpValidationReportMap.containsKey(association.getVariantId())) {
+                    snpValidationReport = new SnpValidationReport(association.getVariantId(), "Duplicate SNP in study");
+                }
+                else {
+                    snpValidationReport = new SnpValidationReport(association.getVariantId(), "Not found in Ensembl");
+                }
+                snpValidationReportMap.put(association.getVariantId(), snpValidationReport);
             }
         }
-        return fileHandler.serializePojoToTsv(snpValidationReports);
+        return fileHandler.serializePojoToTsv(new ArrayList<>(snpValidationReportMap.values()));
     }
 
     @Override
