@@ -52,10 +52,8 @@ public class FilterStudiesController {
             log.info("searchStudyDTO Params are ->"+ searchStudyDTO.getReportedTrait());
         }
         Page<StudySolr> studies =  studiesService.getStudies( pageable, searchStudyDTO);
-
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
                 .methodOn(FilterStudiesController.class).getStudies(searchStudyDTO,assembler, pageable));
-
         return assembler.toResource(studies, studySolrDTOAssembler,
                 new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
 
