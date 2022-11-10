@@ -104,7 +104,7 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         if (efoTraitOptional.isPresent()) {
             EfoTrait existingTrait = efoTraitOptional.get();
             if(!existingTrait.getTrait().trim().equals(efoTraitDto.getTrait().trim())) {
-                List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitContainingIgnoreCase(efoTraitDto.getTrait().trim());
+                List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitIgnoreCase(efoTraitDto.getTrait().trim());
                 if (existingEfoTraits != null && !existingEfoTraits.isEmpty()) {
                     String existingEFOsMessage = "EFO Traits already exists for trait -> " + existingTrait.getTrait().trim();
                     throw new CannotCreateTraitWithDuplicateNameException(existingEFOsMessage);
@@ -191,7 +191,7 @@ public class EfoTraitServiceImpl implements EfoTraitService {
 
     public Boolean validateEFOTraits(EfoTrait efoTrait) {
 
-        List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitContainingIgnoreCase(efoTrait.getTrait().trim());
+        List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitIgnoreCase(efoTrait.getTrait().trim());
         List<EfoTrait> existingEfoTraitsUri = efoTraitRepository.findByUri(efoTrait.getUri().trim());
         if(!CurationUtil.validateURLFormat(efoTrait.getUri().trim())) {
             String invalidURIMessage = "The URI value entered \"" + efoTrait.getUri() + "\" is not valid. " +
