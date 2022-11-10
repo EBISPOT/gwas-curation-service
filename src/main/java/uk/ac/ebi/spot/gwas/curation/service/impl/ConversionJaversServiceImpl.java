@@ -42,6 +42,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                     List<Double> commitIdChanges = changeList.stream()
                             .filter((javersChangeWrapper) ->
                                     ( javersChangeWrapper.getProperty().equals("metadataStatus")) &&
+                                            javersChangeWrapper.getLeft().toString().equals("VALIDATING") &&
                                     javersChangeWrapper.getRight().toString().equals("VALID"))
                             .map((change) -> change.getCommitMetadata().getId())
                             .collect(Collectors.toList());
@@ -90,12 +91,30 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
       List<Integer> invalidSumstatsIndexes = IntStream.range(0, javersChangeWrapperList.size())
                 .filter(i -> ( javersChangeWrapperList.get(i).getProperty().equals("summaryStatsStatus")
                 && javersChangeWrapperList.get(i).getRight().equals("INVALID")))
+                //&& javersChangeWrapperList.get(i).getLeft().toString().equals("VALIDATING")))
                 .mapToObj(i -> i)
                 .collect(Collectors.toList());
 
-        List<Double> versionList = invalidSumstatsIndexes.stream()
+        List<Double> versionList = new ArrayList<>();
+
+        if(invalidSumstatsIndexes != null && !invalidSumstatsIndexes.isEmpty()) {
+            for (int i = 0; i < invalidSumstatsIndexes.size(); i++) {
+                int idx = invalidSumstatsIndexes.get(i);
+                for (int j = idx + 1; j < javersChangeWrapperList.size(); j++) {
+
+                    if (javersChangeWrapperList.get(j).getProperty().equals("metadataStatus") &&
+                            javersChangeWrapperList.get(j).getLeft().toString().equals("VALIDATING") &&
+                            javersChangeWrapperList.get(j).getRight().toString().equals("VALID")) {
+                        versionList.add(javersChangeWrapperList.get(j).getCommitMetadata().getId());
+                        break;
+                    }
+                }
+            }
+        }
+
+/*        List<Double> versionList = invalidSumstatsIndexes.stream()
                 .map(idx -> javersChangeWrapperList.get(idx+1).getCommitMetadata().getId())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());*/
 
         versionList.forEach(version  -> log.info(" Version->"+version));
 
@@ -153,6 +172,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                 javersChangeWrapper.getProperty().equals("studies"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
                 .map(studyJaversService::processStudyTag)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         List<Study> prevStudies = oldChange.stream()
@@ -160,6 +180,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                 javersChangeWrapper.getProperty().equals("studies"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
                 .map(studyJaversService::processStudyTag)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         List<Association> newAssociations = newChange.stream()
@@ -167,6 +188,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                 javersChangeWrapper.getProperty().equals("associations"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
                 .map(associationJaversService::processAssociationTag)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
 
@@ -175,6 +197,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                 javersChangeWrapper.getProperty().equals("associations"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
                 .map(associationJaversService::processAssociationTag)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         List<Sample> newSamples = newChange.stream()
@@ -182,6 +205,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                         javersChangeWrapper.getProperty().equals("samples"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
                 .map(sampleJaversService::processSampleTag)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
 
@@ -190,6 +214,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                         javersChangeWrapper.getProperty().equals("samples"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
                 .map(sampleJaversService::processSampleTag)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         log.info("newStudies****"+newStudies);

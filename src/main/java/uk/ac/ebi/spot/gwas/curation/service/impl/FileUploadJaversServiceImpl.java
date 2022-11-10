@@ -10,7 +10,7 @@ import uk.ac.ebi.spot.gwas.deposition.javers.ElementChange;
 @Service
 public class FileUploadJaversServiceImpl implements FileUploadJaversService {
 
-        @Autowired
+    @Autowired
     FileUploadsService fileUploadsService;
 
     public FileUpload getFileUploadDetails(String fileId){
@@ -23,8 +23,13 @@ public class FileUploadJaversServiceImpl implements FileUploadJaversService {
         }
         else if(elementChange.getElementChangeType().equals("ValueRemoved")){
             return elementChange.getValue().toString();
+        }else if(elementChange.getElementChangeType().equals("ElementValueChange")) {
+            return elementChange.getRightValue().toString();
         }
-        return null;
+        else {
+            return elementChange.getLeftValue().toString();
+        }
+        //return null;
     }
 
 }
