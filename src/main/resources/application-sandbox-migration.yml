@@ -50,6 +50,8 @@ gwas-curation:
   #db: deposition-backend-sandbox
   db: gwasdepo
   proxy-prefix:
+  solr:
+    enabled: true
 
 email:
   enabled: false

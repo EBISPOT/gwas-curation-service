@@ -5,7 +5,7 @@ server:
 logging:
   level:
     org:
-      springframework: DEBUG
+      springframework: ERROR
 
 quartz:
   scheduler:
@@ -22,6 +22,8 @@ gwas-curation:
     curators:
       auth-mechanism: JWT_DOMAIN
       jwt-domains: self.GWAS_Curator
+  solr:
+    enabled: true
 
 spring:
   profiles:
