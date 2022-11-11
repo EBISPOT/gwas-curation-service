@@ -207,7 +207,7 @@
                 </logger>
         -->
 
-        <root level="DEBUG">
+        <root level="ERROR">
             <appender-ref ref="ROLLING"/>
         </root>
     </springProfile>
