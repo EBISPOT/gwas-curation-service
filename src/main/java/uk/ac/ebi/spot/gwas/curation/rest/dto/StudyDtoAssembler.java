@@ -160,7 +160,8 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 study.getReplicateSampleDescription(),
                 study.getSumstatsFlag(),
                 study.getPooledFlag(),
-                study.getGxeFlag());
+                study.getGxeFlag(),
+                study.getSubmissionId());
     }
 
     public static Study disassemble(StudyDto studyDto) {

@@ -30,6 +30,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchStudyDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudySampleDescPatchRequest;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
@@ -128,6 +129,9 @@ public class StudiesController {
                                                @PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID)  String submissionId,
                                                @SortDefault(sort = "accession", direction = Sort.Direction.DESC)
                                                    @PageableDefault(size = 10, page = 0) Pageable pageable) {
+        /*if(searchStudyDTO != null ) {
+            log.info("searchStudyDTO Params are ->"+ searchStudyDTO.getReportedTrait());
+        }*/
         Page<Study> studies =  studiesService.getStudies(submissionId, pageable);
 
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
