@@ -361,8 +361,7 @@ public class StudiesServiceImpl implements StudiesService {
 
         Map<String, EfoTrait> retrievedEfoTraits = efoTraitRepository.findByShortFormIn(shortForms).collect(Collectors.toMap(EfoTrait::getShortForm, e -> e));
         Map<String, EfoTrait> retrievedBackgroundEfoTraits = efoTraitRepository.findByShortFormIn(backgroundShortForms).collect(Collectors.toMap(EfoTrait::getShortForm, e -> e));
-        Map<String, DiseaseTrait> retrievedReportedTraits = diseaseTraitRepository.findByTraitIgnoreCaseIn(reportedTraits).collect(Collectors.toMap(DiseaseTrait::getTrait, d -> {  log.info("Seq id for Trait -> "+d.getId()+","+d.getTrait());
-                return d;}));
+        Map<String, DiseaseTrait> retrievedReportedTraits = diseaseTraitRepository.findByTraitIgnoreCaseIn(reportedTraits).collect(Collectors.toMap(DiseaseTrait::getTrait, d -> d));
         Map<String, Study> studies = studyRepository.findBySubmissionId(submissionId).collect(Collectors.toMap(Study::getAccession, s -> s));
         Map<String, Study> studiesToSave = new HashMap<>();
         List<MultiTraitStudyMappingReport> report = new ArrayList<>();
@@ -377,12 +376,12 @@ public class StudiesServiceImpl implements StudiesService {
             }
             else {
                 if(!multiTraitStudyMappingDto.getStudyTag().trim().equalsIgnoreCase(study.getStudyTag())) {
-                    log.info("Inside invalidStudyTag block()"+study.getStudyTag());
+                    //log.info("Inside invalidStudyTag block()"+study.getStudyTag());
                     invalidStudyTag = true;
                 }
 
                 if (!invalidStudyTag) {
-                    log.info("Inside validStudyTag block()"+study.getStudyTag());
+                    //log.info("Inside validStudyTag block()"+study.getStudyTag());
                     String efoTraitComments = "";
                     HashSet<String> newStudyEfos = new HashSet<>(Arrays.asList(StringUtils.deleteWhitespace(multiTraitStudyMappingDto.getEfoTraitShortForm().trim()).split("\\|")));
                     ArrayList<String> studyEfoTraitsIds = new ArrayList<>();
@@ -421,10 +420,10 @@ public class StudiesServiceImpl implements StudiesService {
 
                     String reportedTraitComments = "";
                     if (retrievedReportedTraits.containsKey(multiTraitStudyMappingDto.getReportedTrait().trim())) {
-                        log.info("Reported Trait in file:"+multiTraitStudyMappingDto.getReportedTrait().trim());
-                        log.info("GCST currently being analysed:"+study.getAccession());
+                        //log.info("Reported Trait in file:"+multiTraitStudyMappingDto.getReportedTrait().trim());
+                        //log.info("GCST currently being analysed:"+study.getAccession());
                         DiseaseTrait diseaseTrait = retrievedReportedTraits.get(multiTraitStudyMappingDto.getReportedTrait().trim());
-                        log.info("Disease Trait Id being assigned :"+diseaseTrait.getId());
+                        //log.info("Disease Trait Id being assigned :"+diseaseTrait.getId());
                         study.setDiseaseTrait(diseaseTrait.getId());
                         studiesToSave.put(study.getId(), study);
                         reportedTraitComments = reportedTraitComments.concat("Reported trait set to: " + diseaseTrait.getTrait());
@@ -442,8 +441,8 @@ public class StudiesServiceImpl implements StudiesService {
         });
         BulkOperations bulkOps = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, Study.class);
         for (Study study: studiesToSave.values()) {
-            log.info("Study GCST which are bulkuploaded -:"+study.getAccession());
-            log.info("Disease Trait Id being assigned to study is :"+study.getDiseaseTrait());
+            //log.info("Study GCST which are bulkuploaded -:"+study.getAccession());
+            //log.info("Disease Trait Id being assigned to study is :"+study.getDiseaseTrait());
             Query query = new Query().addCriteria(new Criteria("id").is(study.getId()));
             Update update = new Update()
                     .set("efoTraits", study.getEfoTraits())
