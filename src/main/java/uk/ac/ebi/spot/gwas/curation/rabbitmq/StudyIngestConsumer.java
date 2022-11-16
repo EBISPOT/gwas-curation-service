@@ -29,7 +29,11 @@ public class StudyIngestConsumer {
     @RabbitListener(queues = { DepositionCurationConstants.QUEUE_NAME_SANDBOX,
             DepositionCurationConstants.QUEUE_NAME_PROD } )
      public void listen(StudyDto studyDto) {
-        log.info("Consuming message for"+studyDto.getSubmissionId()+":"+studyDto.getAccession());
-        studySolrIndexerService.syncSolrWithStudies(studyDto);
+        try {
+            log.info("Consuming message for" + studyDto.getSubmissionId() + ":" + studyDto.getAccession());
+            studySolrIndexerService.syncSolrWithStudies(studyDto);
+        } catch(Exception ex) {
+            log.error("Error in consuming message"+ex.getMessage(),ex);
+        }
     }
 }
