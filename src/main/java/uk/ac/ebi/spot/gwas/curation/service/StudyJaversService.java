@@ -21,6 +21,6 @@ public interface StudyJaversService {
 
     public AddedRemoved getReportedEfoVersionStats(List<Study> prevStudies, List<Study> newStudies);
 
-    public Study processStudyTag(ElementChange elementChange);
+    public String processStudyTag(ElementChange elementChange);
 
 }

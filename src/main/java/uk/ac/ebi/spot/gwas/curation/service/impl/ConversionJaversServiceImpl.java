@@ -13,6 +13,7 @@ import uk.ac.ebi.spot.gwas.deposition.exception.NoVersionSummaryException;
 import uk.ac.ebi.spot.gwas.deposition.javers.*;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -33,8 +34,26 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
     @Autowired
     private FileUploadJaversService fileUploadJaversService;
 
+    @Autowired
+    private StudiesService  studiesService;
+
+    @Autowired
+    private AssociationsService associationsService;
+
+    @Autowired
+    private SamplesService samplesService;
 
 
+    /**
+     * Look for file upload events from Javers response
+     * & capture all the versionIds for the events
+     * use these versionIds to retrieve the studies,
+     * & other entities , the version id will be key
+     * for map & events as the value when the file upload
+     * happens
+     * @param javersChangeWrapperList
+     * @return
+     */
     @Override
     public Optional<Map<Double, List<JaversChangeWrapper>>> filterJaversResponse(List<JaversChangeWrapper> javersChangeWrapperList) {
         return Optional.of(javersChangeWrapperList)
@@ -57,6 +76,16 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                 });
 
     }
+
+    /** The file details events are not saved in the same event
+     * as file upload
+     * so have to parse Javers response for file details
+     * & programmetically  associate them with the specific
+     * version
+     *
+     * @param javersChangeWrapperList
+     * @return
+     */
     @Override
     public Optional<List<FileUpload>> filterJaversResponseForFiles(List<JaversChangeWrapper> javersChangeWrapperList) {
 
@@ -80,7 +109,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
 
     /**
      * Find indexes in Javers API for changes having sumstatsstus as Invalid
-     * & subsequent index will be for metadata submission associated with
+     * & subsequent index  for metadata submission associated with
      * invalid sumstatst , use this index to fetch the version number which
      * needs to be removed for invalid sumstats
      *
@@ -90,7 +119,9 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
 
       List<Integer> invalidSumstatsIndexes = IntStream.range(0, javersChangeWrapperList.size())
                 .filter(i -> ( javersChangeWrapperList.get(i).getProperty().equals("summaryStatsStatus")
-                && javersChangeWrapperList.get(i).getRight().equals("INVALID")))
+                && ( javersChangeWrapperList.get(i).getRight().equals("INVALID")
+                     //|| javersChangeWrapperList.get(i).getLeft().equals("INVALID")
+                )))
                 //&& javersChangeWrapperList.get(i).getLeft().toString().equals("VALIDATING")))
                 .mapToObj(i -> i)
                 .collect(Collectors.toList());
@@ -100,8 +131,9 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
         if(invalidSumstatsIndexes != null && !invalidSumstatsIndexes.isEmpty()) {
             for (int i = 0; i < invalidSumstatsIndexes.size(); i++) {
                 int idx = invalidSumstatsIndexes.get(i);
-                for (int j = idx + 1; j < javersChangeWrapperList.size(); j++) {
-
+                versionList.add(javersChangeWrapperList.get(idx).getCommitMetadata().getId());
+                for (int j = idx; j < javersChangeWrapperList.size(); j++) {
+                //for (int j = idx; j >= 0; j--) {
                     if (javersChangeWrapperList.get(j).getProperty().equals("metadataStatus") &&
                             javersChangeWrapperList.get(j).getLeft().toString().equals("VALIDATING") &&
                             javersChangeWrapperList.get(j).getRight().toString().equals("VALID")) {
@@ -122,20 +154,83 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
 
     }
 
+    /**
+     * Handle Scenarios where the entities are updated
+     * possibly due to frequent submission resets
+     * this create duplicate copies of same fileupload
+     * events , fetch the version for those & remove
+     * them from final versionid events which will be
+     * used for comparison
+     * @param javersChangeWrapperMap
+     * @return
+     */
+    @Override
+    public Optional<Set<Double>> removeDuplicateMetaDataVersions(Optional<Map<Double, List<JaversChangeWrapper>>> javersChangeWrapperMap) {
+
+        Set<Double> commitIdstoDelete = new HashSet<>();
+
+        return javersChangeWrapperMap.map(javersChangeMap -> {
+                    javersChangeMap.forEach((key, changes) ->
+                            changes.forEach(change -> {
+                                if (change.getProperty().equals("overallStatus") &&  change.getLeft().toString().equals("VALIDATING") &&
+                                        ( change.getRight().toString().equals("SUBMITTED") || change.getRight().toString().equals("CURATION_COMPLETE") || change.getRight().toString().equals("DEPOSITION_COMPLETE"))) {
+                                    commitIdstoDelete.add(change.getCommitMetadata().getId());
+                                    log.info("Version which is duplicated for Metadata -:"+change.getCommitMetadata().getId());
+                                }
+
+
+                            }));
+
+                    return commitIdstoDelete;
+                });
+
+
+    }
+
+    /**
+     * Remove Invalid sumstats events from versions map
+     * @param javersChangeWrapperMap
+     * @param versionsTobeRemoved
+     */
+    @Override
     public void removeVersionMap(Optional<Map<Double, List<JaversChangeWrapper>>> javersChangeWrapperMap,
                                  List<Double> versionsTobeRemoved ) {
         versionsTobeRemoved.forEach((version) -> javersChangeWrapperMap.get().remove(version));
     }
 
+    /**
+     * Remove Duplicate metadata evets from versions map
+     * @param javersChangeWrapperMap
+     * @param versionsTobeRemoved
+     */
     @Override
-    public List<VersionSummary> filterStudiesFromJavers(Optional<Map<Double, List<JaversChangeWrapper>>> javersChangeWrapperList) {
+    public void removeVersionMap(Optional<Map<Double, List<JaversChangeWrapper>>> javersChangeWrapperMap,
+                                 Set<Double> versionsTobeRemoved ) {
+        versionsTobeRemoved.forEach((version) -> javersChangeWrapperMap.get().remove(version));
+    }
+
+    /**
+     * Calls the compare version method for
+     * file upload events for each successive
+     * file uploads
+     * @param javersChangeWrapperList
+     * @return
+     */
+    @Override
+    public List<VersionSummary> buiildVersionSummary(Optional<Map<Double, List<JaversChangeWrapper>>> javersChangeWrapperList) {
         Map<Double, List<JaversChangeWrapper>> versionMap = javersChangeWrapperList.orElse(null);
         log.info("versionMap ****"+versionMap);
+
+
+
         if(versionMap != null && !versionMap.isEmpty()){
             if(versionMap.size() < 2 ){
                 throw new NoVersionSummaryException("No Version Stats are available currently for this submission," +
                             " Please upload the edited Template file");
             }
+        } else {
+            throw new NoVersionSummaryException("No Version Stats are available currently for this submission," +
+                    " Since the submission has been reset");
         }
         List<VersionSummary> summaries = new ArrayList<>();
         Set<Double> keys = versionMap.keySet();
@@ -151,23 +246,67 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
         return summaries;
     }
 
+    /**
+     * The file details need to programmetically
+     * assigned to versions map as the file details are
+     * not saved in the same event for submission upload
+     * @param summaries
+     * @param fileUploads
+     * @return
+     */
     public List<VersionSummary> mapFilesToVersionSummary(List<VersionSummary> summaries, List<FileUpload> fileUploads) {
         VersionSummary[] summaryArr = summaries.toArray(new VersionSummary[summaries.size()]);
         FileUpload[] fileUploadArr = fileUploads.toArray(new FileUpload[fileUploads.size()]);
 
-        for(int i = 0 ; i < summaryArr.length; i++) {
-            summaryArr[i].setOldFileDetails(new FileSummaryStats( fileUploadArr[i+1].getFileName(),
-                    fileUploadArr[i+1].getId()));
-            summaryArr[i].setNewFileDetails(new FileSummaryStats( fileUploadArr[i].getFileName(),
-                    fileUploadArr[i].getId()));
+        log.info("VersionSummary length ->"+summaryArr.length);
+        log.info("fileUploadArr length ->"+fileUploadArr.length);
+
+       /* if(summaryArr.length != (fileUploadArr.length - 1) )
+            throw new NoVersionSummaryException("No Version Stats are available currently for this submission," +
+                    " Since the submission has been reset");*/
+
+        if(summaryArr.length > (fileUploadArr.length - 1) ){
+            List<VersionSummary> updatedsummaryArr = new ArrayList<>();
+            for(int i = 0 ; i < fileUploadArr.length - 1; i++) {
+                summaryArr[i].setOldFileDetails(new FileSummaryStats( fileUploadArr[i+1].getFileName(),
+                        fileUploadArr[i+1].getId()));
+                summaryArr[i].setNewFileDetails(new FileSummaryStats( fileUploadArr[i].getFileName(),
+                        fileUploadArr[i].getId()));
+                updatedsummaryArr.add(summaryArr[i]);
+            }
+
+            return updatedsummaryArr;
+        } else {
+
+            for (int i = 0; i < summaryArr.length; i++) {
+                summaryArr[i].setOldFileDetails(new FileSummaryStats(fileUploadArr[i + 1].getFileName(),
+                        fileUploadArr[i + 1].getId()));
+                summaryArr[i].setNewFileDetails(new FileSummaryStats(fileUploadArr[i].getFileName(),
+                        fileUploadArr[i].getId()));
+
+            }
+            return Arrays.asList(summaryArr);
         }
-        return Arrays.asList(summaryArr);
+
     }
 
 
-
+    /**
+     * Compare version events list events
+     * Fetch Study & other entity based on SeqId
+     * in the events
+     * Group studies, association & samples
+     * based on study tags for each version
+     * then Build version summary object comparing
+     * the entities associated with each study tags
+     * also the reported Traits & efo traits stats
+     * are computed
+     * @param newChange
+     * @param oldChange
+     * @return
+     */
     private VersionSummary compareVersions(List<JaversChangeWrapper> newChange, List<JaversChangeWrapper> oldChange) {
-        List<Study> newStudies = newChange.stream()
+        List<String> newStudiesIds = newChange.stream()
                 .filter( (javersChangeWrapper) ->
                 javersChangeWrapper.getProperty().equals("studies"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
@@ -175,7 +314,12 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        List<Study> prevStudies = oldChange.stream()
+
+        List<Study> newStudies = studiesService.getStudies(newStudiesIds).filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+
+        List<String> prevStudiesIds = oldChange.stream()
                 .filter( (javersChangeWrapper) ->
                 javersChangeWrapper.getProperty().equals("studies"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
@@ -183,7 +327,12 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        List<Association> newAssociations = newChange.stream()
+
+        List<Study> prevStudies = studiesService.getStudies(prevStudiesIds).filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+
+        List<String> newAssociationsIds = newChange.stream()
                 .filter( (javersChangeWrapper) ->
                 javersChangeWrapper.getProperty().equals("associations"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
@@ -192,7 +341,12 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                 .collect(Collectors.toList());
 
 
-        List<Association> prevAssociations = oldChange.stream()
+        List<Association> newAssociations = associationsService.readBySeqIds(newAssociationsIds).filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+
+
+        List<String> prevAssociationsIds = oldChange.stream()
                 .filter( (javersChangeWrapper) ->
                 javersChangeWrapper.getProperty().equals("associations"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
@@ -200,7 +354,10 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        List<Sample> newSamples = newChange.stream()
+        List<Association> prevAssociations = associationsService.readBySeqIds(prevAssociationsIds).filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        List<String> newSamplesIds = newChange.stream()
                 .filter( (javersChangeWrapper) ->
                         javersChangeWrapper.getProperty().equals("samples"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
@@ -208,8 +365,11 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        List<Sample> newSamples =   samplesService.findByIdIn(newSamplesIds).filter(Objects::nonNull)
+                    .collect(Collectors.toList());
 
-        List<Sample> prevSamples = oldChange.stream()
+
+        List<String> prevSamplesIds = oldChange.stream()
                 .filter( (javersChangeWrapper) ->
                         javersChangeWrapper.getProperty().equals("samples"))
                 .flatMap((javersChange) -> javersChange.getElementChanges().stream())
@@ -217,10 +377,13 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        log.info("newStudies****"+newStudies);
-        log.info("prevStudies****"+prevStudies);
-        log.info("newAssociations****"+newAssociations);
-        log.info("prevAssociations****"+prevAssociations);
+        List<Sample> prevSamples =   samplesService.findByIdIn(prevSamplesIds).filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        //log.info("newStudies****"+newStudies);
+        //log.info("prevStudies****"+prevStudies);
+        //log.info("newAssociations****"+newAssociations);
+        //log.info("prevAssociations****"+prevAssociations);
 
         VersionSummary versionSummary = new VersionSummary();
         versionSummary.setCurrentVersionSummary(populateCurrentVersionSummary(
@@ -266,10 +429,10 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
 
 
         prevStudyMap.forEach((tag, studyList) -> {
-            log.info("Study Tag ****"+tag);
+            //log.info("Study Tag ****"+tag);
             VersionDiffStats  versionStudyDiffStats = studyJaversService.findStudyChanges(tag, studyList, newStudies);
             if(prevstudyAscnsMap.get(tag) != null  ) {
-                log.info("Inside Association loop ");
+                //log.info("Inside Association loop ");
                 AddedRemoved addedRemovedAsscns = associationJaversService.getAssociationVersionStats(prevstudyAscnsMap.get(tag),
                         newstudyAscnsMap.get(tag) !=null ? newstudyAscnsMap.get(tag) : Collections.emptyList());
 
@@ -280,7 +443,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
 
             } else {
                 if (newstudyAscnsMap.get(tag) != null) {
-                    log.info("Inside Association loop where old study has no asscn ");
+                    //log.info("Inside Association loop where old study has no asscn ");
                     AddedRemoved addedRemovedAsscns = associationJaversService.getAssociationVersionStats(Collections.emptyList(),
                             newstudyAscnsMap.get(tag) );
                     versionStudyDiffStats.setAscnsAdded(addedRemovedAsscns.getAdded());
@@ -294,7 +457,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
             }
 
             if(prevStudySamplesMap.get(tag) != null  ) {
-                log.info("Inside Sample loop ");
+                //log.info("Inside Sample loop ");
                 AddedRemoved addedRemovedSamples = sampleJaversService.getSampleVersionStats(prevStudySamplesMap.get(tag), newStudySamplesMap.get(tag) !=null ?
                         newStudySamplesMap.get(tag) : Collections.emptyList());
                 versionStudyDiffStats.setSamplesAdded(addedRemovedSamples.getAdded());
@@ -303,7 +466,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
                         newStudySamplesMap.get(tag) : Collections.emptyList(), versionStudyDiffStats);
             } else {
                 if(newStudySamplesMap.get(tag) != null) {
-                    log.info("Inside Study loop where old study has no Sample ");
+                    //log.info("Inside Study loop where old study has no Sample ");
                     AddedRemoved addedRemovedSamples = sampleJaversService.getSampleVersionStats(Collections.emptyList(), newStudySamplesMap.get(tag) !=null ?
                             newStudySamplesMap.get(tag) : Collections.emptyList());
                     versionStudyDiffStats.setSamplesAdded(addedRemovedSamples.getAdded());
@@ -324,7 +487,7 @@ public class ConversionJaversServiceImpl implements ConversionJaversService {
         newStudyMap.forEach((tag, studyList) -> {
             if(studyTagsList != null && studyTagsList.contains(tag)) {
                 log.info("Studies added newly");
-                log.info("Studies added ->"+tag);
+                //log.info("Studies added ->"+tag);
                 VersionDiffStats newversionDiffStats = new VersionDiffStats();
                 newversionDiffStats.setEntity(tag);
                 AddedRemoved addedRemovedAsscns = associationJaversService.getAssociationVersionStats(Collections.emptyList(),

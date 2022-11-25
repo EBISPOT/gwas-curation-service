@@ -39,7 +39,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .map(StudyDtoAssembler::assemble)
                 .collect(Collectors.toList());
 
-        log.info("Inside findStudyChanges newStudie**** ");
+        //log.info("Inside findStudyChanges newStudie**** ");
 
         List<StudyDto> prevStudiesDTO = studyList.stream()
                 .map(StudyDtoAssembler::assemble)
@@ -66,13 +66,16 @@ public class StudyJaversServiceImpl implements StudyJaversService {
     public List<ValueChangeWrapper> diffStudies(StudyDto dto1, StudyDto dto2) {
         Javers javers = JaversBuilder.javers().build();
         Diff diff = javers.compare(dto1, dto2);
-        log.info("************");
-        log.info("Diff" + diff);
+        //log.info("************");
+        //log.info("Diff" + diff);
         List<ValueChange> valChanges = diff.getChangesByType(ValueChange.class);
         try {
             ValueChangeWrapper[] changes = new ObjectMapper().readValue(
                     javers.getJsonConverter().toJson(valChanges), ValueChangeWrapper[].class);
-            return Arrays.asList(changes);
+
+            List<ValueChangeWrapper> values = Arrays.asList(changes);
+            List<ValueChangeWrapper> filteredProps = values.stream().filter(val -> (!val.getProperty().equals("studyId") && !val.getProperty().equals("submissionId"))).collect(Collectors.toList());
+            return filteredProps;
         } catch (Exception ex) {
             log.error("Error in mapping Javers Changes" + ex.getMessage(), ex);
             return null;
@@ -105,10 +108,10 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .collect(Collectors.joining(","));
 
 
-        log.info("newStudyTags****" + newStudyTags);
-        log.info("prevStudyTags****" + prevStudyTags);
-        log.info("studiesRemoved****" + studiesRemoved);
-        log.info("studiesAdded****" + studiesAdded);
+        //log.info("newStudyTags****" + newStudyTags);
+        //log.info("prevStudyTags****" + prevStudyTags);
+        //log.info("studiesRemoved****" + studiesRemoved);
+       // log.info("studiesAdded****" + studiesAdded);
 
         versionDiffStats.setStudyTagsAdded(studyTagsAdded);
         versionDiffStats.setStudyTagsRemoved(studyTagsRemoved);
@@ -122,7 +125,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
 
     public AddedRemoved getReportedTraitVersionStats(List<Study> prevStudies, List<Study> newStudies) {
 
-        log.info("Inside getReportedTraitVersionStats()");
+        //log.info("Inside getReportedTraitVersionStats()");
 
         List<String> newReportedTraits = newStudies.stream()
                 .map(Study::getTrait)
@@ -140,10 +143,10 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .filter((study) -> !prevReportedTraits.contains(study.getTrait()))
                 .collect(Collectors.toList());
 
-        log.info("newReportedTraits****"+newReportedTraits);
-        log.info("prevReportedTraits****"+prevReportedTraits);
-        log.info("traitsRemoved****"+traitsRemoved);
-        log.info("traitsAdded****"+traitsAdded);
+        //log.info("newReportedTraits****"+newReportedTraits);
+        //log.info("prevReportedTraits****"+prevReportedTraits);
+        //log.info("traitsRemoved****"+traitsRemoved);
+        //log.info("traitsAdded****"+traitsAdded);
 
         AddedRemoved addedRemoved = new AddedRemoved();
         addedRemoved.setAdded(traitsAdded.size());
@@ -155,7 +158,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
 
     public AddedRemoved getReportedEfoVersionStats(List<Study> prevStudies, List<Study> newStudies) {
 
-        log.info("Inside getReportedEfoVersionStats()");
+        //log.info("Inside getReportedEfoVersionStats()");
         List<String> newEfoTraits = newStudies.stream()
                 .map(Study::getEfoTrait)
                 .filter((efo) -> efo!=null && !efo.isEmpty())
@@ -164,7 +167,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .distinct()
                 .collect(Collectors.toList());
 
-        log.info("Inside getReportedEfoVersionStats 1()");
+        //log.info("Inside getReportedEfoVersionStats 1()");
 
         List<String> prevEfoTraits = prevStudies.stream()
                 .map(Study::getEfoTrait)
@@ -174,7 +177,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .distinct()
                 .collect(Collectors.toList());
 
-        log.info("Inside getReportedEfoVersionStats 2()");
+        //log.info("Inside getReportedEfoVersionStats 2()");
        /* List<Study> efoRemoved = prevStudies.stream()
                 .filter((study) -> !newEfoTraits.contains(study.getTrait()))
                 .collect(Collectors.toList());*/
@@ -188,7 +191,7 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .distinct()
                 .collect(Collectors.toList());
 
-        log.info("Inside getReportedEfoVersionStats 3()");
+        //log.info("Inside getReportedEfoVersionStats 3()");
         /*List<Study> efoAdded = newStudies.stream()
                 .filter((study) -> !prevEfoTraits.contains(study.getTrait()))
                 .collect(Collectors.toList());*/
@@ -201,12 +204,12 @@ public class StudyJaversServiceImpl implements StudyJaversService {
                 .distinct()
                 .collect(Collectors.toList());
 
-        log.info("Inside getReportedEfoVersionStats 4()");
+        //log.info("Inside getReportedEfoVersionStats 4()");
 
-        log.info("newEfoTraits****" + newEfoTraits);
-        log.info("prevEfoTraits****" + prevEfoTraits);
-        log.info("efoRemoved****" + efoRemoved);
-        log.info("efoAdded****" + efoAdded);
+        //log.info("newEfoTraits****" + newEfoTraits);
+        //log.info("prevEfoTraits****" + prevEfoTraits);
+        //log.info("efoRemoved****" + efoRemoved);
+       // log.info("efoAdded****" + efoAdded);
         AddedRemoved addedRemoved = new AddedRemoved();
         addedRemoved.setAdded(efoAdded.size());
         addedRemoved.setRemoved(efoRemoved.size());
@@ -214,9 +217,10 @@ public class StudyJaversServiceImpl implements StudyJaversService {
 
     }
 
-    public Study processStudyTag(ElementChange elementChange) {
+    public String processStudyTag(ElementChange elementChange) {
         if (elementChange.getElementChangeType().equals("ValueAdded")) {
-            return studiesService.getStudy(elementChange.getValue().toString());
+           // return studiesService.getStudy(elementChange.getValue().toString());
+            return elementChange.getValue().toString();
         }
         return null;
     }

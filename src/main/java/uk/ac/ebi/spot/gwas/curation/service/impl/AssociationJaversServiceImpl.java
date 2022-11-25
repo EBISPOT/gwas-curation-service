@@ -42,7 +42,7 @@ public class AssociationJaversServiceImpl implements AssociationJaversService {
             diffStats.setAssociations(new ArrayList<>());
 
         prevAscns.forEach((asscn) -> {
-            log.info("VariantId*****"+asscn.getVariantId());
+            //log.info("VariantId*****"+asscn.getVariantId());
             List<AssociationDto> newAsscnsDto = newAscns.stream()
                     .filter((ascn) -> ascn.getVariantId().equals(asscn.getVariantId()))
                     .map(AssociationDtoAssembler::assemble)
@@ -70,8 +70,8 @@ public class AssociationJaversServiceImpl implements AssociationJaversService {
     public List<ValueChangeWrapper> diffAssociations(AssociationDto dto1, AssociationDto dto2) {
         Javers javers = JaversBuilder.javers().build();
         Diff diff = javers.compare(dto1, dto2);
-        log.info("************");
-        log.info("Diff Asscn"+ diff);
+        //log.info("************");
+        //log.info("Diff Asscn"+ diff);
         List<ValueChange> valChanges = diff.getChangesByType(ValueChange.class);
         try {
             ValueChangeWrapper[]  changes = new ObjectMapper().readValue(
@@ -84,7 +84,7 @@ public class AssociationJaversServiceImpl implements AssociationJaversService {
     }
 
     public AddedRemoved getAssociationVersionStats(List<Association> prevAscns, List<Association> newAscns) {
-        log.info("Inside getAssociationVersionStats() ");
+        //log.info("Inside getAssociationVersionStats() ");
 
         List<String> newAscnsTags = newAscns.stream()
                 .map(asscn -> asscn.getStudyTag() + asscn.getVariantId())
@@ -102,10 +102,10 @@ public class AssociationJaversServiceImpl implements AssociationJaversService {
                 .filter(asscn -> !prevAscnsTags.contains(asscn.getStudyTag() + asscn.getVariantId()))
                 .collect(Collectors.toList());
 
-        log.info("newAscnsTags****"+newAscnsTags);
-        log.info("prevAscnsTags****"+prevAscnsTags);
-        log.info("asscnsRemoved****"+asscnsRemoved);
-        log.info("asscnsAdded****"+asscnsAdded);
+        //log.info("newAscnsTags****"+newAscnsTags);
+       // log.info("prevAscnsTags****"+prevAscnsTags);
+       // log.info("asscnsRemoved****"+asscnsRemoved);
+        //log.info("asscnsAdded****"+asscnsAdded);
 
         AddedRemoved addedRemoved = new AddedRemoved();
         addedRemoved.setAdded(asscnsAdded.size());
@@ -114,9 +114,10 @@ public class AssociationJaversServiceImpl implements AssociationJaversService {
         return addedRemoved;
     }
 
-    public Association processAssociationTag(ElementChange elementChange){
+    public String processAssociationTag(ElementChange elementChange){
         if (elementChange.getElementChangeType().equals("ValueAdded")){
-            return associationsService.getAssociation(elementChange.getValue().toString() );
+            //return associationsService.getAssociation(elementChange.getValue().toString() );
+            return elementChange.getValue().toString();
         }
         return null;
     }
