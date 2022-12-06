@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_SUBMISSIONS)
@@ -49,9 +50,14 @@ public class SubmissionDiffController {
         if(changeList != null && !changeList.isEmpty()) {
             Optional<Map<Double, List<JaversChangeWrapper>>> convertedEntityOptional = conversionService.filterJaversResponse(changeList);
             List<Double> versionMapTobeDeleted = conversionService.removeInvalidSumstatsEntries(changeList);
+            Optional<Set<Double>> versionMapMetaDataDuplicated = conversionService.removeDuplicateMetaDataVersions(convertedEntityOptional);
             if(versionMapTobeDeleted != null && !versionMapTobeDeleted.isEmpty())
                 conversionService.removeVersionMap(convertedEntityOptional, versionMapTobeDeleted );
-            summaries = conversionService.filterStudiesFromJavers(convertedEntityOptional);
+           if(versionMapMetaDataDuplicated.isPresent()) {
+                conversionService.removeVersionMap(convertedEntityOptional,versionMapMetaDataDuplicated.get() );
+            }
+
+            summaries = conversionService.buiildVersionSummary(convertedEntityOptional);
             Optional<List<FileUpload>> fileUploadsOptional = conversionService.filterJaversResponseForFiles(responseEntity.getBody());
             summaries = fileUploadsOptional.isPresent()?conversionService.mapFilesToVersionSummary(summaries, fileUploadsOptional.get()):null;
         }

@@ -8,7 +8,9 @@ import uk.ac.ebi.spot.gwas.curation.repository.SampleRepository;
 import uk.ac.ebi.spot.gwas.curation.service.SamplesService;
 import uk.ac.ebi.spot.gwas.deposition.domain.Sample;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class SamplesServiceImpl implements SamplesService {
@@ -22,16 +24,20 @@ public class SamplesServiceImpl implements SamplesService {
 
     @Override
     public Sample getSample(String sampleId) {
-        log.info("Retrieving sample: {}", sampleId);
+        //log.info("Retrieving sample: {}", sampleId);
         Optional<Sample> sampleOptional = sampleRepository.findById(sampleId);
         if (sampleOptional.isPresent()) {
-            log.info("Found sample: {}", sampleOptional.get().getStudyTag());
+            //log.info("Found sample: {}", sampleOptional.get().getStudyTag());
             return sampleOptional.get();
         }
         log.error("Unable to find sample: {}", sampleId);
         return null;
     }
 
+    @Override
+    public Stream<Sample> findByIdIn(List<String> ids) {
+        return sampleRepository.findByIdIn(ids);
+    }
 
 
 }

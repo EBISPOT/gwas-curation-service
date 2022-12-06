@@ -42,7 +42,7 @@ public class SampleJaversServiceImpl implements SampleJaversService {
             diffStats.setSampleGroups(new ArrayList<>());
 
         prevSamples.forEach((sample) -> {
-            log.info("Sample*****"+sample.getStage()+"|"+sample.getAncestryCategory());
+            //log.info("Sample*****"+sample.getStage()+"|"+sample.getAncestryCategory());
             List<SampleDto> newSamplesDto = newSamples.stream()
                     .filter((sampleGroup) -> (sampleGroup.getStage() + sampleGroup.getAncestryCategory())
                             .equals(sample.getStage() + sample.getAncestryCategory()))
@@ -71,8 +71,8 @@ public class SampleJaversServiceImpl implements SampleJaversService {
     public List<ValueChangeWrapper> diffSamples(SampleDto dto1, SampleDto dto2) {
         Javers javers = JaversBuilder.javers().build();
         Diff diff = javers.compare(dto1, dto2);
-        log.info("************");
-        log.info("Diff Sample"+ diff);
+        //log.info("************");
+        //log.info("Diff Sample"+ diff);
         List<ValueChange> valChanges = diff.getChangesByType(ValueChange.class);
         try {
             ValueChangeWrapper[]  changes = new ObjectMapper().readValue(
@@ -85,7 +85,7 @@ public class SampleJaversServiceImpl implements SampleJaversService {
     }
 
     public AddedRemoved getSampleVersionStats(List<Sample> prevSamples, List<Sample> newSamples) {
-        log.info("Inside getAssociationVersionStats() ");
+        //log.info("Inside getAssociationVersionStats() ");
 
         List<String> newSamplesTags = newSamples.stream()
                 .map(sample -> sample.getStudyTag() + sample.getStage() +sample.getAncestryCategory())
@@ -105,10 +105,10 @@ public class SampleJaversServiceImpl implements SampleJaversService {
                         sample.getAncestryCategory()))
                 .collect(Collectors.toList());
 
-        log.info("newSamplesTags****"+newSamplesTags);
-        log.info("prevSamplesTags****"+prevSamplesTags);
-        log.info("samplesRemoved****"+samplesRemoved);
-        log.info("samplesAdded****"+samplesAdded);
+        //log.info("newSamplesTags****"+newSamplesTags);
+        //log.info("prevSamplesTags****"+prevSamplesTags);
+        //log.info("samplesRemoved****"+samplesRemoved);
+        //log.info("samplesAdded****"+samplesAdded);
 
         AddedRemoved addedRemoved = new AddedRemoved();
         addedRemoved.setAdded(samplesAdded.size());
@@ -117,9 +117,10 @@ public class SampleJaversServiceImpl implements SampleJaversService {
         return addedRemoved;
     }
 
-    public Sample processSampleTag(ElementChange elementChange) {
+    public String processSampleTag(ElementChange elementChange) {
         if (elementChange.getElementChangeType().equals("ValueAdded")){
-            return samplesService.getSample(elementChange.getValue().toString() );
+            //return samplesService.getSample(elementChange.getValue().toString() );
+            return elementChange.getValue().toString();
         }
         return null;
     }
