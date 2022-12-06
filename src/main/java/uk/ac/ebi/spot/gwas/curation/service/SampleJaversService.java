@@ -17,7 +17,7 @@ public interface SampleJaversService {
 
     public AddedRemoved getSampleVersionStats(List<Sample> prevSamples, List<Sample> newSamples);
 
-    public Sample processSampleTag(ElementChange elementChange);
+    public String processSampleTag(ElementChange elementChange);
 
 
 }

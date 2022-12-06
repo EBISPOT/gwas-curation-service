@@ -9,11 +9,14 @@ import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface StudiesService {
 
 
     Study getStudy(String studyId);
+
+    Stream<Study> getStudies(List<String> ids);
 
     Study getStudyByAccession(String accessionId, String submissionId);
 

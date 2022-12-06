@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 public interface AssociationRepository extends MongoRepository<Association, String> {
 
     Stream<Association> readBySubmissionId(String submissionId);
+    Stream<Association> readByIdIn(List<String> ids);
     Integer countByIsValidAndSubmissionId(Boolean isValid, String submissionId);
     Integer countByIsApprovedAndSubmissionId(Boolean isApproved, String submissionId);
 }

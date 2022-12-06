@@ -94,7 +94,7 @@ public class ConversionJaversServiceTest {
 
     @Test
     public void testCompareVersions() {
-        List<VersionSummary> versions = conversionJaversService.filterStudiesFromJavers(changeMap);
+        List<VersionSummary> versions = conversionJaversService.buiildVersionSummary(changeMap);
         assertNotNull(versions);
     }
 

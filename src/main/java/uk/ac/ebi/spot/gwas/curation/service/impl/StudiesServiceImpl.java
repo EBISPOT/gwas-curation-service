@@ -36,6 +36,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class StudiesServiceImpl implements StudiesService {
@@ -82,10 +83,10 @@ public class StudiesServiceImpl implements StudiesService {
 
     @Override
     public Study getStudy(String studyId) {
-        log.info("Retrieving study: {}", studyId);
+        //log.info("Retrieving study: {}", studyId);
         Optional<Study> studyOptional = studyRepository.findById(studyId);
         if (studyOptional.isPresent()) {
-            log.info("Found study: {}", studyOptional.get().getStudyTag());
+            //log.info("Found study: {}", studyOptional.get().getStudyTag());
             return studyOptional.get();
         }
         log.error("Unable to find study: {}", studyId);
@@ -537,5 +538,9 @@ public class StudiesServiceImpl implements StudiesService {
 
     public void sendStudyChangeMessage(Study study){
         studyIngestPublisher.send(StudyDtoAssembler.assemble(study));
+    }
+
+    public Stream<Study> getStudies(List<String> ids) {
+        return studyRepository.readByIdIn(ids);
     }
 }

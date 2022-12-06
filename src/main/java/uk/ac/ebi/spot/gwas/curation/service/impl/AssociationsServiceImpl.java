@@ -20,6 +20,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.SnpValidationReport;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class AssociationsServiceImpl implements AssociationsService {
@@ -39,10 +40,10 @@ public class AssociationsServiceImpl implements AssociationsService {
 
     @Override
     public Association getAssociation(String associationId) {
-        log.info("Retrieving association: {}", associationId);
+        //log.info("Retrieving association: {}", associationId);
         Optional<Association> associationOptional = associationRepository.findById(associationId);
         if (associationOptional.isPresent()) {
-            log.info("Found association: {}", associationOptional.get().getStudyTag());
+            //log.info("Found association: {}", associationOptional.get().getStudyTag());
             return associationOptional.get();
         }
         log.error("Unable to find association: {}", associationId);
@@ -99,5 +100,10 @@ public class AssociationsServiceImpl implements AssociationsService {
         snpStatusReportDto.setNoApprovedSnps(associationRepository.countByIsApprovedAndSubmissionId(true, submissionId));
         snpStatusReportDto.setNoValidSnps(associationRepository.countByIsValidAndSubmissionId(true, submissionId));
         return snpStatusReportDto;
+    }
+
+    @Override
+    public Stream<Association> readBySeqIds(List<String> ids) {
+       return  associationRepository.readByIdIn(ids);
     }
 }

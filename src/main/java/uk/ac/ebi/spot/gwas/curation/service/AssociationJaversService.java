@@ -17,5 +17,5 @@ public interface AssociationJaversService {
 
     public AddedRemoved getAssociationVersionStats(List<Association> prevAscns, List<Association> newAscns);
 
-    public Association processAssociationTag(ElementChange elementChange);
+    public String processAssociationTag(ElementChange elementChange);
 }
