@@ -18,6 +18,12 @@ public class RestInteractionConfig {
     @Value("${gwas-curation-service.javers.endpoints.javers-submission}")
     private String javersEndpoint;
 
+    @Value("${europepmc.root}")
+    private String euroPMCEndpoint;
+
+    @Value("${europepmc.search.pubmed}")
+    private String euroPMCSearchUrl;
+
 
 
     public String getDepositionServiceUrl() {
@@ -32,4 +38,11 @@ public class RestInteractionConfig {
         return curationServiceUrl;
     }
 
+    public String getEuroPMCEndpoint() {
+        return euroPMCEndpoint;
+    }
+
+    public String getEuroPMCSearchUrl() {
+        return euroPMCSearchUrl;
+    }
 }

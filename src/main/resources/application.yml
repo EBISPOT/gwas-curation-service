@@ -32,3 +32,9 @@ spring:
 comms:
   messaging:
     enabled: false
+
+
+europepmc:
+  root: https://www.ebi.ac.uk/europepmc/webservices/rest/
+  search:
+    pubmed: search?query=ext_id:{idlist} src:med&resulttype=core&format=JSON
