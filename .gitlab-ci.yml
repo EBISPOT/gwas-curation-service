@@ -30,7 +30,7 @@ maven-build:
     paths:
       - target/*.jar
 
-
+#Uncommenting Solr cloud related changes
 sonarcloud-check:
   image: maven:3.6.3-jdk-11
   stage: test
