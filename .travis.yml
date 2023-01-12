@@ -1,9 +1,9 @@
 language: java
 sudo: false
 
-jdk: openjdk11
+jdk: oraclejdk11
 
-dist: xenial
+dist: trusty
 
 env:
   global:
@@ -16,5 +16,5 @@ addons:
 script:
   - jdk_switcher use openjdk8
   - mvn clean verify -Dspring.profiles.active=test -Dmaven.test.failure.ignore=true -Dmaven.test.error.ignore=true
-  - export JAVA_HOME=$HOME/openjdk11
+  - export JAVA_HOME=$HOME/oraclejdk11
   - mvn sonar:sonar -Dsonar.projectKey=uk.ac.ebi.spot.gwasdepo:gwas-curation-service -Dsonar.login=0566d66d0cfe16cd2cb8ba02db7fcd0b6d1e7ee6
