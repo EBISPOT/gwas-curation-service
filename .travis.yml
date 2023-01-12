@@ -3,7 +3,7 @@ sudo: false
 
 jdk: openjdk11
 
-dist: trusty
+dist: xenial
 
 env:
   global:
