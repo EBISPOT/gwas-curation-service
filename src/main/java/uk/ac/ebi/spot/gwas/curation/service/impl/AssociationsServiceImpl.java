@@ -61,13 +61,13 @@ public class AssociationsServiceImpl implements AssociationsService {
         for (Association association: associations) {
             if (!association.getValid()) {
                 SnpValidationReport snpValidationReport;
-                if (snpValidationReportMap.containsKey(association.getVariantId())) {
+                if (snpValidationReportMap.containsKey(association.getStudyTag() + "-" + association.getVariantId())) {
                     snpValidationReport = new SnpValidationReport(association.getVariantId(), "Duplicate SNP in study");
                 }
                 else {
                     snpValidationReport = new SnpValidationReport(association.getVariantId(), "Not found in Ensembl");
                 }
-                snpValidationReportMap.put(association.getVariantId(), snpValidationReport);
+                snpValidationReportMap.put(association.getStudyTag() + "-" + association.getVariantId(), snpValidationReport);
             }
         }
         return fileHandler.serializePojoToTsv(new ArrayList<>(snpValidationReportMap.values()));
