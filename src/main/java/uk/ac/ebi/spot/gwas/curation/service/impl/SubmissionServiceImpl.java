@@ -8,8 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.SubmissionRepository;
 import uk.ac.ebi.spot.gwas.curation.service.CuratorAuthService;
+import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
 import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
 import uk.ac.ebi.spot.gwas.deposition.constants.Status;
+import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.SubmissionDto;
@@ -31,6 +33,9 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     @Autowired
     private CuratorAuthService curatorAuthService;
+
+    @Autowired
+    private PublicationService publicationService;
 
     @Override
     public Submission getSubmission(String submissionId) {
@@ -142,6 +147,14 @@ public class SubmissionServiceImpl implements SubmissionService {
             throw new EntityNotFoundException("Unable to find submission: " + submissionId);
         }
         Submission submission = submissionOptional.get();
+
+        if(submission.getOverallStatus() != null && submission.getOverallStatus().equals("CURATION_COMPLETE")) {
+            if(submission.getPublicationId() != null) {
+                Publication publication = publicationService.getPublicationDetailsByPmidOrPubId(submission.getPublicationId(), false);
+                Optional.ofNullable(publication.getStatus()).filter((status) -> status.equals("PUBLISHED") || status.equals("PUBLISHED_WITH_SS"))
+                        .ifPresent(status -> publication.setStatus("UNDER_SUBMISSION"));
+            }
+        }
 
         log.info(" Submission status for {} is {}",submissionId, submissionDto.getSubmissionStatus());
 
