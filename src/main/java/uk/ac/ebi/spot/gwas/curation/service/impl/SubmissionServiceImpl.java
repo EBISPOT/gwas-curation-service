@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.spot.gwas.curation.repository.PublicationRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.SubmissionRepository;
 import uk.ac.ebi.spot.gwas.curation.service.CuratorAuthService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
@@ -36,6 +37,9 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     @Autowired
     private PublicationService publicationService;
+
+    @Autowired
+    private PublicationRepository publicationRepository;
 
     @Override
     public Submission getSubmission(String submissionId) {
@@ -152,7 +156,10 @@ public class SubmissionServiceImpl implements SubmissionService {
             if(submission.getPublicationId() != null) {
                 Publication publication = publicationService.getPublicationDetailsByPmidOrPubId(submission.getPublicationId(), false);
                 Optional.ofNullable(publication.getStatus()).filter((status) -> status.equals("PUBLISHED") || status.equals("PUBLISHED_WITH_SS"))
-                        .ifPresent(status -> publication.setStatus("UNDER_SUBMISSION"));
+                        .ifPresent(status -> {
+                            publication.setStatus("UNDER_SUBMISSION");
+                            publicationRepository.save(publication);
+                        });
             }
         }
 
