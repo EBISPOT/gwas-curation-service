@@ -11,7 +11,7 @@ server:
 logging:
   level:
     org:
-      springframework: ERROR
+      springframework: DEBUG
 
 spring:
   rabbitmq:
