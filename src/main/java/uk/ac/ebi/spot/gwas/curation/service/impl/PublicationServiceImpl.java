@@ -71,46 +71,14 @@ public class PublicationServiceImpl implements PublicationService {
     @Override
     public Page<SOLRPublication> searchPublications(SearchPublicationDTO searchPublicationDTO, Pageable page) {
             if (searchPublicationDTO != null ) {
-                String pmid = searchPublicationDTO.getPmid();
-                String curator = searchPublicationDTO.getCurator();
-                String title = searchPublicationDTO.getTitle();
-                String curationStatus = searchPublicationDTO.getCurationStatus();
-                if (pmid != null && curator != null && curationStatus != null && title != null) {
-                    return publicationSolrRepository.findByPmidAndCurationStatusAndCuratorAndTitle(pmid, curator, curationStatus, title,
-                            page);
-                } else if (pmid != null && curator != null && curationStatus != null) {
-                    return publicationSolrRepository.findByPmidAndCurationStatusAndCurator(pmid, curationStatus, curator, page);
-                } else if (pmid != null && title != null && curator != null) {
-                    return publicationSolrRepository.findByPmidAndCuratorAndTitle(pmid, curator, title, page);
-                } else if (pmid != null && title != null && curationStatus != null) {
-                    return publicationSolrRepository.findByPmidAndCurationStatusAndTitle(pmid, curationStatus, title, page);
-                } else if (curator != null && title != null && curationStatus != null) {
-                    return publicationSolrRepository.findByCurationStatusAndCuratorAndTitle(curationStatus, curator, title, page);
-                } else if (pmid != null && curationStatus != null) {
-                    return publicationSolrRepository.findByPmidAndCurationStatus(pmid, curationStatus, page);
-                } else if (pmid != null && curator != null) {
-                    return publicationSolrRepository.findByPmidAndCurator(pmid, curator, page);
-                } else if (pmid != null && title != null) {
-                    return publicationSolrRepository.findByPmidAndTitle(pmid, title, page);
-                }  else if (curationStatus != null && title != null) {
-                    return publicationSolrRepository.findByCurationStatusAndTitle(curationStatus, title, page);
-                } else if ( curator != null && title != null) {
-                    return publicationSolrRepository.findByCuratorAndTitle(curator, title, page);
-                }  else if ( curator != null && curationStatus != null) {
-                    return publicationSolrRepository.findByCuratorAndCurationStatus(curator, curationStatus, page);
-                } else if (pmid != null) {
-                    return publicationSolrRepository.findByPmid(pmid, page);
-                } else if (curator != null ){
-                    return  publicationSolrRepository.findByCurator(curator, page);
-                } else if (title != null ) {
-                    return publicationSolrRepository.findByTitle(title, page);
-                } else if (curationStatus != null ) {
-                    return publicationSolrRepository.findByCurationStatus(curationStatus, page);
-                }
+                String pmid = searchPublicationDTO.getPmid() == null ? "*:*" : "pmid:" + searchPublicationDTO.getPmid();
+                String curator = searchPublicationDTO.getCurator() == null ? "*:*" : "curator:*"+ searchPublicationDTO.getCurator() + "*";
+                String title = searchPublicationDTO.getTitle() == null ? "*:*" : "title:*"+ searchPublicationDTO.getTitle() + "*";
+                String curationStatus = searchPublicationDTO.getCurationStatus() == null ? "*:*" : "curationStatus:" + searchPublicationDTO.getCurationStatus();
+                String submitter = searchPublicationDTO.getSubmitter() == null ? "*:*" : "submitter:*"+ searchPublicationDTO.getSubmitter() + "*";
+                return publicationSolrRepository.findPublications(pmid, title, curator, curationStatus, submitter, page);
             }
-
             return publicationSolrRepository.findAll(page);
-
     }
 
     @Override
