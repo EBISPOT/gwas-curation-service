@@ -22,7 +22,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.CurationStatusDTO;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 @RestController
-@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_CURATORSTATUS)
+@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_PUBLICATION_STATUS)
 public class CurationStatusController {
 
     @Autowired

@@ -6,6 +6,6 @@ import uk.ac.ebi.spot.gwas.deposition.exception.PubmedLookupException;
 
 public interface EuropepmcPubMedSearchService {
 
-    public EuropePMCData createStudyByPubmed(String pubmedId) throws PubmedLookupException, EuropePMCException;
+     EuropePMCData createStudyByPubmed(String pubmedId) throws PubmedLookupException, EuropePMCException;
 
 }

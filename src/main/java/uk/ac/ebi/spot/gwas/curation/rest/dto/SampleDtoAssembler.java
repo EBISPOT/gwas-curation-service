@@ -20,7 +20,9 @@ public class SampleDtoAssembler  {
                 sample.getAncestryCategory(),
                 sample.getAncestry(),
                 sample.getAncestryDescription(),
-                sample.getCountryRecruitement());
+                sample.getCountryRecruitement(),
+                sample.getCaseControlStudy(),
+                sample.getAncestryMethod());
     }
 
     public static Sample disassemble(SampleDto sampleDto) {
