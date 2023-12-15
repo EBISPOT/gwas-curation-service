@@ -2,6 +2,7 @@ package uk.ac.ebi.spot.gwas.curation.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -11,10 +12,8 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,6 +46,8 @@ public class CurationUtil {
         }
         return null;
     }
+
+
 
 
     public static Boolean validateURLFormat(String uri) {

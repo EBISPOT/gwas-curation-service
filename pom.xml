@@ -382,6 +382,19 @@
             <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
 
+
+        <dependency>
+            <groupId>com.mashape.unirest</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>1.4.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.gcardone.junidecode</groupId>
+            <artifactId>junidecode</artifactId>
+            <version>0.4.1</version>
+        </dependency>
+
         <!--<dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-mongodb</artifactId>
