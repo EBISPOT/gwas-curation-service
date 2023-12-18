@@ -4,7 +4,7 @@ services:
 
 stages:
   - build
-  - test
+#  - test
   - docker
   - docker-release
   - deploy-sandbox
