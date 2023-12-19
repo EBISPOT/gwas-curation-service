@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.service.JWTService;
@@ -33,6 +34,7 @@ public class PublicationsController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/{pmids}",produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public List<PublicationStatusReport> createPublication(@PathVariable List<String> pmids, HttpServletRequest request ) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         return publicationService.createPublication(pmids, user);

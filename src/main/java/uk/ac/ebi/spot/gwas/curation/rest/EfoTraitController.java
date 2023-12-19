@@ -13,6 +13,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -74,6 +75,7 @@ public class EfoTraitController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<EfoTraitDto> createEfoTrait(@Valid @RequestBody EfoTraitDto efoTraitDto, HttpServletRequest request)  {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         EfoTrait efoTrait = efoTraitDtoAssembler.disassemble(efoTraitDto);
@@ -83,6 +85,7 @@ public class EfoTraitController {
 
     @GetMapping(value = "/download-template", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public HttpEntity<byte[]> downloadCreationTemplate() {
 
         byte[] result = Objects.requireNonNull(fileHandler.getTemplate(FileUploadType.EFO_TRAIT_FILE)).getBytes();
@@ -95,6 +98,7 @@ public class EfoTraitController {
 
     @PostMapping(value = "/bulk-upload")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public HttpEntity<UploadReportWrapper> createEfoTraits(@Valid FileUploadRequest fileUploadRequest,
                                                            HttpServletRequest request, BindingResult result) {
 
@@ -112,6 +116,7 @@ public class EfoTraitController {
 
     @GetMapping(value = "/{traitId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<EfoTraitDto> getEfoTrait(@PathVariable String traitId) {
 
         Optional<EfoTrait> efoTraitOptional = efoTraitService.getEfoTrait(traitId);
@@ -127,6 +132,7 @@ public class EfoTraitController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public PagedResources<EfoTraitDto> getEfoTraits(
             PagedResourcesAssembler assembler,
             @RequestParam(value = DepositionCurationConstants.PARAM_TRAIT, required = false) String trait,
@@ -148,6 +154,7 @@ public class EfoTraitController {
 
     @GetMapping(value = "/export")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public HttpEntity<byte[]> exportTraits(@RequestParam(value = DepositionCurationConstants.PARAM_TRAIT, required = false) String trait) {
 
         byte[] result = Objects.requireNonNull(efoTraitService.getEfoTraitsTsv(trait));
@@ -160,6 +167,7 @@ public class EfoTraitController {
     
     @DeleteMapping(value = "/{traitIds}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public void deleteEfoTrait(@PathVariable String traitIds, HttpServletRequest request) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         efoTraitService.deleteEfoTrait(traitIds);
@@ -167,6 +175,7 @@ public class EfoTraitController {
 
     @PutMapping(value = "/{traitId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<EfoTraitDto> fullyUpdateEfoTrait(@PathVariable String traitId, @RequestBody EfoTraitDto efoTraitDto, HttpServletRequest request) {
 
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);

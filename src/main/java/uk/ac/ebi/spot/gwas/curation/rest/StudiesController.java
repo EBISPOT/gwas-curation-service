@@ -16,6 +16,7 @@ import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
@@ -63,6 +64,7 @@ public class StudiesController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+"/{studyId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<StudyDto> getStudy(@PathVariable String studyId, @PathVariable String submissionId) {
         Study study = studiesService.getStudy(studyId);
         if( study != null ) {
@@ -74,6 +76,7 @@ public class StudiesController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+"/{studyId}/diseasetraits", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<DiseaseTraitDto> getDiseaseTraits(PagedResourcesAssembler assembler, @PathVariable String studyId, @PathVariable String submissionId) {
 
         DiseaseTrait diseaseTrait = studiesService.getDiseaseTraitsByStudyId(studyId);
@@ -94,6 +97,7 @@ public class StudiesController {
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+"/{studyId}",produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public  Resource<StudyDto> updateStudies(@PathVariable String studyId, @PathVariable String submissionId, @Valid @RequestBody StudyDto studyDto, HttpServletRequest request) {
         List<String> traitIds = null;
         List<String> efoTraitIds = null;
@@ -125,6 +129,7 @@ public class StudiesController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES,produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public PagedResources<StudyDto> getStudies(PagedResourcesAssembler assembler,
                                                @PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID)  String submissionId,
                                                @SortDefault(sort = "accession", direction = Sort.Direction.DESC)
@@ -145,6 +150,7 @@ public class StudiesController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+DepositionCurationConstants.API_SAMPLEDESCRIPTION,produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public PagedResources<StudySampleDescPatchRequest> getSampleDescription(PagedResourcesAssembler assembler,
                                                                             @PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID)  String submissionId,
                                                                             @SortDefault(sort = "accession", direction = Sort.Direction.DESC)
@@ -160,6 +166,7 @@ public class StudiesController {
 
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+DepositionCurationConstants.API_SAMPLEDESCRIPTION,produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public List<StudySampleDescPatchRequest> patchSampleDescription(@PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID) String submissionId,
                                                                     @Valid @RequestBody List<StudySampleDescPatchRequest> studySampleDescPatchRequests){
 
