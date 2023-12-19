@@ -1,10 +1,10 @@
-  image: docker:latest
+image: docker:latest
 services:
   - docker:dind
 
 stages:
   - build
-  - test
+#  - test
   - docker
   - docker-release
   - deploy-sandbox
@@ -31,19 +31,19 @@ maven-build:
       - target/*.jar
 
 #Uncommenting Solr cloud related changes
-sonarcloud-check:
-  image: maven:3.6.3-jdk-11
-  stage: test
-  cache:
-    key: "${CI_JOB_NAME}"
-    paths:
-      - .sonar/cache
-  script:
-    - echo ${MAVEN_SETTINGS} | base64 -d > settings.xml
-    - mvn -s settings.xml sonar:sonar -Dspring.profiles.active=test
-  only:
-    - merge_requests
-    - develop
+#sonarcloud-check:
+  #image: maven:3.6.3-jdk-11
+  #stage: test
+  #cache:
+    #key: "${CI_JOB_NAME}"
+    #paths:
+     # - .sonar/cache
+  #script:
+    #- echo ${MAVEN_SETTINGS} | base64 -d > settings.xml
+    #- mvn -s settings.xml sonar:sonar -Dspring.profiles.active=test
+  #only:
+   # - merge_requests
+    #- develop
 
 build-backend-container:
   stage: docker

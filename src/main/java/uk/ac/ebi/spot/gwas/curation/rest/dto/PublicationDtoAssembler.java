@@ -2,6 +2,8 @@ package uk.ac.ebi.spot.gwas.curation.rest.dto;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.spot.gwas.curation.service.UserService;
+
 import uk.ac.ebi.spot.gwas.curation.service.PublicationAuthorService;
 import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
@@ -15,6 +17,9 @@ import java.util.stream.Collectors;
 public class PublicationDtoAssembler  {
 
     @Autowired
+    private UserService userService;
+
+
     ProvenanceDtoAssembler provenanceDtoAssembler;
 
     @Autowired
@@ -24,6 +29,7 @@ public class PublicationDtoAssembler  {
     PublicationAuthorDtoAssembler publicationAuthorDtoAssembler;
 
     public  PublicationDto assemble(Publication publication, User user) {
+
         return new PublicationDto(publication.getId(),
                 publication.getPmid(),
                 publication.getTitle(),
@@ -45,6 +51,7 @@ public class PublicationDtoAssembler  {
                         .map(author -> publicationAuthorDtoAssembler.assemble(author, user))
                         .collect(Collectors.toList())
                 ).orElse(null));
+
     }
 
 
