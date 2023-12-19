@@ -8,7 +8,7 @@ import uk.ac.ebi.spot.gwas.deposition.solr.SOLRPublication;
 
 public interface PublicationSolrRepository extends SolrCrudRepository<SOLRPublication , String> {
 
-    @Query(value = "?0 AND ?1 AND ?2 AND ?3 AND ?4")
+    @Query(value = "?0 AND  ?1 AND ?2 AND ?3 AND ?4")
     Page<SOLRPublication> findPublications(String pmid, String title, String curator, String curationStatus, String submitter, Pageable page);
 
 }
