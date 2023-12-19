@@ -10,6 +10,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
@@ -36,6 +37,7 @@ public class CurationStatusController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public PagedResources<CurationStatusDTO> getAllCurationStatus(PagedResourcesAssembler assembler,
                                                                @PageableDefault(size = 10, page = 0) Pageable pageable) {
        Page<CurationStatus> curationStatuses = curationStatusService.findAllCurationStatus(pageable);
@@ -49,6 +51,7 @@ public class CurationStatusController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{curatorStatusId}")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<CurationStatusDTO> getCurationStatus(@PathVariable String curatorStatusId) {
         CurationStatus curationStatus = curationStatusService.findCurationStatus(curatorStatusId);
         if(curationStatus != null){

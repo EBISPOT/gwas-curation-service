@@ -5,6 +5,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.service.AssociationsService;
@@ -22,6 +23,7 @@ public class AssociationController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{submissionId}" + DepositionCurationConstants.API_ASSOCIATIONS + "/snp-validation-report")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public HttpEntity<byte[]> getSnpValidationReport(@PathVariable String submissionId) {
         byte[] result = Objects.requireNonNull(associationsService.getSnpValidationReportTsv(submissionId));
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -33,12 +35,14 @@ public class AssociationController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{submissionId}" + DepositionCurationConstants.API_ASSOCIATIONS + "/snp-status")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public HttpEntity<SnpStatusReportDto> getSnpStatus(@PathVariable String submissionId) {
         return new HttpEntity<>(associationsService.getSnpStatus(submissionId));
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping(value = "/{submissionId}" + DepositionCurationConstants.API_ASSOCIATIONS + "/approve-snps")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public void approveSnps(@PathVariable String submissionId) {
         associationsService.approveSnps(submissionId);
     }
