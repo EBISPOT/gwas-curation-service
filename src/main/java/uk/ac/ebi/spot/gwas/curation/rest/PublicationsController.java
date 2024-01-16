@@ -11,6 +11,7 @@ import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
+import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.PublicationDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationStatusReport;
@@ -33,9 +34,16 @@ public class PublicationsController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/{pmids}",produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<PublicationStatusReport> createPublication(@PathVariable List<String> pmids, HttpServletRequest request ) {
+    public List<PublicationStatusReport> createPublication(@PathVariable List<String> pmids, HttpServletRequest request) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         return publicationService.createPublication(pmids, user);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping(value = "/{pmid}/curation")
+    public PublicationDto patchCurationDetails(@PathVariable String pmid, @RequestBody PublicationDto publicationDto, HttpServletRequest request) {
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
+        return publicationService.addPublicationCurationDetails(pmid, publicationDto, user);
     }
 
 }

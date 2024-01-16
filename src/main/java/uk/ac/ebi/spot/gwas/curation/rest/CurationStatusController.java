@@ -10,6 +10,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
@@ -22,7 +23,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.CurationStatusDTO;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 @RestController
-@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_PUBLICATION_STATUS)
+@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_CURATION_STATUS)
 public class CurationStatusController {
 
     @Autowired
@@ -34,6 +35,7 @@ public class CurationStatusController {
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
 
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public PagedResources<CurationStatusDTO> getAllCurationStatus(PagedResourcesAssembler assembler,
@@ -47,6 +49,7 @@ public class CurationStatusController {
 
     }
 
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{curatorStatusId}")
     public Resource<CurationStatusDTO> getCurationStatus(@PathVariable String curatorStatusId) {
@@ -56,6 +59,13 @@ public class CurationStatusController {
         } else{
             throw new EntityNotFoundException("Entity not found ->"+curatorStatusId);
         }
+    }
+
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping
+    public void createCurationStatus(@RequestBody CurationStatusDTO curationStatusDto) {
+        curationStatusService.createCurationStatus(curationStatusDto.getStatus());
     }
 
 }

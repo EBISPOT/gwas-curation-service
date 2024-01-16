@@ -9,9 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.PublicationRepository;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationDtoAssembler;
-import uk.ac.ebi.spot.gwas.curation.service.EuropepmcPubMedSearchService;
-import uk.ac.ebi.spot.gwas.curation.service.PublicationAuthorService;
-import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
+import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.solr.repository.PublicationSolrRepository;
 import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
 import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
@@ -21,6 +19,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationAuthorDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationStatusReport;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchPublicationDTO;
 import uk.ac.ebi.spot.gwas.deposition.europmc.EuropePMCData;
+import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import uk.ac.ebi.spot.gwas.deposition.exception.EuropePMCException;
 import uk.ac.ebi.spot.gwas.deposition.exception.PubmedLookupException;
 import uk.ac.ebi.spot.gwas.deposition.solr.SOLRPublication;
@@ -48,6 +47,12 @@ public class PublicationServiceImpl implements PublicationService {
 
     @Autowired
     PublicationAuthorService publicationAuthorService;
+
+    @Autowired
+    CuratorService curatorService;
+
+    @Autowired
+    CurationStatusService curationStatusService;
 
     @Override
     public Publication getPublicationDetailsByPmidOrPubId(String pmid, Boolean isPmid) {
@@ -78,6 +83,7 @@ public class PublicationServiceImpl implements PublicationService {
                 String submitter = searchPublicationDTO.getSubmitter() == null ? "*:*" : "submitter:*"+ searchPublicationDTO.getSubmitter() + "*";
                 return publicationSolrRepository.findPublications(pmid, title, curator, curationStatus, submitter, page);
             }
+
             return publicationSolrRepository.findAll(page);
     }
 
@@ -151,6 +157,32 @@ public class PublicationServiceImpl implements PublicationService {
 
         });
         return reports;
+    }
+
+    //adds curationStatus and assigns curator to publication
+    @Override
+    public PublicationDto addPublicationCurationDetails(String pubmedId, PublicationDto publicationDto, User user) {
+        if ((publicationDto.getCurationStatus() == null || publicationDto.getCurationStatus().getId() == null)
+                && (publicationDto.getCurator() == null || publicationDto.getCurator().getId() == null)) {
+            throw new IllegalArgumentException("both curationStatus.id and curator.id are null, at least one required");
+        }
+        Publication publication = publicationRepository
+                .findByPmid(pubmedId)
+                .orElseThrow(() -> new EntityNotFoundException("publication id not found"));
+        if (publicationDto.getCurationStatus() != null && publicationDto.getCurationStatus().getId() != null) {
+            if (curationStatusService.findCurationStatus(publicationDto.getCurationStatus().getId()) == null) {
+                throw new EntityNotFoundException("curationStatus.id not found");
+            }
+            publication.setCurationStatusId(publicationDto.getCurationStatus().getId());
+        }
+        if (publicationDto.getCurator() != null && publicationDto.getCurator().getId() != null) {
+            if (curatorService.findCuratorDetails(publicationDto.getCurator().getId()) == null) {
+                throw new EntityNotFoundException("curator.id not found");
+            }
+            publication.setCuratorId(publicationDto.getCurator().getId());
+        }
+        publication = publicationRepository.save(publication);
+        return publicationDtoAssembler.assemble(publication, user);
     }
 
 }

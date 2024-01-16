@@ -41,6 +41,6 @@ public class DepositionCurationConstants {
     public static final String API_SOLR_REMOVE = "/remove-studies";
     public static final String API_PUBLICATIONS = "/publications";
     public static final String API_CURATORS = "/curators";
-    public static final String API_PUBLICATION_STATUS = "/publication-status";
+    public static final String API_CURATION_STATUS = "/curation-status";
 
 }

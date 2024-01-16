@@ -2,6 +2,8 @@ package uk.ac.ebi.spot.gwas.curation.rest.dto;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.spot.gwas.curation.service.CurationStatusService;
+import uk.ac.ebi.spot.gwas.curation.service.CuratorService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 
 import uk.ac.ebi.spot.gwas.curation.service.PublicationAuthorService;
@@ -16,14 +18,22 @@ import java.util.stream.Collectors;
 @Component
 public class PublicationDtoAssembler  {
 
-    @Autowired
-    private UserService userService;
-
-
     ProvenanceDtoAssembler provenanceDtoAssembler;
 
     @Autowired
     PublicationAuthorService publicationAuthorService;
+
+    @Autowired
+    CurationStatusService curationStatusService;
+
+    @Autowired
+    CurationStatusDTOAssembler curationStatusDTOAssembler;
+
+    @Autowired
+    CuratorService curatorService;
+
+    @Autowired
+    CuratorDTOAssembler curatorDTOAssembler;
 
     @Autowired
     PublicationAuthorDtoAssembler publicationAuthorDtoAssembler;
@@ -49,8 +59,11 @@ public class PublicationDtoAssembler  {
                         filter(Optional::isPresent)
                         .map(Optional::get)
                         .map(author -> publicationAuthorDtoAssembler.assemble(author, user))
-                        .collect(Collectors.toList())
-                ).orElse(null));
+                        .collect(Collectors.toList()))
+                        .orElse(null),
+                publication.getCurationStatusId() != null ? curationStatusDTOAssembler.assemble(curationStatusService.findCurationStatus(publication.getCurationStatusId())) : null,
+                publication.getCuratorId() != null ? curatorDTOAssembler.assemble(curatorService.findCuratorDetails(publication.getCuratorId())): null
+        );
 
     }
 
