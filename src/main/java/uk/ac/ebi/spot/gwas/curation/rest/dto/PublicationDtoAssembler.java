@@ -1,12 +1,18 @@
 package uk.ac.ebi.spot.gwas.curation.rest.dto;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceAssembler;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
+import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
+import uk.ac.ebi.spot.gwas.curation.rest.PublicationsController;
 import uk.ac.ebi.spot.gwas.curation.service.CurationStatusService;
 import uk.ac.ebi.spot.gwas.curation.service.CuratorService;
-import uk.ac.ebi.spot.gwas.curation.service.UserService;
 
 import uk.ac.ebi.spot.gwas.curation.service.PublicationAuthorService;
+import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.CorrespondingAuthorDto;
@@ -16,7 +22,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class PublicationDtoAssembler  {
+public class PublicationDtoAssembler  implements ResourceAssembler<Publication, Resource<PublicationDto>> {
 
     ProvenanceDtoAssembler provenanceDtoAssembler;
 
@@ -37,6 +43,9 @@ public class PublicationDtoAssembler  {
 
     @Autowired
     PublicationAuthorDtoAssembler publicationAuthorDtoAssembler;
+
+    @Autowired
+    DepositionCurationConfig depositionCurationConfig;
 
     public  PublicationDto assemble(Publication publication, User user) {
 
@@ -62,7 +71,8 @@ public class PublicationDtoAssembler  {
                         .collect(Collectors.toList()))
                         .orElse(null),
                 publication.getCurationStatusId() != null ? curationStatusDTOAssembler.assemble(curationStatusService.findCurationStatus(publication.getCurationStatusId())) : null,
-                publication.getCuratorId() != null ? curatorDTOAssembler.assemble(curatorService.findCuratorDetails(publication.getCuratorId())): null
+                publication.getCuratorId() != null ? curatorDTOAssembler.assemble(curatorService.findCuratorDetails(publication.getCuratorId())): null,
+                publication.getSubmitter()
         );
 
     }
@@ -84,4 +94,33 @@ public class PublicationDtoAssembler  {
                 null);
     }
 
+    @Override
+    public Resource<PublicationDto> toResource(Publication publication) {
+        PublicationDto publicationDto = PublicationDto
+                .builder()
+                .pmid(publication.getPmid())
+                .publicationId(publication.getId())
+                .title(publication.getTitle())
+                .journal(publication.getJournal())
+                .firstAuthor(publication.getFirstAuthor())
+                .publicationDate(publication.getPublicationDate())
+                .correspondingAuthor(
+                        publication.getCorrespondingAuthor() != null ?
+                                new CorrespondingAuthorDto(publication.getCorrespondingAuthor().getAuthorName(),
+                                        publication.getCorrespondingAuthor().getEmail()) : null
+                )
+                .status(publication.getStatus())
+                .curationStatus(publication.getCurationStatusId() != null ? curationStatusDTOAssembler.assemble(curationStatusService.findCurationStatus(publication.getCurationStatusId())) : null)
+                .curator(publication.getCuratorId() != null ? curatorDTOAssembler.assemble(curatorService.findCuratorDetails(publication.getCuratorId())): null)
+                .submitter(publication.getSubmitter())
+                .build();
+
+        final ControllerLinkBuilder controllerLinkBuilder = ControllerLinkBuilder.linkTo(
+                ControllerLinkBuilder.methodOn(PublicationsController.class).getPublication(publication.getId())
+        );
+
+        Resource<PublicationDto> resource = new Resource<>(publicationDto);
+        resource.add(BackendUtil.underBasePath(controllerLinkBuilder, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT));
+        return resource;
+    }
 }

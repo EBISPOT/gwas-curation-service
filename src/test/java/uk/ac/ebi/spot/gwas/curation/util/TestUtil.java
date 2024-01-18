@@ -1298,8 +1298,8 @@ public class TestUtil {
         publication.setId("1234");
         publication.setPublicationDate(DateTime.now().toLocalDate());
         publication.setCorrespondingAuthor(null);
-        publication.setCurator("test");
-        publication.setCurationStatus("test");
+        publication.setCuratorId("test");
+        publication.setCurationStatusId("test");
         publication.setPmid("12345678");
         publication.setPushed(true);
         publication.setTitle("test");

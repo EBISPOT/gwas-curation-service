@@ -1,11 +1,19 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bson.BSONObject;
+import org.bson.BasicBSONObject;
+import org.bson.Document;
 import org.joda.time.DateTime;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.PublicationRepository;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationDtoAssembler;
@@ -24,9 +32,9 @@ import uk.ac.ebi.spot.gwas.deposition.exception.EuropePMCException;
 import uk.ac.ebi.spot.gwas.deposition.exception.PubmedLookupException;
 import uk.ac.ebi.spot.gwas.deposition.solr.SOLRPublication;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 @Service
 public class PublicationServiceImpl implements PublicationService {
@@ -85,6 +93,31 @@ public class PublicationServiceImpl implements PublicationService {
             }
 
             return publicationSolrRepository.findAll(page);
+    }
+
+    @Override
+    public Page<Publication> search(SearchPublicationDTO searchPublicationDTO, Pageable pageable) throws IOException {
+        List<String> queryList = new ArrayList<>();
+        if (searchPublicationDTO.getPmid() != null) {
+            queryList.add("\"pmid\": \"" + searchPublicationDTO.getPmid() + "\"");
+        }
+        if (searchPublicationDTO.getTitle() != null ) {
+            queryList.add("\"title\": {\"$regex\": \".*" + searchPublicationDTO.getTitle() + ".*\", \"$options\" : \"i\"}");
+        }
+        if (searchPublicationDTO.getCurator() != null) {
+            queryList.add("\"curatorId\": \"" + searchPublicationDTO.getPmid() + "\"");
+        }
+        if (searchPublicationDTO.getCurationStatus() != null) {
+            queryList.add("\"curationStatusId\": \"" + searchPublicationDTO.getPmid() + "\"");
+        }
+        if (searchPublicationDTO.getSubmitter() != null) {
+            queryList.add("\"submitter\": {\"$regex\": \".*" + searchPublicationDTO.getSubmitter() + ".*\", \"$options\" : \"i\"}");
+        }
+        String query = "{" + String.join(",", queryList) + "}";
+        Map<String,Object> result = new ObjectMapper().readValue(query, HashMap.class);
+        BSONObject bsonQuery = new BasicBSONObject();
+        bsonQuery.putAll(result);
+        return publicationRepository.findByQuery(bsonQuery, pageable);
     }
 
     @Override
