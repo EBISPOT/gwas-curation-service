@@ -66,8 +66,7 @@ public class PublicationsController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping(value = "/search")
-    // todo remove /search and solrController cuz ambiguous /{id}, use try catch instead of throwing exception
+    @GetMapping
     public PagedResources<PublicationDto> search(SearchPublicationDTO searchPublicationDTO,
                                                  PagedResourcesAssembler assembler,
                                                  @PageableDefault(size = 10, page = 0) Pageable pageable) throws IOException {
@@ -81,7 +80,7 @@ public class PublicationsController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping(value = "/search/{id}")
+    @GetMapping(value = "/{id}")
     public Resource<PublicationDto> getPublication(@PathVariable String id) {
         Publication publication = publicationService.getPublicationDetailsByPmidOrPubId(id, false);
         if (publication != null) {
