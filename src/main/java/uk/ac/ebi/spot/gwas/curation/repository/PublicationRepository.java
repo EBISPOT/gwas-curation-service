@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
+
+import java.util.List;
 import java.util.Optional;
 
 public interface PublicationRepository extends MongoRepository<Publication, String> {
@@ -17,5 +19,7 @@ public interface PublicationRepository extends MongoRepository<Publication, Stri
 
     @Query(value = "?0")
     Page<Publication> findByQuery(BSONObject query, Pageable pageable);
+
+    List<Publication> findByStatusNot(String status);
 
 }

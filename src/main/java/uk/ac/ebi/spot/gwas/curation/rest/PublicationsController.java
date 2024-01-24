@@ -62,7 +62,7 @@ public class PublicationsController {
     @PatchMapping(value = "/{pmid}/curation")
     public PublicationDto patchCurationDetails(@PathVariable String pmid, @RequestBody PublicationDto publicationDto, HttpServletRequest request) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        return publicationService.addPublicationCurationDetails(pmid, publicationDto, user);
+        return publicationService.updatePublicationCurationDetails(pmid, publicationDto, user);
     }
 
     @ResponseStatus(HttpStatus.OK)

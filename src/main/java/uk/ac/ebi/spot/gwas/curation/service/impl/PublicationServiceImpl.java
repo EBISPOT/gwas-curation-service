@@ -1,26 +1,25 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
-import org.bson.Document;
 import org.joda.time.DateTime;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.PublicationRepository;
+import uk.ac.ebi.spot.gwas.curation.repository.SubmissionRepository;
+import uk.ac.ebi.spot.gwas.curation.repository.UserRepository;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.solr.repository.PublicationSolrRepository;
 import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
 import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
+import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.PublicationDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationAuthorDto;
@@ -34,7 +33,6 @@ import uk.ac.ebi.spot.gwas.deposition.solr.SOLRPublication;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Pattern;
 
 @Service
 public class PublicationServiceImpl implements PublicationService {
@@ -61,6 +59,44 @@ public class PublicationServiceImpl implements PublicationService {
 
     @Autowired
     CurationStatusService curationStatusService;
+
+    @Autowired
+    SubmissionRepository submissionRepository;
+
+    @Autowired
+    UserRepository userRepository;
+
+    // todo uncomment @PostConstruct
+    private void addSubmitter() {
+        List<Publication> publications = publicationRepository.findByStatusNot("ELIGIBLE");
+        publications
+                .stream()
+                .filter(publication -> StringUtils.isEmpty(publication.getSubmitter()))
+                .forEach(publication -> {
+                    //log.info("Looking for submitter for pmid {}", publication.getPmid());
+                    String submitter = Optional.ofNullable(submissionRepository.findByPublicationIdAndArchived(publication.getId(),
+                                    false, Pageable.unpaged() ))
+                            .map(page -> page.stream().findFirst())
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .map(Submission::getCreated)
+                            .map(Provenance::getUserId)
+                            .map(userId -> userRepository.findById(userId))
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .map(user -> user.getName())
+                            .orElse(null);
+                    if (submitter == null) {
+                        //log.info("No submitter found for pmid {}", publication.getPmid());
+                    }
+                    else {
+                        log.info("Found submitter {} for pmid {}", submitter, publication.getPmid());
+                        publication.setSubmitter(submitter);
+                        publicationRepository.save(publication);
+                    }
+                });
+
+    }
 
     @Override
     public Publication getPublicationDetailsByPmidOrPubId(String pmid, Boolean isPmid) {
@@ -105,10 +141,10 @@ public class PublicationServiceImpl implements PublicationService {
             queryList.add("\"title\": {\"$regex\": \".*" + searchPublicationDTO.getTitle() + ".*\", \"$options\" : \"i\"}");
         }
         if (searchPublicationDTO.getCurator() != null) {
-            queryList.add("\"curatorId\": \"" + searchPublicationDTO.getPmid() + "\"");
+            queryList.add("\"curatorId\": \"" + searchPublicationDTO.getCurator() + "\"");
         }
         if (searchPublicationDTO.getCurationStatus() != null) {
-            queryList.add("\"curationStatusId\": \"" + searchPublicationDTO.getPmid() + "\"");
+            queryList.add("\"curationStatusId\": \"" + searchPublicationDTO.getCurationStatus() + "\"");
         }
         if (searchPublicationDTO.getSubmitter() != null) {
             queryList.add("\"submitter\": {\"$regex\": \".*" + searchPublicationDTO.getSubmitter() + ".*\", \"$options\" : \"i\"}");
@@ -194,7 +230,7 @@ public class PublicationServiceImpl implements PublicationService {
 
     //adds curationStatus and assigns curator to publication
     @Override
-    public PublicationDto addPublicationCurationDetails(String pubmedId, PublicationDto publicationDto, User user) {
+    public PublicationDto updatePublicationCurationDetails(String pubmedId, PublicationDto publicationDto, User user) {
         if ((publicationDto.getCurationStatus() == null || publicationDto.getCurationStatus().getId() == null)
                 && (publicationDto.getCurator() == null || publicationDto.getCurator().getId() == null)) {
             throw new IllegalArgumentException("both curationStatus.id and curator.id are null, at least one required");

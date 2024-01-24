@@ -25,6 +25,6 @@ public interface PublicationService {
 
     List<PublicationStatusReport>  createPublication(List<String> pmids, User user);
 
-    PublicationDto addPublicationCurationDetails(String pmid, PublicationDto publicationDto, User user);
+    PublicationDto updatePublicationCurationDetails(String pmid, PublicationDto publicationDto, User user);
 
 }
