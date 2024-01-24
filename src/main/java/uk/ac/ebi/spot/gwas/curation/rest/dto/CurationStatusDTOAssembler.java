@@ -33,7 +33,7 @@ public class CurationStatusDTOAssembler implements ResourceAssembler<CurationSta
     public CurationStatusDTO assemble(CurationStatus curationStatus) {
         return CurationStatusDTO
                 .builder()
-                .id(curationStatus.getId())
+                .curationStatusId(curationStatus.getId())
                 .status(curationStatus.getStatus())
                 .build();
     }

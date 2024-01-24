@@ -33,7 +33,7 @@ public class CuratorDTOAssembler implements ResourceAssembler<Curator, Resource<
     public CuratorDTO assemble(Curator curator) {
         return CuratorDTO
                 .builder()
-                .id(curator.getId())
+                .curatorId(curator.getId())
                 .email(curator.getEmail())
                 .firstName(curator.getFirstName())
                 .lastName(curator.getLastName())

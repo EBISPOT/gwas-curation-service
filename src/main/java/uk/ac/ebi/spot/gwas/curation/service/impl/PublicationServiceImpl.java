@@ -231,24 +231,24 @@ public class PublicationServiceImpl implements PublicationService {
     //adds curationStatus and assigns curator to publication
     @Override
     public PublicationDto updatePublicationCurationDetails(String pubmedId, PublicationDto publicationDto, User user) {
-        if ((publicationDto.getCurationStatus() == null || publicationDto.getCurationStatus().getId() == null)
-                && (publicationDto.getCurator() == null || publicationDto.getCurator().getId() == null)) {
+        if ((publicationDto.getCurationStatus() == null || publicationDto.getCurationStatus().getCurationStatusId() == null)
+                && (publicationDto.getCurator() == null || publicationDto.getCurator().getCuratorId() == null)) {
             throw new IllegalArgumentException("both curationStatus.id and curator.id are null, at least one required");
         }
         Publication publication = publicationRepository
                 .findByPmid(pubmedId)
                 .orElseThrow(() -> new EntityNotFoundException("publication id not found"));
-        if (publicationDto.getCurationStatus() != null && publicationDto.getCurationStatus().getId() != null) {
-            if (curationStatusService.findCurationStatus(publicationDto.getCurationStatus().getId()) == null) {
+        if (publicationDto.getCurationStatus() != null && publicationDto.getCurationStatus().getCurationStatusId() != null) {
+            if (curationStatusService.findCurationStatus(publicationDto.getCurationStatus().getCurationStatusId()) == null) {
                 throw new EntityNotFoundException("curationStatus.id not found");
             }
-            publication.setCurationStatusId(publicationDto.getCurationStatus().getId());
+            publication.setCurationStatusId(publicationDto.getCurationStatus().getCurationStatusId());
         }
-        if (publicationDto.getCurator() != null && publicationDto.getCurator().getId() != null) {
-            if (curatorService.findCuratorDetails(publicationDto.getCurator().getId()) == null) {
+        if (publicationDto.getCurator() != null && publicationDto.getCurator().getCuratorId() != null) {
+            if (curatorService.findCuratorDetails(publicationDto.getCurator().getCuratorId()) == null) {
                 throw new EntityNotFoundException("curator.id not found");
             }
-            publication.setCuratorId(publicationDto.getCurator().getId());
+            publication.setCuratorId(publicationDto.getCurator().getCuratorId());
         }
         publication = publicationRepository.save(publication);
         return publicationDtoAssembler.assemble(publication, user);
