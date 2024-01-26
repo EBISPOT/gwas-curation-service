@@ -22,18 +22,22 @@ public class CuratorDTOAssembler implements ResourceAssembler<Curator, Resource<
 
     @Override
     public Resource<CuratorDTO> toResource(Curator curator) {
-        CuratorDTO curatorDTO = CuratorDTO.builder()
-                                .email(curator.getEmail())
-                                .firstName(curator.getFirstName())
-                                .lastName(curator.getLastName())
-                                .username(curator.getUsername())
-                                .build();
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
                 ControllerLinkBuilder.methodOn(CuratorController.class).getCuratorDetails(curator.getId()));
 
-        Resource<CuratorDTO> resource = new Resource<>(curatorDTO);
+        Resource<CuratorDTO> resource = new Resource<>(assemble(curator));
         resource.add(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT));
         return resource;
+    }
 
+    public CuratorDTO assemble(Curator curator) {
+        return CuratorDTO
+                .builder()
+                .curatorId(curator.getId())
+                .email(curator.getEmail())
+                .firstName(curator.getFirstName())
+                .lastName(curator.getLastName())
+                .username(curator.getUsername())
+                .build();
     }
 }

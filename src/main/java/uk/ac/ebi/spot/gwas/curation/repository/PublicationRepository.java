@@ -1,14 +1,14 @@
 package uk.ac.ebi.spot.gwas.curation.repository;
 
+import org.bson.BSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public interface PublicationRepository extends MongoRepository<Publication, String> {
 
@@ -16,5 +16,10 @@ public interface PublicationRepository extends MongoRepository<Publication, Stri
 
 
     Optional<Publication> findById(String pubId);
+
+    @Query(value = "?0")
+    Page<Publication> findByQuery(BSONObject query, Pageable pageable);
+
+    List<Publication> findByStatusNot(String status);
 
 }
