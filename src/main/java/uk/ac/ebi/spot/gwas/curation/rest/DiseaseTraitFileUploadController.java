@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
@@ -58,6 +59,7 @@ public class DiseaseTraitFileUploadController {
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public HttpEntity<UploadReportWrapper> uploadDiseaseTraits(@RequestParam MultipartFile multipartFile,
                                                                         HttpServletRequest request) {
         if(multipartFile.isEmpty()){
@@ -74,6 +76,7 @@ public class DiseaseTraitFileUploadController {
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/analysis", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<AnalysisCacheDto>  similaritySearchAnalysis(@RequestParam MultipartFile multipartFile) throws IOException {
         if(multipartFile.isEmpty()){
             throw new FileProcessingException("File not found");
@@ -94,6 +97,7 @@ public class DiseaseTraitFileUploadController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value ="/analysis/{analysisId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseBody
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public HttpEntity<byte[]> similaritySearchAnalysisCsvDownload(@PathVariable String analysisId)
             throws IOException{
         log.info("Retrieving Cached Analysis with ID  : {}", analysisId);
@@ -117,6 +121,7 @@ public class DiseaseTraitFileUploadController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/templates", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResponseBody
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public HttpEntity<byte[]> fileUploadTemplateDownload(HttpServletResponse response,
                                              @RequestParam(value = "file") String fileUploadType) throws IOException {
 

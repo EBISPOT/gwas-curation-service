@@ -38,6 +38,7 @@ public class CurationStatusController {
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public PagedResources<CurationStatusDTO> getAllCurationStatus(PagedResourcesAssembler assembler,
                                                                @PageableDefault(size = 10, page = 0) Pageable pageable) {
        Page<CurationStatus> curationStatuses = curationStatusService.findAllCurationStatus(pageable);
@@ -52,6 +53,7 @@ public class CurationStatusController {
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{curatorStatusId}")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<CurationStatusDTO> getCurationStatus(@PathVariable String curatorStatusId) {
         CurationStatus curationStatus = curationStatusService.findCurationStatus(curatorStatusId);
         if(curationStatus != null){

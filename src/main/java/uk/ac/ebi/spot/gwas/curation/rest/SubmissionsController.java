@@ -80,6 +80,7 @@ public class SubmissionsController {
 
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(value = "/{submissionId}")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<SubmissionDto> patchSubmission(@PathVariable String submissionId, @RequestBody SubmissionDto submissionDto) {
 
         return submissionAssemblyService.toResource(submissionService.patchSubmission(submissionDto, submissionId));
