@@ -58,6 +58,7 @@ public class StudyTraitsUploadFileController {
         List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = (List<MultiTraitStudyMappingDto>) fileHandler.disassemble(multipartFile, MultiTraitStudyMappingDto.class,  multiTraitStudyMappingDto);
         //List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForMultiTraitMapping(multipartFile);
         UploadReportWrapper traitUploadReport = studiesService.updateMultiTraitsForStudies(multiTraitStudyMappingDtos, submissionId);
+        studiesService.sendMetaDataMessageToQueue(submissionId);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         return new HttpEntity<>(traitUploadReport, responseHeaders);
@@ -95,6 +96,7 @@ public class StudyTraitsUploadFileController {
         List<StudySampleDescPatchWrapper>  sampleDescPatchWrapperRequests =  (List<StudySampleDescPatchWrapper>) fileHandler.disassemble(multipartFile, StudySampleDescPatchWrapper.class,studySampleDescPatchWrapper);
         List<StudySampleDescPatchRequest> sampleDescPatchRequests = sampleDescPatchWrapperRequests.stream().map(studySampleDescPatchRequestAssembler::disassembleWrapper).collect(Collectors.toList());
         byte[] result = studiesService.uploadSampleDescriptions(sampleDescPatchRequests, submissionId);
+        studiesService.sendMetaDataMessageToQueue(submissionId);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studySampleDescriptions_Extract");
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);

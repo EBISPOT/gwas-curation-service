@@ -91,3 +91,7 @@ rabbitmq:
   queue-name: study_change_sandbox
   exchange-name: study_change_exchange_sandbox
   routing-key: study-ingest_sandbox
+  sumstats:
+    queue-name: study_change_sandbox
+    exchange-name: study_change_exchange_sandbox
+    routing-key: study-ingest_sandbox
