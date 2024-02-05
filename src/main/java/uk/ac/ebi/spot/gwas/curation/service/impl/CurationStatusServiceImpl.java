@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.CurationStatusRepository;
 import uk.ac.ebi.spot.gwas.curation.service.CurationStatusService;
 import uk.ac.ebi.spot.gwas.deposition.domain.CurationStatus;
+import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 import java.util.Optional;
 
@@ -23,9 +24,20 @@ public class CurationStatusServiceImpl implements CurationStatusService {
 
     @Override
     public CurationStatus findCurationStatus(String id) {
-        return Optional.ofNullable(curationStatusRepository.findById(id))
+        return Optional.of(curationStatusRepository.findById(id))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .orElse(null);
     }
+
+    @Override
+    public CurationStatus findCurationStatusByStatus(String status) {
+        return curationStatusRepository.findCurationStatusByStatus(status).orElseThrow(() -> new EntityNotFoundException("CurationStatus not found"));
+    }
+
+    @Override
+    public CurationStatus createCurationStatus(String status) {
+        return curationStatusRepository.save(new CurationStatus(status));
+    }
+
 }

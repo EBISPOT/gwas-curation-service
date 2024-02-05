@@ -16,19 +16,24 @@ import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.MatchPublicationReportDTOAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.JWTService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
+import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.PublicationDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.MatchPublicationReport;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.MatchPublicationReportDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationStatusReport;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchPublicationDTO;
+import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -46,6 +51,9 @@ public class PublicationsController {
 
     @Autowired
     MatchPublicationReportDTOAssembler publicationReportDTOAssembler;
+    @Autowired
+    PublicationDtoAssembler publicationDtoAssembler;
+
 
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
@@ -68,6 +76,38 @@ public class PublicationsController {
                 .methodOn(PublicationsController.class).matchPublication(assembler, pmid, pageable));
         return assembler.toResource(matchPublicationReports, publicationReportDTOAssembler,
                 new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
+    }
+
+    @PatchMapping(value = "/{pmid}/curation")
+    public PublicationDto patchCurationDetails(@PathVariable String pmid, @RequestBody PublicationDto publicationDto, HttpServletRequest request) {
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
+        return publicationService.updatePublicationCurationDetails(pmid, publicationDto, user);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping
+    public PagedResources<PublicationDto> search(SearchPublicationDTO searchPublicationDTO,
+                                                 PagedResourcesAssembler assembler,
+                                                 @PageableDefault(size = 10, page = 0) Pageable pageable) throws IOException {
+        Page<Publication> publications = publicationService.search(searchPublicationDTO, pageable);
+        final ControllerLinkBuilder controllerLinkBuilder = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
+                .methodOn(PublicationsController.class)
+                .search(searchPublicationDTO, assembler, pageable)
+        );
+        return assembler.toResource(publications, publicationDtoAssembler,
+                new Link(BackendUtil.underBasePath(controllerLinkBuilder, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(value = "/{id}")
+    public Resource<PublicationDto> getPublication(@PathVariable String id) {
+        Publication publication = publicationService.getPublicationDetailsByPmidOrPubId(id, false);
+        if (publication != null) {
+            return publicationDtoAssembler.toResource(publication);
+        }
+        else {
+            throw new EntityNotFoundException("publication id not found, " + id);
+        }
     }
 
 }

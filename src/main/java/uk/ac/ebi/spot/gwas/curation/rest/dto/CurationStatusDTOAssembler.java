@@ -22,15 +22,19 @@ public class CurationStatusDTOAssembler implements ResourceAssembler<CurationSta
 
     @Override
     public Resource<CurationStatusDTO> toResource(CurationStatus curationStatus) {
-        CurationStatusDTO curationStatusDTO = CurationStatusDTO.builder()
-                                                .status(curationStatus.getStatus())
-                                                .build();
-
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
                 ControllerLinkBuilder.methodOn(CurationStatusController.class).getCurationStatus(curationStatus.getId()));
 
-        Resource<CurationStatusDTO> resource = new Resource<>(curationStatusDTO);
+        Resource<CurationStatusDTO> resource = new Resource<>(assemble(curationStatus));
         resource.add(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT));
         return resource;
+    }
+
+    public CurationStatusDTO assemble(CurationStatus curationStatus) {
+        return CurationStatusDTO
+                .builder()
+                .curationStatusId(curationStatus.getId())
+                .status(curationStatus.getStatus())
+                .build();
     }
 }

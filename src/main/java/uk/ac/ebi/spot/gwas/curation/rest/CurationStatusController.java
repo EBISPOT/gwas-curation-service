@@ -23,7 +23,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.CurationStatusDTO;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 @RestController
-@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_PUBLICATION_STATUS)
+@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_CURATION_STATUS)
 public class CurationStatusController {
 
     @Autowired
@@ -35,11 +35,10 @@ public class CurationStatusController {
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
 
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
-    @PreAuthorize("hasRole('self.GWAS_Curator')")
-    public PagedResources<CurationStatusDTO> getAllCurationStatus(PagedResourcesAssembler assembler,
-                                                               @PageableDefault(size = 10, page = 0) Pageable pageable) {
+    public PagedResources<CurationStatusDTO> getAllCurationStatus(PagedResourcesAssembler assembler, @PageableDefault(size = 10, page = 0) Pageable pageable) {
        Page<CurationStatus> curationStatuses = curationStatusService.findAllCurationStatus(pageable);
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
                 .methodOn(CurationStatusController.class).getAllCurationStatus(assembler, pageable));
@@ -49,9 +48,9 @@ public class CurationStatusController {
 
     }
 
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{curatorStatusId}")
-    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<CurationStatusDTO> getCurationStatus(@PathVariable String curatorStatusId) {
         CurationStatus curationStatus = curationStatusService.findCurationStatus(curatorStatusId);
         if(curationStatus != null){
@@ -59,6 +58,13 @@ public class CurationStatusController {
         } else{
             throw new EntityNotFoundException("Entity not found ->"+curatorStatusId);
         }
+    }
+
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping
+    public void createCurationStatus(@RequestBody CurationStatusDTO curationStatusDto) {
+        curationStatusService.createCurationStatus(curationStatusDto.getStatus());
     }
 
 }

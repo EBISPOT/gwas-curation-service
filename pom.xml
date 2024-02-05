@@ -190,7 +190,8 @@
         <dependency>
             <groupId>uk.ac.ebi.spot.gwasdepo</groupId>
             <artifactId>gwasdepo-commons</artifactId>
-            <version>1.0.34-SNAPSHOT</version>
+
+            <version>1.0.35-SNAPSHOT</version>
         </dependency>
 
         <dependency>
