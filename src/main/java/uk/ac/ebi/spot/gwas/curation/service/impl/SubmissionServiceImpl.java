@@ -203,7 +203,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                 submissionList.put(testSub.getId(), testSub);
             });
         } catch (Exception e) {
-            e.printStackTrace();
+           log.error("Exception in getSubmissions() call"+e.getMessage(),e);
         }
         return submissionList;
 
