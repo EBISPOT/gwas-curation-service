@@ -12,6 +12,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
@@ -25,7 +26,7 @@ import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import uk.ac.ebi.spot.gwas.deposition.solr.SOLRPublication;
 
 @RestController
-@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_PUBLICATIONS)
+@RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_PUBLICATIONS_SOLR)
 public class PublicationSolrController {
 
         @Autowired
@@ -40,6 +41,7 @@ public class PublicationSolrController {
 
         @ResponseStatus(HttpStatus.OK)
         @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+        @PreAuthorize("hasRole('self.GWAS_Curator')")
         public PagedResources<SolrPublicationDTO> getPublications(SearchPublicationDTO searchPublicationDTO,
                                                                   PagedResourcesAssembler assembler,
                                                                   @PageableDefault(size = 10, page = 0) Pageable pageable) {
@@ -55,6 +57,7 @@ public class PublicationSolrController {
 
         @ResponseStatus(HttpStatus.OK)
         @GetMapping("/{pubId}")
+        @PreAuthorize("hasRole('self.GWAS_Curator')")
         public Resource<SolrPublicationDTO> getPublication(@PathVariable String pubId) {
                 SOLRPublication solrPublication = publicationService.getPublicationFromSolr(pubId);
                 if(solrPublication != null){

@@ -161,7 +161,13 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
                 study.getSumstatsFlag(),
                 study.getPooledFlag(),
                 study.getGxeFlag(),
-                study.getSubmissionId());
+                study.getSubmissionId(),
+                study.getImputationPanel(),
+                study.getImputationSoftware(),
+                study.getAdjustedCovariates(),
+                study.getEffect_allele_frequency_lower_limit(),
+                study.getSex(),
+                study.getCoordinateSystem());
     }
 
     public static Study disassemble(StudyDto studyDto) {

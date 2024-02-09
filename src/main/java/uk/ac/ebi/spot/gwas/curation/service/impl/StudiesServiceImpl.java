@@ -114,7 +114,9 @@ public class StudiesServiceImpl implements StudiesService {
             String reportedTrait = searchStudyDTO.getReportedTrait();
             String note = searchStudyDTO.getNote();
 
-            if (efo != null && reportedTrait != null && note != null &&
+            if (searchStudyDTO.getAccessionId() != null) {
+                return studySolrRepository.findByAccessionId(searchStudyDTO.getAccessionId(), page);
+            } else if (efo != null && reportedTrait != null && note != null &&
                     sumStatsFlag != null && pooledFlag != null && gxeFlag != null) {
                 return studySolrRepository.findByEfoTraitsAndReportedTraitAndNotesAndSumstatsFlagOrGxeFlagOrPooledFlag(efo, reportedTrait, note,
                         sumStatsFlag, gxeFlag, pooledFlag, page);
@@ -293,8 +295,6 @@ public class StudiesServiceImpl implements StudiesService {
                 return studySolrRepository.findBySubmissionId(searchStudyDTO.getSubmissionId(), page);
             } else if (searchStudyDTO.getBowId() != null) {
                 return studySolrRepository.findByBowId(searchStudyDTO.getBowId(), page);
-            } else if (searchStudyDTO.getAccessionId() != null) {
-                return studySolrRepository.findByAccessionId(searchStudyDTO.getAccessionId(), page);
             } else if (sumStatsFlag != null && pooledFlag != null && gxeFlag != null) {
                 return studySolrRepository.findBySumstatsFlagOrPooledFlagOrGxeFlag(sumStatsFlag, pooledFlag, gxeFlag, page);
             } else if (sumStatsFlag != null && pooledFlag != null) {

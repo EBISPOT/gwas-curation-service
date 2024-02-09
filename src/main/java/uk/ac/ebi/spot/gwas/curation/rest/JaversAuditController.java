@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
@@ -66,6 +67,7 @@ public class JaversAuditController {
     @GetMapping(value = "/submissions/{submissionId}/changes",
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public List<JaversChangeWrapper> getSubmissionChanges(@PathVariable  String submissionId, HttpServletRequest request) throws Exception {
         User user = userService.findUser(jwtService.extractUser(HeadersUtil.extractJWT(request)), false);
         Submission submission = submissionService.getSubmission(submissionId, user);

@@ -10,4 +10,8 @@ public interface CurationStatusService {
 
     CurationStatus findCurationStatus(String id);
 
+    CurationStatus findCurationStatusByStatus(String status);
+
+    CurationStatus createCurationStatus(String status);
+
 }

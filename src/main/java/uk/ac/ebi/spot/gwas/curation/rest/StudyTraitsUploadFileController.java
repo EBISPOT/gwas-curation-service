@@ -6,6 +6,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
@@ -46,6 +47,7 @@ public class StudyTraitsUploadFileController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_MULTI_TRAITS + "/files")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public HttpEntity<UploadReportWrapper> uploadMultiTraitStudyMapping(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile, HttpServletRequest request) {
 
         if(multipartFile.isEmpty()){
@@ -64,6 +66,7 @@ public class StudyTraitsUploadFileController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_SAMPLEDESCRIPTION + "/files",
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public HttpEntity<byte[]> getSampleDescriptions(@PathVariable String submissionId) {
 
         List<StudySampleDescPatchWrapper> sampleDescPatchRequests =
@@ -86,6 +89,7 @@ public class StudyTraitsUploadFileController {
     @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_SAMPLEDESCRIPTION + "/files",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public HttpEntity<byte[]> uploadSampleDescriptions(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile) {
         StudySampleDescPatchWrapper studySampleDescPatchWrapper = new StudySampleDescPatchWrapper("","","","");
         List<StudySampleDescPatchWrapper>  sampleDescPatchWrapperRequests =  (List<StudySampleDescPatchWrapper>) fileHandler.disassemble(multipartFile, StudySampleDescPatchWrapper.class,studySampleDescPatchWrapper);

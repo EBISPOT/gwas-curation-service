@@ -190,7 +190,7 @@
         <dependency>
             <groupId>uk.ac.ebi.spot.gwasdepo</groupId>
             <artifactId>gwasdepo-commons</artifactId>
-            <version>1.0.28-SNAPSHOT</version>
+            <version>1.0.35-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -380,6 +380,19 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.mashape.unirest</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>1.4.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.gcardone.junidecode</groupId>
+            <artifactId>junidecode</artifactId>
+            <version>0.4.1</version>
         </dependency>
 
         <!--<dependency>

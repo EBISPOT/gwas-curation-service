@@ -45,6 +45,9 @@ public class SubmissionAssemblyService implements ResourceAssembler<Submission, 
     @Autowired
     private BodyOfWorkService bodyOfWorkService;
 
+    @Autowired
+    PublicationDtoAssembler publicationDtoAssembler;
+
     @Override
     public Resource<SubmissionDto> toResource(Submission submission) {
         Publication publication = null;
@@ -67,7 +70,7 @@ public class SubmissionAssemblyService implements ResourceAssembler<Submission, 
         }
 
         SubmissionDto submissionDto = SubmissionDtoAssembler.assemble(submission,
-                publication != null ? PublicationDtoAssembler.assemble(publication) : null,
+                publication != null ? publicationDtoAssembler.assemble(publication, null) : null,
                 bodyOfWork != null ? BodyOfWorkDtoAssembler.assemble(bodyOfWork) : null,
                 fileUploadDtos,
                 ProvenanceDtoAssembler.assemble(submission.getCreated(), userService.getUser(submission.getCreated().getUserId())),

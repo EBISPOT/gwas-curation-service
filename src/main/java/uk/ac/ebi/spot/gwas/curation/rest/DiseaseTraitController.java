@@ -23,6 +23,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
@@ -75,6 +76,7 @@ public class DiseaseTraitController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<DiseaseTraitDto> addDiseaseTraits(@Valid @RequestBody DiseaseTraitDto diseaseTraitDto, HttpServletRequest request) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         DiseaseTrait diseaseTrait = diseaseTraitDtoAssembler.disassemble(diseaseTraitDto);
@@ -85,6 +87,7 @@ public class DiseaseTraitController {
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/{traitId}",produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<DiseaseTraitDto> updateDiseaseTraits(@PathVariable String traitId,@Valid @RequestBody DiseaseTraitDto diseaseTraitDto, HttpServletRequest request) {
         Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitId);
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
@@ -94,6 +97,7 @@ public class DiseaseTraitController {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(value = "/{traitIds}")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public void deleteDiseaseTraits(@PathVariable List<String> traitIds) {
         diseaseTraitService.deleteDiseaseTrait(traitIds);
     }
@@ -103,6 +107,7 @@ public class DiseaseTraitController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{traitId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<DiseaseTraitDto> getDiseaseTrait(@PathVariable String traitId) {
         Optional<DiseaseTrait> optionalDiseaseTrait = diseaseTraitService.getDiseaseTrait(traitId);
         if(optionalDiseaseTrait.isPresent()) {
@@ -116,6 +121,7 @@ public class DiseaseTraitController {
 
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping(value = "/{traitId}", produces = "application/json-patch+json")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public Resource<DiseaseTraitDto> patchDiseaseTrait(@PathVariable String traitId, @RequestBody JsonPatch jsonPatch, HttpServletRequest request)
             throws JsonPatchException, JsonProcessingException {
         log.info("Inside applyPatchToDiseaseTrait()");
@@ -137,6 +143,7 @@ public class DiseaseTraitController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public PagedResources<DiseaseTraitDto> getDiseaseTraits(PagedResourcesAssembler assembler,
                                                             @RequestParam(value = DepositionCurationConstants.PARAM_TRAIT,
                                                                     required = false) String trait,
