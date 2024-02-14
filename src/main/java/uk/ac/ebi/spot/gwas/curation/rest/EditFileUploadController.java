@@ -14,10 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.config.RestInteractionConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
-import uk.ac.ebi.spot.gwas.curation.service.EditFileUploadService;
-import uk.ac.ebi.spot.gwas.curation.service.JWTService;
-import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
-import uk.ac.ebi.spot.gwas.curation.service.UserService;
+import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.dto.FileUploadDto;
@@ -52,6 +49,9 @@ public class EditFileUploadController {
 
     @Autowired
     SubmissionService submissionService;
+
+    @Autowired
+    StudiesService studiesService;
     /*
      * POST /v1/submissions/{submissionId}/edituploads
      */
@@ -69,8 +69,8 @@ public class EditFileUploadController {
 
         String jwtToken = CurationUtil.parseJwt(request);
         ResponseEntity<Resource<FileUploadDto>> fileUploadDtoResource = editFileUploadService.uploadEditFIle(jwtToken, submissionId, file );
-
-       return fileUploadDtoResource.getBody();
+        studiesService.sendMetaDataMessageToQueue(submissionId);
+        return fileUploadDtoResource.getBody();
     }
 
     /*
