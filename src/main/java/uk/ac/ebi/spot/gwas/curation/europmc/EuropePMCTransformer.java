@@ -25,6 +25,7 @@ public class EuropePMCTransformer {
     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
     public EuropePMCData transform(EuropePMCRequest europePMCRequest) {
+        log.debug("Inside transform()");
         EuropePMCData europePMCData = new EuropePMCData();
         europePMCData.setPublication(getPublicationInfo(europePMCRequest));
         List<PublicationAuthorDto> authorDtos = getAuthorsInfo(europePMCRequest);
@@ -37,7 +38,7 @@ public class EuropePMCTransformer {
 
     public String getDoi(EuropePMCRequest europePMCRequest) {
         ResultList resultList = europePMCRequest.getResultList();
-
+        log.debug("Inside getDoi()");
         return Optional.ofNullable(resultList).map(ResultList::getResult)
                 .filter(result -> !result.isEmpty())
                 .map(result -> result.stream().findFirst())
@@ -49,7 +50,7 @@ public class EuropePMCTransformer {
 
     public List<PublicationAuthorDto> getAuthorsInfo(EuropePMCRequest europePMCRequest) {
         ResultList resultList = europePMCRequest.getResultList();
-
+        log.debug("Inside getAuthorsInfo()");
         return Optional.ofNullable(resultList).map(rList -> rList.getResult())
                 .filter(result -> !result.isEmpty())
                 .map(result -> result.stream().findFirst())
@@ -62,7 +63,7 @@ public class EuropePMCTransformer {
 
     public PublicationDto getPublicationInfo(EuropePMCRequest europePMCRequest){
        ResultList resultList = europePMCRequest.getResultList();
-
+        log.debug("Inside getPublicationInfo()");
         return Optional.ofNullable(resultList).map(ResultList::getResult)
                 .filter(result -> !result.isEmpty())
                 .map(result -> result.stream().findFirst())
@@ -74,6 +75,7 @@ public class EuropePMCTransformer {
     }
 
     private PublicationDto mapPublicationDTO(Result result) {
+        log.debug("Inside mapPublicationDTO()");
         String datePublication = "";
         String medlineAbbreviation = "";
         if(result.getElectronicPublicationDate() != null) {
@@ -110,6 +112,7 @@ public class EuropePMCTransformer {
     }
 
     private List<PublicationAuthorDto> mapPublicationAuthorDto(Result result) {
+        log.debug("Inside mapPublicationAuthorDto()");
         AuthorList authors = result.getAuthorList();
         Pair<Boolean, List<PublicationAuthorDto>> pair = Optional.ofNullable(authors).map(AuthorList::getAuthor)
                 .filter(authList -> !authList.isEmpty())
@@ -131,7 +134,7 @@ public class EuropePMCTransformer {
 
     private Pair<Boolean, List<PublicationAuthorDto>> convertAuthToPublicationAuthorDto(List<Author> authors) {
         boolean noAuthor = true;
-
+        log.debug("Inside convertAuthToPublicationAuthorDto()");
         List<PublicationAuthorDto> dtos = new ArrayList<>();
         for(Author author : authors) {
             PublicationAuthorDto publicationAuthorDto = new PublicationAuthorDto();
@@ -172,7 +175,7 @@ public class EuropePMCTransformer {
     }
 
     private String getAffliationDetails(Author author) {
-
+        log.debug("Inside getAffliationDetails()");
        return Optional.ofNullable(author.getAuthorAffiliationDetailsList())
                 .map(AuthorAffiliationDetailsList::getAuthorAffiliation)
                 .filter(afflist -> !afflist.isEmpty())
@@ -188,7 +191,7 @@ public class EuropePMCTransformer {
 
 
     private String getAffliationDetails(Investigator investigator) {
-
+        log.debug("Inside getAffliationDetails Investigator ()");
         return Optional.ofNullable(investigator.getInvestigatorAffiliationDetailsList())
                 .map(InvestigatorAffiliationDetailsList::getInvestigatorAffiliation)
                 .filter(afflist -> !afflist.isEmpty())
@@ -204,6 +207,7 @@ public class EuropePMCTransformer {
 
     private  List<PublicationAuthorDto> convertInvestigatorToPublicationAuthorDto(List<Investigator> investigators) {
         List<PublicationAuthorDto> dtos = new ArrayList<>();
+        log.debug("Inside convertInvestigatorToPublicationAuthorDto()");
         for(Investigator investigator : investigators) {
             PublicationAuthorDto publicationAuthorDto = new PublicationAuthorDto();
             String fullName = investigator.getFullName();

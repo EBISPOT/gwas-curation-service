@@ -1,5 +1,13 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
+
+import org.apache.commons.text.similarity.CosineDistance;
+import org.apache.commons.text.similarity.JaroWinklerSimilarity;
+import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BSONObject;
@@ -9,12 +17,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.PublicationRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.SubmissionRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.UserRepository;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationDtoAssembler;
+
+import uk.ac.ebi.spot.gwas.curation.service.EuropepmcPubMedSearchService;
+import uk.ac.ebi.spot.gwas.curation.service.PublicationAuthorService;
+import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
+import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
 import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.solr.repository.PublicationSolrRepository;
 import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
@@ -22,9 +37,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.PublicationDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationAuthorDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationStatusReport;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchPublicationDTO;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import uk.ac.ebi.spot.gwas.deposition.europmc.EuropePMCData;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import uk.ac.ebi.spot.gwas.deposition.exception.EuropePMCException;
@@ -53,6 +66,8 @@ public class PublicationServiceImpl implements PublicationService {
 
     @Autowired
     PublicationAuthorService publicationAuthorService;
+    @Autowired
+    SubmissionService submissionService;
 
     @Autowired
     CuratorService curatorService;
@@ -189,7 +204,109 @@ public class PublicationServiceImpl implements PublicationService {
         return publicationRepository.save(publication);
     }
 
+    public Page<MatchPublicationReport> matchPublication(String pmid, Pageable pageable) {
+        Map<String, Object> results = new HashMap<>();
+        CosineDistance cosScore = new CosineDistance();
+        LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
+        JaroWinklerSimilarity jwDistance = new JaroWinklerSimilarity();
+        EuropePMCData europePMCResult = europepmcPubMedSearchService.createStudyByPubmed(pmid);
+        Map<String, String> searchProps = new HashMap<>();
+        List<MatchPublicationReport> reports = new ArrayList<>();
+        Page<MatchPublicationReport> pageMatchPubReports = null;
+        if (!europePMCResult.getError()) {
+            try {
+                searchProps.put("pubMedID", europePMCResult.getPublication().getPmid());
+                searchProps.put("author", europePMCResult.getFirstAuthor().getFullName());
+                searchProps.put("title", europePMCResult.getPublication().getTitle());
+                searchProps.put("doi", europePMCResult.getDoi());
+                results.put("search", searchProps);
+                String searchTitle = europePMCResult.getPublication().getTitle();
+                String searchAuthor = europePMCResult.getFirstAuthor().getFullName();
+                CharSequence searchString = buildSearch(searchAuthor, searchTitle);
+                Map<String, SubmissionEnvelope> submissionMap = submissionService.getSubmissions();
+                for (Map.Entry<String, SubmissionEnvelope> e : submissionMap.entrySet()) {
+                    SubmissionEnvelope submission = e.getValue();
+                    String matchTitle = submission.getTitle();
+                    String matchAuthor = submission.getAuthor();
+                    CharSequence matchString = buildSearch(matchAuthor, matchTitle);
+                    String cosSore = "";
+                    String levDistance = "";
+                    String jwtScore = "";
+                    if (matchString.equals("")) {
+                        cosSore =  new Integer(0).toString();
+                        levDistance = new Integer(0).toString();
+                        jwtScore = new Integer(0).toString();
+                    } else {
+                        Double score = cosScore.apply(searchString, matchString) * 100;
+                        Integer ldScore = levenshteinDistance.apply(searchString, matchString);
+                        Double jwScore = jwDistance.apply(searchString, matchString) * 100;
+                        cosSore = normalizeScore(score.intValue()).toString();
+                        levDistance =  normalizeScore(ldScore).toString();
+                        jwtScore = new Integer(jwScore.intValue()).toString();
+                    }
 
+
+                    reports.add(MatchPublicationReport.builder()
+                            .submissionID(submission.getId())
+                            .pubMedID(submission.getPubMedID())
+                            .author(submission.getAuthor())
+                            .title(submission.getTitle())
+                            .doi(submission.getDoi())
+                            .cosScore(cosSore)
+                            .levDistance(levDistance)
+                            .jwScore(jwtScore)
+                            .build());
+
+                }
+
+                reports.sort((o1, o2) -> Integer.decode(o2.getCosScore()).compareTo(Integer.decode(o1.getCosScore())));
+                List<MatchPublicationReport> subListReports = reports.subList(0, 50);
+
+                Sort sort = pageable.getSort();
+                if(sort != null) {
+                    Sort.Order orderAuthor = sort.getOrderFor("author");
+                    if(orderAuthor != null) {
+                        if(orderAuthor.isAscending())
+                            subListReports.sort(Comparator.comparing(MatchPublicationReport::getAuthor));
+                        else
+                            subListReports.sort((o1, o2) -> o2.getAuthor().compareTo(o1.getAuthor()));
+                    }
+                }
+
+                pageMatchPubReports = new PageImpl<>(subListReports, pageable, subListReports.size());
+            } catch (Exception ex) {
+                log.error("Exeption inside matchPublication() " + ex.getMessage(), ex);
+            }
+        } else {
+            return null;
+        }
+        return pageMatchPubReports;
+    }
+
+
+    private CharSequence buildSearch(String author, String title) throws IOException {
+        StringBuffer result = new StringBuffer();
+        EnglishAnalyzer filter = new EnglishAnalyzer();
+        if (author == null) {
+            author = "";
+        }
+        if (title == null) {
+            title = "";
+        }
+        String search = author.toLowerCase() + " " + title.toLowerCase();
+        TokenStream stream = filter.tokenStream("", search.toString());
+        stream.reset();
+        CharTermAttribute term = stream.addAttribute(CharTermAttribute.class);
+        while (stream.incrementToken()) {
+            result.append(term.toString()).append(" ");
+        }
+        stream.close();
+        return result.toString().trim();
+    }
+
+    private Integer normalizeScore(int score) {
+        return 100 - score > 0 ? 100 - score : 0;
+    }
 
     public List<PublicationStatusReport>  createPublication(List<String> pmids, User user) {
         List<PublicationStatusReport> reports = new ArrayList<>();
@@ -203,7 +320,7 @@ public class PublicationServiceImpl implements PublicationService {
                 reports.add(statusReport);
             } else {
 
-                    try {
+                        try {
                         Publication publicationImported = importNewPublication(pmid, user);
                         PublicationStatusReport statusReport = new PublicationStatusReport();
                         statusReport.setPmid(pmid);
