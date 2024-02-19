@@ -58,6 +58,11 @@ gwas-curation-service:
       javers-submission: /gwas/depo-curation/api/v1/javers
 
 
+gwas-ingest-service:
+  url: http://gwas-ingest-service:8080/gwas/ingest/api
+  endpoints:
+    submission-envelope: /v1/submission-envelopes
+
 rabbitmq:
   queue-name: study_change
   exchange-name: study_change_exchange

@@ -53,6 +53,11 @@ gwas-curation-service:
     endpoints:
       javers-submission: /v1/javers
 
+gwas-ingest-service:
+  url: http://localhost:8082/gwas/ingest/api
+  endpoints:
+    submission-envelope: /v1/submission-envelopes
+
 goci:
   url: http://localhost:8080
   diseaseTraits:

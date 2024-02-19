@@ -1,11 +1,15 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
+import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.spot.gwas.curation.config.RestInteractionConfig;
 import uk.ac.ebi.spot.gwas.curation.repository.PublicationRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.SubmissionRepository;
 import uk.ac.ebi.spot.gwas.curation.service.CuratorAuthService;
@@ -16,13 +20,13 @@ import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.SubmissionDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchSubmissionDTO;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
+import uk.ac.ebi.spot.gwas.deposition.dto.ingest.BodyOfWorkDto;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
+import uk.ac.ebi.spot.gwas.deposition.util.DepositionUtil;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class SubmissionServiceImpl implements SubmissionService {
@@ -40,6 +44,13 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     @Autowired
     private PublicationRepository publicationRepository;
+
+    @Autowired
+    @Qualifier("restTemplateCuration")
+    RestTemplate restTemplate;
+
+    @Autowired
+    RestInteractionConfig restInteractionConfig;
 
     @Override
     public Submission getSubmission(String submissionId) {
@@ -175,5 +186,74 @@ public class SubmissionServiceImpl implements SubmissionService {
         }
         return submissionRepository.save(submission);
 
+    }
+
+
+    public Map<String, SubmissionEnvelope> getSubmissions() {
+        Map<String, SubmissionEnvelope> submissionList = new TreeMap<>();
+        try {
+            int i = 0;
+            Map<String, Integer> params = new HashMap<>();
+            params.put("page", i);
+            log.info("Ingest uri is "+ restInteractionConfig.getIngestServiceUri()+restInteractionConfig.getSubmissionEnvelopeEndpoint());
+            DepositionSubmission[] submissions =
+                    restTemplate.getForObject(restInteractionConfig.getIngestServiceUri()+restInteractionConfig.getSubmissionEnvelopeEndpoint(), DepositionSubmission[].class, params);
+            Arrays.stream(submissions).forEach(s -> {
+                SubmissionEnvelope testSub = buildSubmission(s);
+                submissionList.put(testSub.getId(), testSub);
+            });
+        } catch (Exception e) {
+           log.error("Exception in getSubmissions() call"+e.getMessage(),e);
+        }
+        return submissionList;
+
+    }
+
+
+    public SubmissionEnvelope buildSubmission(DepositionSubmission depositionSubmission) {
+        SubmissionEnvelope testSub = new SubmissionEnvelope();
+        testSub.setId(depositionSubmission.getSubmissionId());
+        testSub.setCurator(depositionSubmission.getCreated().getUser().getName());
+        testSub.setStatus(depositionSubmission.getStatus());
+        testSub.setCreated(depositionSubmission.getCreated().getTimestamp().toString(DateTimeFormat.forPattern("yyyy-MM-dd")));
+        testSub.setImportStatus(ImportStatus.NOT_READY);
+        testSub.setSubmissionType(DepositionUtil.getSubmissionType(depositionSubmission));
+        if (depositionSubmission.getBodyOfWork() != null) {
+            BodyOfWorkDto bodyOfWork = depositionSubmission.getBodyOfWork();
+            if (bodyOfWork.getPmids() != null && bodyOfWork.getPmids().size() != 0) {
+                testSub.setPubMedID(String.join(",", bodyOfWork.getPmids()));
+            }
+            if (bodyOfWork.getFirstAuthor() != null) {
+                if (bodyOfWork.getFirstAuthor().getGroup() != null) {
+                    testSub.setAuthor(bodyOfWork.getFirstAuthor().getGroup());
+                } else {
+                    testSub.setAuthor(bodyOfWork.getFirstAuthor().getFirstName() + ' ' +
+                            bodyOfWork.getFirstAuthor().getLastName());
+                }
+            }
+            testSub.setTitle(bodyOfWork.getTitle());
+            testSub.setPublicationStatus(bodyOfWork.getStatus());
+            testSub.setDoi(bodyOfWork.getPreprintServerDOI());
+            if (testSub.getSubmissionType().equals(SubmissionType.UNKNOWN)) {
+                testSub.setStatus("REVIEW");
+            }
+        } else if (depositionSubmission.getPublication() != null) {
+            DepositionPublication publication = depositionSubmission.getPublication();
+            testSub.setPubMedID(publication.getPmid());
+            testSub.setAuthor(publication.getFirstAuthor());
+            testSub.setTitle(publication.getTitle());
+            testSub.setPublicationStatus(publication.getStatus());
+            testSub.setDoi(publication.getDoi());
+            if (testSub.getSubmissionType().equals(SubmissionType.UNKNOWN)) {
+                testSub.setStatus("REVIEW");
+            }
+        }
+
+        if (testSub.getStatus().equalsIgnoreCase("SUBMITTED") &&
+                !testSub.getSubmissionType().equals(SubmissionType.PRE_PUBLISHED) &&
+                !testSub.getSubmissionType().equals(SubmissionType.UNKNOWN)) {
+            testSub.setImportStatus(ImportStatus.READY);
+        }
+        return testSub;
     }
 }

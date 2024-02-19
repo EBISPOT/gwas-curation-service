@@ -6,6 +6,10 @@ import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.SubmissionDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchSubmissionDTO;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.SubmissionEnvelope;
+
+
+import java.util.Map;
 
 public interface SubmissionService {
 
@@ -14,8 +18,11 @@ public interface SubmissionService {
 
     Submission getSubmission(String submissionId, User user);
 
-    public Submission getSubmission(String submissionId);
+    Submission getSubmission(String submissionId);
 
+    Map<String, SubmissionEnvelope> getSubmissions();
 
     Submission patchSubmission(SubmissionDto submissionDto, String submissionId);
+
+
 }

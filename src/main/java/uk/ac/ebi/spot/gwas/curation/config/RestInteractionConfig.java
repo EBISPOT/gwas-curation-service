@@ -24,7 +24,11 @@ public class RestInteractionConfig {
     @Value("${europepmc.search.pubmed}")
     private String euroPMCSearchUrl;
 
+    @Value("${gwas-ingest-service.url}")
+    private String ingestServiceUri;
 
+    @Value("${gwas-ingest-service.endpoints.submission-envelope}")
+    private String submissionEnvelopeEndpoint;
 
     public String getDepositionServiceUrl() {
         return depositionServiceUrl;
@@ -44,5 +48,13 @@ public class RestInteractionConfig {
 
     public String getEuroPMCSearchUrl() {
         return euroPMCSearchUrl;
+    }
+
+    public String getIngestServiceUri() {
+        return ingestServiceUri;
+    }
+
+    public String getSubmissionEnvelopeEndpoint() {
+        return submissionEnvelopeEndpoint;
     }
 }

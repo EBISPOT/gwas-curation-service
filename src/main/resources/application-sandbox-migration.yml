@@ -77,6 +77,10 @@ gwas-curation-service:
     endpoints:
       javers-submission: /gwas/depo-curation/api/v1/javers
 
+gwas-ingest-service:
+  url: http://gwas-ingest-service-dev:8080/gwas/ingest/api
+  endpoints:
+    submission-envelope: /v1/submission-envelopes
 
 goci:
   url: http://snoopy.ebi.ac.uk:9680/gwas/curation
