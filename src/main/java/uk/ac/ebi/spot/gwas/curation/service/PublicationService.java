@@ -35,4 +35,5 @@ public interface PublicationService {
     PublicationDto updatePublicationCurationDetails(String pmid, PublicationDto publicationDto, User user);
 
 
+    void linkSubmission(String pmid, String submissionId);
 }
