@@ -59,7 +59,7 @@ public class SubmissionAssemblyService implements ResourceAssembler<Submission, 
                 bodyOfWork = bodyOfWorkService.retrieveBodyOfWork(submission.getBodyOfWorks().get(0));
             }
             if (submission.getPublicationId() != null) {
-                publication = publicationService.getPublicationDetailsByPmidOrPubId(submission.getPublicationId(), true);
+                publication = publicationService.getPublicationDetailsByPmidOrPubId(submission.getPublicationId(), false);
             }
         }
         List<FileUpload> fileUploads = fileUploadsService.getFileUploads(submission.getFileUploads());

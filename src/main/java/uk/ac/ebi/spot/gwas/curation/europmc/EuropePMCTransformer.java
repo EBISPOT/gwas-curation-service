@@ -30,7 +30,7 @@ public class EuropePMCTransformer {
         europePMCData.setPublication(getPublicationInfo(europePMCRequest));
         List<PublicationAuthorDto> authorDtos = getAuthorsInfo(europePMCRequest);
         europePMCData.setAuthors(authorDtos);
-        if(authorDtos != null & !authorDtos.isEmpty())
+        if(authorDtos != null && !authorDtos.isEmpty())
             europePMCData.setFirstAuthor(authorDtos.get(0));
         europePMCData.setDoi(getDoi(europePMCRequest));
         return europePMCData;

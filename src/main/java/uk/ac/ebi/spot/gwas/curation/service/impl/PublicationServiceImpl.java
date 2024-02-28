@@ -31,7 +31,6 @@ import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
 import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.solr.repository.PublicationSolrRepository;
 import uk.ac.ebi.spot.gwas.deposition.constants.PublicationStatus;
-import uk.ac.ebi.spot.gwas.deposition.constants.SubmissionProvenanceType;
 import uk.ac.ebi.spot.gwas.deposition.domain.*;
 import uk.ac.ebi.spot.gwas.deposition.dto.PublicationDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
@@ -408,7 +407,6 @@ public class PublicationServiceImpl implements PublicationService {
             throw new RuntimeException("Submission with id " + submissionId + " already has PMID");
         }
         submission.setPublicationId(publication.getId());
-        submission.setProvenanceType(SubmissionProvenanceType.PUBLICATION.name());
         // link submission studies
         List<Study> studies = studyRepository.findBySubmissionId(submissionId).collect(Collectors.toList());
         for (Study study : studies) {
