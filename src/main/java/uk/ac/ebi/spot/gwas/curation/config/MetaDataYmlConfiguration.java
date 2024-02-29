@@ -49,6 +49,8 @@ public class MetaDataYmlConfiguration {
         Map<String, Class<?>> idClassMapping = new HashMap<>();
         idClassMapping.put("metadataYmlUpdate", MetadataYmlUpdate.class);
         classMapper.setIdClassMapping(idClassMapping);
+        classMapper.setDefaultType(Map.class);
+        classMapper.setTrustedPackages("*");
         return classMapper;
     }
 
