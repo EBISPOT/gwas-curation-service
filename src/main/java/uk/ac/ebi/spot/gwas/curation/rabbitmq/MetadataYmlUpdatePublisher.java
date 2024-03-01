@@ -23,7 +23,7 @@ public class MetadataYmlUpdatePublisher {
     }
 
     public void send(MetadataYmlUpdate metadataYmlUpdate) {
-        log.info("Sending Message for "+metadataYmlUpdate.getGsct());
+        log.info("Sending Message for "+metadataYmlUpdate.getArgs() != null ? metadataYmlUpdate.getArgs().get(0) : "Empty" );
         //rabbitTemplate.convertAndSend(DepositionCurationConstants.ROUTING_KEY, studyDto);
 
         rabbitTemplate.convertAndSend(rabbitMQConfigProperties.getSumstatsExchangeName(),rabbitMQConfigProperties.getSumstatsRoutingKey()

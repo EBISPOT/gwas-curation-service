@@ -83,7 +83,10 @@ public class StudiesServiceImpl implements StudiesService {
         log.info("Inside updateStudies");
         Study updatedStudy = studyRepository.save(study);
         sendStudyChangeMessage(updatedStudy);
-        metadataYmlUpdatePublisher.send(new MetadataYmlUpdate(updatedStudy.getAccession()));
+        metadataYmlUpdatePublisher.send(MetadataYmlUpdate.builder()
+                .args(Collections.singletonList(study.getAccession()))
+                .task("sumstats_service.app.convert_metadata_to_yaml")
+                .id(UUID.randomUUID().toString()).build());
         return updatedStudy;
     }
 
@@ -115,7 +118,11 @@ public class StudiesServiceImpl implements StudiesService {
             log.info("Sending Studies to Queue Page running is " + i);
             Pageable pageable = new PageRequest(i, 100);
             Page<Study> studies = studyRepository.findBySubmissionId(submissionId, pageable);
-            studies.forEach(study -> metadataYmlUpdatePublisher.send(new MetadataYmlUpdate(study.getAccession())));
+
+            studies.forEach(study -> metadataYmlUpdatePublisher.send( MetadataYmlUpdate.builder()
+                                                                        .args(Collections.singletonList(study.getAccession()))
+                                                                        .task("sumstats_service.app.convert_metadata_to_yaml")
+                                                                         .id(UUID.randomUUID().toString()).build()));
       }
     }
 
@@ -560,4 +567,7 @@ public class StudiesServiceImpl implements StudiesService {
     public Stream<Study> getStudies(List<String> ids) {
         return studyRepository.readByIdIn(ids);
     }
+
+
+
 }
