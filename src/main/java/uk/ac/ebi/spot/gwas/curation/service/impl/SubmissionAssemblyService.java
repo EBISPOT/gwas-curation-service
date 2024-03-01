@@ -70,7 +70,7 @@ public class SubmissionAssemblyService implements ResourceAssembler<Submission, 
         }
 
         SubmissionDto submissionDto = SubmissionDtoAssembler.assemble(submission,
-                publication != null ? publicationDtoAssembler.assemble(publication, null) : null,
+                publication != null ? publicationDtoAssembler.assemble(publication, userService.getUser(submission.getCreated().getUserId())) : null,
                 bodyOfWork != null ? BodyOfWorkDtoAssembler.assemble(bodyOfWork) : null,
                 fileUploadDtos,
                 ProvenanceDtoAssembler.assemble(submission.getCreated(), userService.getUser(submission.getCreated().getUserId())),
