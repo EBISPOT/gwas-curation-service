@@ -21,9 +21,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.spot.gwas.curation.repository.PublicationRepository;
-import uk.ac.ebi.spot.gwas.curation.repository.SubmissionRepository;
-import uk.ac.ebi.spot.gwas.curation.repository.UserRepository;
+import uk.ac.ebi.spot.gwas.curation.repository.*;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationDtoAssembler;
 
 import uk.ac.ebi.spot.gwas.curation.service.EuropepmcPubMedSearchService;
@@ -32,10 +30,8 @@ import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
 import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
 import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.solr.repository.PublicationSolrRepository;
-import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
-import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
-import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
-import uk.ac.ebi.spot.gwas.deposition.domain.User;
+import uk.ac.ebi.spot.gwas.deposition.constants.PublicationStatus;
+import uk.ac.ebi.spot.gwas.deposition.domain.*;
 import uk.ac.ebi.spot.gwas.deposition.dto.PublicationDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import uk.ac.ebi.spot.gwas.deposition.europmc.EuropePMCData;
@@ -46,6 +42,7 @@ import uk.ac.ebi.spot.gwas.deposition.solr.SOLRPublication;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PublicationServiceImpl implements PublicationService {
@@ -80,6 +77,12 @@ public class PublicationServiceImpl implements PublicationService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    BodyOfWorkRepository bodyOfWorkRepository;
+
+    @Autowired
+    StudyRepository studyRepository;
 
     // todo uncomment @PostConstruct
     private void addSubmitter() {
@@ -205,7 +208,7 @@ public class PublicationServiceImpl implements PublicationService {
     }
 
     public Page<MatchPublicationReport> matchPublication(String pmid, Pageable pageable) {
-        Map<String, Object> results = new HashMap<>();
+//        Map<String, Object> results = new HashMap<>();
         CosineDistance cosScore = new CosineDistance();
         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
         JaroWinklerSimilarity jwDistance = new JaroWinklerSimilarity();
@@ -219,7 +222,7 @@ public class PublicationServiceImpl implements PublicationService {
                 searchProps.put("author", europePMCResult.getFirstAuthor().getFullName());
                 searchProps.put("title", europePMCResult.getPublication().getTitle());
                 searchProps.put("doi", europePMCResult.getDoi());
-                results.put("search", searchProps);
+//                results.put("search", searchProps);
                 String searchTitle = europePMCResult.getPublication().getTitle();
                 String searchAuthor = europePMCResult.getFirstAuthor().getFullName();
                 CharSequence searchString = buildSearch(searchAuthor, searchTitle);
@@ -233,16 +236,16 @@ public class PublicationServiceImpl implements PublicationService {
                     String levDistance = "";
                     String jwtScore = "";
                     if (matchString.equals("")) {
-                        cosSore =  new Integer(0).toString();
-                        levDistance = new Integer(0).toString();
-                        jwtScore = new Integer(0).toString();
+                        cosSore = Integer.toString(0);
+                        levDistance = Integer.toString(0);
+                        jwtScore = Integer.toString(0);
                     } else {
                         Double score = cosScore.apply(searchString, matchString) * 100;
                         Integer ldScore = levenshteinDistance.apply(searchString, matchString);
                         Double jwScore = jwDistance.apply(searchString, matchString) * 100;
                         cosSore = normalizeScore(score.intValue()).toString();
                         levDistance =  normalizeScore(ldScore).toString();
-                        jwtScore = new Integer(jwScore.intValue()).toString();
+                        jwtScore = Integer.toString(jwScore.intValue());
                     }
 
 
@@ -263,7 +266,7 @@ public class PublicationServiceImpl implements PublicationService {
                 List<MatchPublicationReport> subListReports = reports.subList(0, 50);
 
                 Sort sort = pageable.getSort();
-                if(sort != null) {
+                if(sort.getOrderFor("author") != null) {
                     Sort.Order orderAuthor = sort.getOrderFor("author");
                     if(orderAuthor != null) {
                         if(orderAuthor.isAscending())
@@ -316,7 +319,7 @@ public class PublicationServiceImpl implements PublicationService {
                 PublicationStatusReport statusReport = new PublicationStatusReport();
                 statusReport.setPmid(pmid);
                 statusReport.setPublicationDto(publicationDtoAssembler.assemble(publication, user));
-                statusReport.setStatus("Pmid already exists");
+                statusReport.setStatus("PMID already exists");
                 reports.add(statusReport);
             } else {
 
@@ -325,17 +328,17 @@ public class PublicationServiceImpl implements PublicationService {
                         PublicationStatusReport statusReport = new PublicationStatusReport();
                         statusReport.setPmid(pmid);
                         statusReport.setPublicationDto(publicationDtoAssembler.assemble(publicationImported, user));
-                        statusReport.setStatus("Pmid Saved");
+                        statusReport.setStatus("PMID saved");
                         reports.add(statusReport);
                     } catch (EuropePMCException ex){
                         PublicationStatusReport statusReport = new PublicationStatusReport();
                         statusReport.setPmid(pmid);
-                        statusReport.setStatus("EuropePMC API could not be contacted");
+                        statusReport.setStatus("Couldn't contact EPMC API");
                         reports.add(statusReport);
                     }catch (PubmedLookupException ex) {
                         PublicationStatusReport statusReport = new PublicationStatusReport();
                         statusReport.setPmid(pmid);
-                        statusReport.setStatus("Pmid not found in EuropePMC API");
+                        statusReport.setStatus("PMID not found in EPMC");
                         reports.add(statusReport);
                     }
 
@@ -369,6 +372,54 @@ public class PublicationServiceImpl implements PublicationService {
         }
         publication = publicationRepository.save(publication);
         return publicationDtoAssembler.assemble(publication, user);
+    }
+
+    @Override
+    public void linkSubmission(String pmid, String submissionId) {
+        // get publication
+        Optional<Publication> publicationOptional = publicationRepository.findByPmid(pmid);
+        if (!publicationOptional.isPresent()) {
+            throw new EntityNotFoundException("Publication with PMID " + pmid + " not found");
+        }
+        Publication publication = publicationOptional.get();
+        // get submission
+        Optional<Submission> submissionOptional = submissionRepository.findById(submissionId);
+        if (!submissionOptional.isPresent()) {
+            throw new EntityNotFoundException("Submission with id " + submissionId + " not found");
+        }
+        Submission submission = submissionOptional.get();
+        // get body of work
+        String bowId = submission.getBodyOfWorks().get(0);
+        Optional<BodyOfWork> bodyOfWorkOptional = bodyOfWorkRepository.findByBowId(bowId);
+        if (!bodyOfWorkOptional.isPresent()) {
+            throw new EntityNotFoundException("BodyOfWork with id " + bowId + " not found");
+        }
+        BodyOfWork bodyOfWork = bodyOfWorkOptional.get();
+        // change status
+        publication.setStatus(PublicationStatus.UNDER_SUBMISSION.name());
+        // link body of work
+        if (bodyOfWork.getPmids() != null && !bodyOfWork.getPmids().isEmpty()) {
+            throw new RuntimeException("BodyOfWork with id " + bowId + " already has PMID");
+        }
+        bodyOfWork.setPmids(new ArrayList<>(Collections.singletonList(pmid)));
+        // link submission
+        if (submission.getPublicationId() != null) {
+            throw new RuntimeException("Submission with id " + submissionId + " already has PMID");
+        }
+        submission.setPublicationId(publication.getId());
+        // link submission studies
+        List<Study> studies = studyRepository.findBySubmissionId(submissionId).collect(Collectors.toList());
+        for (Study study : studies) {
+            if (study.getPmids() != null && !study.getPmids().isEmpty()) {
+                throw new RuntimeException("Study with id " + study.getId() + " already has PMID");
+            }
+            study.setPmids(new ArrayList<>(Collections.singletonList(pmid)));
+        }
+        // save
+        publicationRepository.save(publication);
+        bodyOfWorkRepository.save(bodyOfWork);
+        submissionRepository.save(submission);
+        studyRepository.saveAll(studies);
     }
 
 }

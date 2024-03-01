@@ -1,6 +1,7 @@
 package uk.ac.ebi.spot.gwas.curation.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -109,5 +110,11 @@ public class PublicationsController {
             throw new EntityNotFoundException("publication id not found, " + id);
         }
     }
+
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping(value = "/{pmid}/link-submission")
+    public void linkSubmission(@PathVariable String pmid, @RequestParam String submissionId) {
+        publicationService.linkSubmission(pmid, submissionId);
+    };
 
 }
