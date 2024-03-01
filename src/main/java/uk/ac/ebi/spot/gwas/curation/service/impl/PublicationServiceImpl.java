@@ -199,6 +199,7 @@ public class PublicationServiceImpl implements PublicationService {
      publication.setFirstAuthorId(publicationAuthorService.
                 getFirstAuthorDetails(publicationAuthorDto , user));
      publication.setCreated(new Provenance(DateTime.now(), user.getId()));
+     publication.setFirstAuthor(publicationAuthorDto.getFullName());
      savePublication(publication);
 
     }
@@ -407,6 +408,13 @@ public class PublicationServiceImpl implements PublicationService {
             throw new RuntimeException("Submission with id " + submissionId + " already has PMID");
         }
         submission.setPublicationId(publication.getId());
+        String submitter = Optional
+                .of(userRepository.findById(submission.getCreated().getUserId()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(User::getName)
+                .orElse(null);
+        publication.setSubmitter(submitter);
         // link submission studies
         List<Study> studies = studyRepository.findBySubmissionId(submissionId).collect(Collectors.toList());
         for (Study study : studies) {
