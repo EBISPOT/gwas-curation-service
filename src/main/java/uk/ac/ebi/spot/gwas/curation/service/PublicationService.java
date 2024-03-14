@@ -36,4 +36,6 @@ public interface PublicationService {
 
 
     void linkSubmission(String pmid, String submissionId);
+
+    void fillSubmitterForOldPublications();
 }

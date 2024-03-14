@@ -12,6 +12,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
@@ -80,12 +81,14 @@ public class PublicationsController {
     }
 
     @PatchMapping(value = "/{pmid}/curation")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public PublicationDto patchCurationDetails(@PathVariable String pmid, @RequestBody PublicationDto publicationDto, HttpServletRequest request) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         return publicationService.updatePublicationCurationDetails(pmid, publicationDto, user);
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @GetMapping
     public PagedResources<PublicationDto> search(SearchPublicationDTO searchPublicationDTO,
                                                  PagedResourcesAssembler assembler,
@@ -99,6 +102,16 @@ public class PublicationsController {
                 new Link(BackendUtil.underBasePath(controllerLinkBuilder, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
     }
 
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping("/utils/fill-submitter-for-old-publications")
+    @Async
+    public void fillSubmitterForOldPublications() {
+        publicationService.fillSubmitterForOldPublications();
+    }
+
+
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{id}")
     public Resource<PublicationDto> getPublication(@PathVariable String id) {
@@ -113,6 +126,7 @@ public class PublicationsController {
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/{pmid}/link-submission")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public void linkSubmission(@PathVariable String pmid, @RequestParam String submissionId) {
         publicationService.linkSubmission(pmid, submissionId);
     };
