@@ -9,4 +9,7 @@ public interface CuratorService {
     Page<Curator> findAllCurators(Pageable page);
 
     Curator findCuratorDetails(String id);
+
+    Curator findCuratorByLastName(String id);
+
 }

@@ -84,8 +84,7 @@ public class PublicationServiceImpl implements PublicationService {
     @Autowired
     StudyRepository studyRepository;
 
-    // todo uncomment @PostConstruct
-    private void addSubmitter() {
+    public void fillSubmitterForOldPublications() {
         List<Publication> publications = publicationRepository.findByStatusNot("ELIGIBLE");
         publications
                 .stream()
@@ -190,6 +189,14 @@ public class PublicationServiceImpl implements PublicationService {
      Publication publication = publicationDtoAssembler.disassemble(publicationDto, user);
      publication.setAuthors(publicationAuthorService.
                 addAuthorsForPublication(europePMCData , user));
+     try {
+         publication.setCurationStatusId(curationStatusService.findCurationStatusByStatus("Awaiting submission").getId());
+         publication.setCuratorId(curatorService.findCuratorByLastName("Level 1 Curator").getId());
+     }
+     catch (NullPointerException npe) {
+         log.error("Warning: EMPC Import - Null pointer exception when assigning CurationStatus/Curator for pmid");
+     }
+     publication.setStatus(PublicationStatus.ELIGIBLE.name());
      addFirstAuthorToPublication(publication, europePMCData,  user);
      return  publication;
     }
@@ -396,8 +403,16 @@ public class PublicationServiceImpl implements PublicationService {
             throw new EntityNotFoundException("BodyOfWork with id " + bowId + " not found");
         }
         BodyOfWork bodyOfWork = bodyOfWorkOptional.get();
-        // change status
+        // change curator and status
         publication.setStatus(PublicationStatus.UNDER_SUBMISSION.name());
+        try {
+            publication.setCurationStatusId(curationStatusService.findCurationStatusByStatus("Submission complete").getId());
+            publication.setCuratorId(curatorService.findCuratorByLastName("Level 2 Curator").getId());
+        }
+        catch (NullPointerException npe) {
+            log.error("Warning: Link submission - Null pointer exception when assigning CurationStatus/Curator for pmid " +
+                    "{}, submission {}", pmid, submissionId);
+        }
         // link body of work
         if (bodyOfWork.getPmids() != null && !bodyOfWork.getPmids().isEmpty()) {
             throw new RuntimeException("BodyOfWork with id " + bowId + " already has PMID");
