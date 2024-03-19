@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import uk.ac.ebi.spot.gwas.curation.service.CuratorWhitelistService;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 
 import javax.servlet.FilterChain;
@@ -27,6 +28,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    CuratorWhitelistService curatorWhitelistService;
+
     private static final Logger log = LoggerFactory.getLogger(AuthTokenFilter.class);
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -37,9 +41,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         this.setHeaders(response);
         try {
             String jwt = CurationUtil.parseJwt(request);
-            if(jwt != null && jwt.equalsIgnoreCase("SpringRestDocsDummyToken")){
+            String email = getEmailFromJwtToken(jwtUtils.getClaims(jwt));
+            if(jwt != null && (jwt.equalsIgnoreCase("SpringRestDocsDummyToken") || curatorWhitelistService.isCuratorWhiteListed(email))) {
+                log.info("Inside Bypass authentication Block");
                 List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                authorities.add(new SimpleGrantedAuthority("self.GWAS_Curator"));
+                authorities.add(new SimpleGrantedAuthority("ROLE_self.GWAS_Curator"));
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("", null, authorities);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -66,6 +72,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
         return new UsernamePasswordAuthenticationToken("", null, authorities);
     }
+
+    private String getEmailFromJwtToken(Claims claims) {
+        AapPayload aapPayload = mapper.convertValue(claims, new TypeReference<AapPayload>() {
+        });
+        return aapPayload.getEmail();
+    }
+
+
+
 
     private void setHeaders(HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", "*");
