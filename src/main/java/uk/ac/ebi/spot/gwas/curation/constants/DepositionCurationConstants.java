@@ -46,4 +46,6 @@ public class DepositionCurationConstants {
     public static final String API_CURATORS = "/curators";
     public static final String API_CURATION_STATUS = "/curation-status";
 
+    public static final String EMAIL_WHITE_LIST = "EMAIL_WHITELISTING";
+
 }

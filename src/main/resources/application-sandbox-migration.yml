@@ -47,6 +47,8 @@ quartz:
 gwas-curation:
   auth:
     enabled: true
+    curators:
+      auth-mechanism: EMAIL_WHITELISTING
   #db: deposition-backend-sandbox
   db: gwasdepo
   proxy-prefix:
