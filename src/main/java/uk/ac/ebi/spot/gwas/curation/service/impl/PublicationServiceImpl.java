@@ -390,6 +390,11 @@ public class PublicationServiceImpl implements PublicationService {
             throw new EntityNotFoundException("Publication with PMID " + pmid + " not found");
         }
         Publication publication = publicationOptional.get();
+        // validate pmid has no submissions attached already
+        Page<Submission> pubAlreadyLinkedSubmissions = submissionRepository.findByPublicationIdAndArchived(publication.getId(), false, null);
+        if (pubAlreadyLinkedSubmissions.getTotalElements() > 0) {
+            throw new EntityNotFoundException("Publication already has linked Submission");
+        }
         // get submission
         Optional<Submission> submissionOptional = submissionRepository.findById(submissionId);
         if (!submissionOptional.isPresent()) {
