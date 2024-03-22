@@ -16,10 +16,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.*;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationDtoAssembler;
@@ -390,6 +387,11 @@ public class PublicationServiceImpl implements PublicationService {
             throw new EntityNotFoundException("Publication with PMID " + pmid + " not found");
         }
         Publication publication = publicationOptional.get();
+        // validate pmid has no submissions attached already
+        Page<Submission> pubAlreadyLinkedSubmissions = submissionRepository.findByPublicationIdAndArchived(publication.getId(), false, PageRequest.of(0, 20));
+        if (pubAlreadyLinkedSubmissions.getTotalElements() > 0) {
+            throw new EntityNotFoundException("Publication already has linked Submission");
+        }
         // get submission
         Optional<Submission> submissionOptional = submissionRepository.findById(submissionId);
         if (!submissionOptional.isPresent()) {
