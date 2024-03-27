@@ -51,8 +51,8 @@ public class PublicationDtoAssembler  implements ResourceAssembler<Publication, 
 
         return new PublicationDto(publication.getId(),
                 publication.getPmid(),
-                publication.getTitle(),
                 publication.getJournal(),
+                publication.getTitle(),
                 publication.getFirstAuthor(),
                 publication.getPublicationDate(),
                 publication.getCorrespondingAuthor() != null ?

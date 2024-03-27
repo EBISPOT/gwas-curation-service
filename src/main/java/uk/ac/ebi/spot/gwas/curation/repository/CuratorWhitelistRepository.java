@@ -6,5 +6,5 @@ import uk.ac.ebi.spot.gwas.deposition.domain.CuratorWhitelist;
 import java.util.Optional;
 
 public interface CuratorWhitelistRepository extends MongoRepository<CuratorWhitelist, String> {
-    Optional<CuratorWhitelist> findByEmailIgnoreCase(String enail);
+    Optional<CuratorWhitelist> findByEmailIgnoreCase(String email);
 }

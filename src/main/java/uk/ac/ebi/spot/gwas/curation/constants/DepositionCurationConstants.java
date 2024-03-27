@@ -36,6 +36,8 @@ public class DepositionCurationConstants {
     public static final String API_POPULATE_SOLR_STUDIES = "/reindex-studies";
     public static final String QUEUE_NAME_SANDBOX = "study_change_sandbox";
     public static final String QUEUE_NAME_PROD = "study_change";
+
+    public static final String QUEUE_NAME_SUMSTATS_SANDBOX = "metadata-yml-update-sandbox";
     public static final String EXCHANGE_NAME = "study_change_exchange";
     public static final String ROUTING_KEY = "study-ingest";
     public static final String API_SOLR_REMOVE = "/remove-studies";
@@ -43,5 +45,7 @@ public class DepositionCurationConstants {
     public static final String API_PUBLICATIONS_SOLR = "/publications/search";
     public static final String API_CURATORS = "/curators";
     public static final String API_CURATION_STATUS = "/curation-status";
+
+    public static final String EMAIL_WHITE_LIST = "EMAIL_WHITELISTING";
 
 }

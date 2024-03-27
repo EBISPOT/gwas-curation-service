@@ -29,4 +29,12 @@ public class CuratorServiceImpl implements CuratorService {
 
     }
 
+    public Curator findCuratorByLastName(String lastName) {
+        return Optional
+                .of(curatorRepository.findCuratorByLastName(lastName))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .orElse(null);
+    }
+
 }

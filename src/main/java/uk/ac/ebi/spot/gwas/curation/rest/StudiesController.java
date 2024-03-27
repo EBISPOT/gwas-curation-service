@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
+import uk.ac.ebi.spot.gwas.curation.rabbitmq.MetadataYmlUpdatePublisher;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
@@ -29,10 +30,7 @@ import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchStudyDTO;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudySampleDescPatchRequest;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -61,6 +59,7 @@ public class StudiesController {
 
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
+
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+"/{studyId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -170,8 +169,9 @@ public class StudiesController {
     public List<StudySampleDescPatchRequest> patchSampleDescription(@PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID) String submissionId,
                                                                     @Valid @RequestBody List<StudySampleDescPatchRequest> studySampleDescPatchRequests){
 
-        return studiesService.updateSampleDescription(studySampleDescPatchRequests, submissionId);
-
+        List<StudySampleDescPatchRequest> sampleDescPatchRequests = studiesService.updateSampleDescription(studySampleDescPatchRequests, submissionId);
+        studiesService.sendMetaDataMessageToQueue(submissionId);
+        return sampleDescPatchRequests;
 
     }
 
