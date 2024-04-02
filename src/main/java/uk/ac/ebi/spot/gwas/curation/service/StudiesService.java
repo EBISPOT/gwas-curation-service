@@ -35,4 +35,7 @@ public interface StudiesService {
 
     public byte[] uploadSampleDescriptions(List<StudySampleDescPatchRequest> studySampleDescPatchRequests, String submissionId);
 
+
+    void sendMetaDataMessageToQueue(String submissionId);
+
 }

@@ -59,7 +59,7 @@ public class SubmissionAssemblyService implements ResourceAssembler<Submission, 
                 bodyOfWork = bodyOfWorkService.retrieveBodyOfWork(submission.getBodyOfWorks().get(0));
             }
             if (submission.getPublicationId() != null) {
-                publication = publicationService.getPublicationDetailsByPmidOrPubId(submission.getPublicationId(), true);
+                publication = publicationService.getPublicationDetailsByPmidOrPubId(submission.getPublicationId(), false);
             }
         }
         List<FileUpload> fileUploads = fileUploadsService.getFileUploads(submission.getFileUploads());
@@ -70,7 +70,7 @@ public class SubmissionAssemblyService implements ResourceAssembler<Submission, 
         }
 
         SubmissionDto submissionDto = SubmissionDtoAssembler.assemble(submission,
-                publication != null ? publicationDtoAssembler.assemble(publication, null) : null,
+                publication != null ? publicationDtoAssembler.assemble(publication, userService.getUser(submission.getCreated().getUserId())) : null,
                 bodyOfWork != null ? BodyOfWorkDtoAssembler.assemble(bodyOfWork) : null,
                 fileUploadDtos,
                 ProvenanceDtoAssembler.assemble(submission.getCreated(), userService.getUser(submission.getCreated().getUserId())),

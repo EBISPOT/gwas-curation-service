@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -14,6 +15,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.spot.gwas.curation.rabbitmq.MetadataYmlUpdatePublisher;
 import uk.ac.ebi.spot.gwas.curation.rabbitmq.StudyIngestPublisher;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
@@ -73,11 +75,18 @@ public class StudiesServiceImpl implements StudiesService {
     @Autowired
     StudyIngestPublisher studyIngestPublisher;
 
+    @Autowired
+    MetadataYmlUpdatePublisher metadataYmlUpdatePublisher;
+
     @Override
     public Study updateStudies(Study study) {
         log.info("Inside updateStudies");
         Study updatedStudy = studyRepository.save(study);
         sendStudyChangeMessage(updatedStudy);
+        metadataYmlUpdatePublisher.send(MetadataYmlUpdate.builder()
+                .args(Collections.singletonList(study.getAccession()))
+                .task("sumstats_service.app.convert_metadata_to_yaml")
+                .id(UUID.randomUUID().toString()).build());
         return updatedStudy;
     }
 
@@ -101,6 +110,21 @@ public class StudiesServiceImpl implements StudiesService {
         return studyRepository.findBySubmissionId(submissionId, page);
     }
 
+
+    public void sendMetaDataMessageToQueue(String submissionId) {
+      Long studiesCount =  studyRepository.findBySubmissionId(submissionId).count();
+      long bucket = studiesCount / 100;
+      for (int i = 0; i <= bucket; i++) {
+            log.info("Sending Studies to Queue Page running is {}", i);
+            Pageable pageable = new PageRequest(i, 100);
+            Page<Study> studies = studyRepository.findBySubmissionId(submissionId, pageable);
+
+            studies.forEach(study -> metadataYmlUpdatePublisher.send( MetadataYmlUpdate.builder()
+                                                                        .args(Collections.singletonList(study.getAccession()))
+                                                                        .task("sumstats_service.app.convert_metadata_to_yaml")
+                                                                         .id(UUID.randomUUID().toString()).build()));
+      }
+    }
 
     @Override
     public Page<StudySolr> getStudies(Pageable page, SearchStudyDTO searchStudyDTO) {
@@ -543,4 +567,7 @@ public class StudiesServiceImpl implements StudiesService {
     public Stream<Study> getStudies(List<String> ids) {
         return studyRepository.readByIdIn(ids);
     }
+
+
+
 }

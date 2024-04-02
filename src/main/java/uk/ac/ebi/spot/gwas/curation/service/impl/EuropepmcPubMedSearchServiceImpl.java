@@ -65,6 +65,7 @@ public class EuropepmcPubMedSearchServiceImpl implements EuropepmcPubMedSearchSe
                 throw new PubmedLookupException("EuropePMC : Pmid not found in EuropePmc"+pubmedId);
             }
 
+
         } catch (Exception e) {
             log.error("EuropePMC : Generic Error conversion JSON"+e.getMessage(),e);
             throw new PubmedLookupException("EuropePMC : Generic Error conversion JSON"+pubmedId);
