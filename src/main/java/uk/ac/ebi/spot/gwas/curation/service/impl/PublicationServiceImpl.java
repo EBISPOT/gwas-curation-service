@@ -292,7 +292,7 @@ public class PublicationServiceImpl implements PublicationService {
 
 
     private CharSequence buildSearch(String author, String title) throws IOException {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         EnglishAnalyzer filter = new EnglishAnalyzer();
         if (author == null) {
             author = "";
@@ -301,7 +301,7 @@ public class PublicationServiceImpl implements PublicationService {
             title = "";
         }
         String search = author.toLowerCase() + " " + title.toLowerCase();
-        TokenStream stream = filter.tokenStream("", search.toString());
+        TokenStream stream = filter.tokenStream("", search);
         stream.reset();
         CharTermAttribute term = stream.addAttribute(CharTermAttribute.class);
         while (stream.incrementToken()) {
