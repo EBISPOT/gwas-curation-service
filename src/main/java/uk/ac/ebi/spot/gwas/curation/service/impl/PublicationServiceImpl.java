@@ -293,15 +293,17 @@ public class PublicationServiceImpl implements PublicationService {
 
     private CharSequence buildSearch(String author, String title) throws IOException {
         StringBuilder result = new StringBuilder();
-        EnglishAnalyzer filter = new EnglishAnalyzer();
-        if (author == null) {
-            author = "";
+        TokenStream stream;
+        try (EnglishAnalyzer filter = new EnglishAnalyzer()) {
+            if (author == null) {
+                author = "";
+            }
+            if (title == null) {
+                title = "";
+            }
+            String search = author.toLowerCase() + " " + title.toLowerCase();
+            stream = filter.tokenStream("", search);
         }
-        if (title == null) {
-            title = "";
-        }
-        String search = author.toLowerCase() + " " + title.toLowerCase();
-        TokenStream stream = filter.tokenStream("", search);
         stream.reset();
         CharTermAttribute term = stream.addAttribute(CharTermAttribute.class);
         while (stream.incrementToken()) {
