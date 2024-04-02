@@ -12,7 +12,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
@@ -105,7 +104,6 @@ public class PublicationsController {
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/utils/fill-submitter-for-old-publications")
-    @Async
     public void fillSubmitterForOldPublications() {
         publicationService.fillSubmitterForOldPublications();
     }
