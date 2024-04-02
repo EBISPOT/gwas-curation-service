@@ -213,7 +213,7 @@ public class PublicationServiceImpl implements PublicationService {
     }
 
     public Page<MatchPublicationReport> matchPublication(String pmid, Pageable pageable) {
-//        Map<String, Object> results = new HashMap<>();
+        String authorPropName = "author";
         CosineDistance cosScore = new CosineDistance();
         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
         JaroWinklerSimilarity jwDistance = new JaroWinklerSimilarity();
@@ -227,7 +227,6 @@ public class PublicationServiceImpl implements PublicationService {
                 searchProps.put("author", europePMCResult.getFirstAuthor().getFullName());
                 searchProps.put("title", europePMCResult.getPublication().getTitle());
                 searchProps.put("doi", europePMCResult.getDoi());
-//                results.put("search", searchProps);
                 String searchTitle = europePMCResult.getPublication().getTitle();
                 String searchAuthor = europePMCResult.getFirstAuthor().getFullName();
                 CharSequence searchString = buildSearch(searchAuthor, searchTitle);
@@ -271,8 +270,8 @@ public class PublicationServiceImpl implements PublicationService {
                 List<MatchPublicationReport> subListReports = reports.subList(0, 50);
 
                 Sort sort = pageable.getSort();
-                if(sort.getOrderFor("author") != null) {
-                    Sort.Order orderAuthor = sort.getOrderFor("author");
+                if(sort.getOrderFor(authorPropName) != null) {
+                    Sort.Order orderAuthor = sort.getOrderFor(authorPropName);
                     if(orderAuthor != null) {
                         if(orderAuthor.isAscending())
                             subListReports.sort(Comparator.comparing(MatchPublicationReport::getAuthor));

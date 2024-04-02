@@ -129,6 +129,6 @@ public class PublicationsController {
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     public void linkSubmission(@PathVariable String pmid, @RequestParam String submissionId) {
         publicationService.linkSubmission(pmid, submissionId);
-    };
+    }
 
 }

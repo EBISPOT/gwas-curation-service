@@ -59,7 +59,6 @@ public class EuropepmcPubMedSearchServiceImpl implements EuropepmcPubMedSearchSe
         try {
             if(out != null){
                 europePMCRequest = out.getBody();
-                //log.info("europePMCRequest -:"+europePMCRequest);
             }
             europePMCData = europePMCTransformer.transform(europePMCRequest);
 

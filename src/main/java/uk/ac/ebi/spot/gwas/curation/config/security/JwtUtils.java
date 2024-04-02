@@ -57,7 +57,6 @@ public class JwtUtils {
     }
 
     public Claims getClaims(String token) {
-       //log.info("Jwt token is {}", Jwts.parser().setSigningKey(verifyingKey).parse(token).getBody());
         return Jwts.parser().setSigningKey(verifyingKey).parseClaimsJws(token).getBody();
     }
 
