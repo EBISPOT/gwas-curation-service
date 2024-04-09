@@ -10,6 +10,7 @@ import uk.ac.ebi.spot.gwas.curation.service.impl.StudySolrIndexerServiceImpl;
 import uk.ac.ebi.spot.gwas.deposition.config.RabbitMQConfigProperties;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyIngestEntryDTO;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyRabbitMessage;
 
 @Component
 public class StudyIngestPublisher {
@@ -25,11 +26,11 @@ public class StudyIngestPublisher {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void send(StudyDto studyDto) {
-        log.info("Sending Message for"+studyDto.getSubmissionId()+":"+studyDto.getAccession());
+    public void send(StudyRabbitMessage studyRabbitMessage) {
+        log.info("Sending Message for {] : {}",studyRabbitMessage.getSubmissionId(),studyRabbitMessage.getAccession());
         //rabbitTemplate.convertAndSend(DepositionCurationConstants.ROUTING_KEY, studyDto);
 
         rabbitTemplate.convertAndSend(rabbitMQConfigProperties.getExchangeName(),rabbitMQConfigProperties.getRoutingKey()
-        , studyDto);
+        , studyRabbitMessage);
     }
 }
