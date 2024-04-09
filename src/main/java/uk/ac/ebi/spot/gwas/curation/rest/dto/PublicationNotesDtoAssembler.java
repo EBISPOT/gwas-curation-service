@@ -2,7 +2,6 @@ package uk.ac.ebi.spot.gwas.curation.rest.dto;
 
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
@@ -11,18 +10,12 @@ import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.repository.PublicationNotesRepository;
 import uk.ac.ebi.spot.gwas.curation.rest.PublicationNotesController;
-import uk.ac.ebi.spot.gwas.curation.rest.PublicationsController;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
 import uk.ac.ebi.spot.gwas.deposition.domain.PublicationNotes;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
-import uk.ac.ebi.spot.gwas.deposition.dto.PublicationDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.PublicationNotesDto;
-import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
-
-import java.util.List;
-import java.util.Optional;
 @Component
 public class PublicationNotesDtoAssembler implements ResourceAssembler<PublicationNotes, Resource<PublicationNotesDto>> {
 
@@ -68,22 +61,11 @@ public class PublicationNotesDtoAssembler implements ResourceAssembler<Publicati
     }
 
     public PublicationNotes disassemble(PublicationNotesDto  publicationNotesDto, User user) {
-        PublicationNotes publicationNotes = null;
-
-        Optional<PublicationNotes> optPubNotes = publicationNotesRepository.findByPublicationId(publicationNotesDto.getPublicationId());
-        if (optPubNotes.isPresent()) {
-            publicationNotes = optPubNotes.get();
-            publicationNotes.setNotes(publicationNotesDto.getNotes());
-            publicationNotes.setUpdated(new Provenance(DateTime.now(), user.getId()));
-        }
-        else {
-            publicationNotes = new PublicationNotes();
-            publicationNotes.setPublicationId(publicationNotesDto.getPublicationId());
-            publicationNotes.setNotes(publicationNotesDto.getNotes());
-            publicationNotes.setCreated(new Provenance(DateTime.now(), user.getId()));
-            publicationNotes.setUpdated(new Provenance(DateTime.now(), user.getId()));
-
-        }
+        PublicationNotes publicationNotes = new PublicationNotes();
+        publicationNotes.setPublicationId(publicationNotesDto.getPublicationId());
+        publicationNotes.setNotes(publicationNotesDto.getNotes());
+        publicationNotes.setCreated(new Provenance(DateTime.now(), user.getId()));
+        publicationNotes.setUpdated(new Provenance(DateTime.now(), user.getId()));
         return publicationNotes;
     }
 
