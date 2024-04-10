@@ -21,6 +21,7 @@ import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyRabbitMessageAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
@@ -78,6 +79,9 @@ public class StudiesServiceImpl implements StudiesService {
     @Autowired
     MetadataYmlUpdatePublisher metadataYmlUpdatePublisher;
 
+    @Autowired
+    StudyRabbitMessageAssembler studyRabbitMessageAssembler;
+
     @Override
     public Study updateStudies(Study study) {
         log.info("Inside updateStudies");
@@ -113,12 +117,14 @@ public class StudiesServiceImpl implements StudiesService {
 
     public void sendMetaDataMessageToQueue(String submissionId) {
       Long studiesCount =  studyRepository.findBySubmissionId(submissionId).count();
+      log.info("Studies count for {} is {}",submissionId,  studiesCount);
       long bucket = studiesCount / 100;
+      log.info("Bucket size for studies is {}",bucket);
       for (int i = 0; i <= bucket; i++) {
             log.info("Sending Studies to Queue Page running is {}", i);
             Pageable pageable = new PageRequest(i, 100);
             Page<Study> studies = studyRepository.findBySubmissionId(submissionId, pageable);
-
+            log.info("Studies size is -> {}",studies.getTotalElements());
             studies.forEach(study -> metadataYmlUpdatePublisher.send( MetadataYmlUpdate.builder()
                                                                         .args(Collections.singletonList(study.getAccession()))
                                                                         .task("sumstats_service.app.convert_metadata_to_yaml")
@@ -561,7 +567,7 @@ public class StudiesServiceImpl implements StudiesService {
     }
 
     public void sendStudyChangeMessage(Study study){
-        studyIngestPublisher.send(StudyDtoAssembler.assemble(study));
+        studyIngestPublisher.send(studyRabbitMessageAssembler.assemble(study));
     }
 
     public Stream<Study> getStudies(List<String> ids) {

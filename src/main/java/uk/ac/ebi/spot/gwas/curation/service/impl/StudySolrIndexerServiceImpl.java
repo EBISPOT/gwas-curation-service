@@ -10,12 +10,14 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.*;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyRabbitMessageAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySolrAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.StudySolrIndexerService;
 import uk.ac.ebi.spot.gwas.curation.solr.domain.StudySolr;
 import uk.ac.ebi.spot.gwas.curation.solr.repository.StudySolrRepository;
 import uk.ac.ebi.spot.gwas.deposition.domain.*;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyRabbitMessage;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,6 +54,9 @@ public class StudySolrIndexerServiceImpl implements StudySolrIndexerService {
 
     @Autowired
     StudyDtoAssembler studyDtoAssembler;
+
+    @Autowired
+    StudyRabbitMessageAssembler studyRabbitMessageAssembler;
 
     @Override
     @Async
@@ -98,8 +103,9 @@ public class StudySolrIndexerServiceImpl implements StudySolrIndexerService {
         studySolrRepository.deleteAll();
     }
 
-    public void syncSolrWithStudies(StudyDto studyDto) {
-         Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyDto.getStudyId());
+    public void syncSolrWithStudies(StudyRabbitMessage studyRabbitMessage) {
+
+        Study study = studyRabbitMessageAssembler.disassemble(studyRabbitMessage);
          log.info("Accession Id"+study.getAccession());
          log.info("Submission Id"+study.getSubmissionId());
          log.info("Disease Trait Id"+study.getDiseaseTrait());
