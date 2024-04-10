@@ -195,7 +195,7 @@ public class SubmissionServiceImpl implements SubmissionService {
             int i = 0;
             Map<String, Integer> params = new HashMap<>();
             params.put("page", i);
-            log.info("Ingest uri is "+ restInteractionConfig.getIngestServiceUri()+restInteractionConfig.getSubmissionEnvelopeEndpoint());
+            log.info("Ingest uri is {}", restInteractionConfig.getIngestServiceUri()+restInteractionConfig.getSubmissionEnvelopeEndpoint());
             DepositionSubmission[] submissions =
                     restTemplate.getForObject(restInteractionConfig.getIngestServiceUri()+restInteractionConfig.getSubmissionEnvelopeEndpoint(), DepositionSubmission[].class, params);
             Arrays.stream(submissions).forEach(s -> {

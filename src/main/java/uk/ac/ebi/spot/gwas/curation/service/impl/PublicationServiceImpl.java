@@ -213,7 +213,7 @@ public class PublicationServiceImpl implements PublicationService {
     }
 
     public Page<MatchPublicationReport> matchPublication(String pmid, Pageable pageable) {
-//        Map<String, Object> results = new HashMap<>();
+        String authorPropName = "author";
         CosineDistance cosScore = new CosineDistance();
         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
         JaroWinklerSimilarity jwDistance = new JaroWinklerSimilarity();
@@ -227,7 +227,6 @@ public class PublicationServiceImpl implements PublicationService {
                 searchProps.put("author", europePMCResult.getFirstAuthor().getFullName());
                 searchProps.put("title", europePMCResult.getPublication().getTitle());
                 searchProps.put("doi", europePMCResult.getDoi());
-//                results.put("search", searchProps);
                 String searchTitle = europePMCResult.getPublication().getTitle();
                 String searchAuthor = europePMCResult.getFirstAuthor().getFullName();
                 CharSequence searchString = buildSearch(searchAuthor, searchTitle);
@@ -271,8 +270,8 @@ public class PublicationServiceImpl implements PublicationService {
                 List<MatchPublicationReport> subListReports = reports.subList(0, 50);
 
                 Sort sort = pageable.getSort();
-                if(sort.getOrderFor("author") != null) {
-                    Sort.Order orderAuthor = sort.getOrderFor("author");
+                if(sort.getOrderFor(authorPropName) != null) {
+                    Sort.Order orderAuthor = sort.getOrderFor(authorPropName);
                     if(orderAuthor != null) {
                         if(orderAuthor.isAscending())
                             subListReports.sort(Comparator.comparing(MatchPublicationReport::getAuthor));
@@ -293,16 +292,18 @@ public class PublicationServiceImpl implements PublicationService {
 
 
     private CharSequence buildSearch(String author, String title) throws IOException {
-        StringBuffer result = new StringBuffer();
-        EnglishAnalyzer filter = new EnglishAnalyzer();
-        if (author == null) {
-            author = "";
+        StringBuilder result = new StringBuilder();
+        TokenStream stream;
+        try (EnglishAnalyzer filter = new EnglishAnalyzer()) {
+            if (author == null) {
+                author = "";
+            }
+            if (title == null) {
+                title = "";
+            }
+            String search = author.toLowerCase() + " " + title.toLowerCase();
+            stream = filter.tokenStream("", search);
         }
-        if (title == null) {
-            title = "";
-        }
-        String search = author.toLowerCase() + " " + title.toLowerCase();
-        TokenStream stream = filter.tokenStream("", search.toString());
         stream.reset();
         CharTermAttribute term = stream.addAttribute(CharTermAttribute.class);
         while (stream.incrementToken()) {

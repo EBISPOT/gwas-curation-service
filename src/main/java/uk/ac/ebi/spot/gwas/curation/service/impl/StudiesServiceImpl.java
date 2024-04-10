@@ -121,7 +121,7 @@ public class StudiesServiceImpl implements StudiesService {
       long bucket = studiesCount / 100;
       log.info("Bucket size for studies is {}",bucket);
       for (int i = 0; i <= bucket; i++) {
-            log.info("Sending Studies to Queue Page running is " + i);
+            log.info("Sending Studies to Queue Page running is {}", i);
             Pageable pageable = new PageRequest(i, 100);
             Page<Study> studies = studyRepository.findBySubmissionId(submissionId, pageable);
             log.info("Studies size is -> {}",studies.getTotalElements());

@@ -45,7 +45,6 @@ public class EuropepmcPubMedSearchServiceImpl implements EuropepmcPubMedSearchSe
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String queryUrl = urlRequest.replace("{idlist}", pubmedId);
-        //log.info("EuroPMC url is ->"+queryUrl);
         HttpEntity<Object> entity = new HttpEntity<Object>(headers);
         try{
             out = restTemplate.exchange(queryUrl, HttpMethod.GET, entity,
@@ -59,7 +58,6 @@ public class EuropepmcPubMedSearchServiceImpl implements EuropepmcPubMedSearchSe
         try {
             if(out != null){
                 europePMCRequest = out.getBody();
-                //log.info("europePMCRequest -:"+europePMCRequest);
             }
             europePMCData = europePMCTransformer.transform(europePMCRequest);
 
