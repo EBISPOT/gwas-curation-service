@@ -38,10 +38,11 @@ public class PublicationNotesDtoAssembler implements ResourceAssembler<Publicati
                 .updated(publicationNotes.getUpdated() != null ? ProvenanceDtoAssembler.assemble(publicationNotes.getUpdated(),
                         userService.getUser(publicationNotes.getCreated().getUserId())): null)
                 .notes(publicationNotes.getNotes())
+                .noteId(publicationNotes.getId())
                 .build();
 
         final ControllerLinkBuilder controllerLinkBuilder = ControllerLinkBuilder.linkTo(
-                ControllerLinkBuilder.methodOn(PublicationNotesController.class).getPublicationNotes(publicationNotes.getPublicationId()));
+                ControllerLinkBuilder.methodOn(PublicationNotesController.class).getPublicationNotes(publicationNotes.getPublicationId(), null,null));
         Resource<PublicationNotesDto> resource = new Resource<>(publicationNotesDto);
         resource.add(BackendUtil.underBasePath(controllerLinkBuilder, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT));
         return resource;
