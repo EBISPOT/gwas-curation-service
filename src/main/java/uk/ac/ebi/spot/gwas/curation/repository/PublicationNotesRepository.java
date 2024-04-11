@@ -11,5 +11,8 @@ import java.util.Optional;
 
 public interface PublicationNotesRepository extends MongoRepository<PublicationNotes, String> {
 
-    Optional<PublicationNotes> findByPublicationId(String pubId);
+    Page<PublicationNotes> findByPublicationId(String pubId, Pageable pageable);
+
+    Optional<PublicationNotes> findById(String noteId);
+    Boolean existsByPublicationId(String pubId);
 }

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.SortDefault;
 import org.springframework.hateoas.Link;
@@ -56,9 +57,14 @@ public class PublicationNotesController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{pubId}/notes")
     @PreAuthorize("hasRole('self.GWAS_Curator')")
-    public Resource<PublicationNotesDto> getPublicationNotes(@PathVariable String pubId) {
-
-        return publicationNotesDtoAssembler.toResource(publicationNotesService.getNotes(pubId));
+    public PagedResources<PublicationNotesDto> getPublicationNotes(@PathVariable String pubId,
+                                                             @PageableDefault(size = 20, page = 0) Pageable pageable,
+                                                             PagedResourcesAssembler assembler) {
+        Page<PublicationNotes> publicationNotesPage = publicationNotesService.getNotes(pubId, pageable);
+        final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
+                .methodOn(PublicationNotesController.class).getPublicationNotes(pubId, pageable, assembler));
+        return assembler.toResource(publicationNotesPage, publicationNotesDtoAssembler,
+                new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
     }
 
 
@@ -71,6 +77,26 @@ public class PublicationNotesController {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
 
         return publicationNotesDtoAssembler.toResource(publicationNotesService.createNotes(publicationNotesDto, user, pubId));
+    }
+
+
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping (value = "/{pubId}/notes/{noteId}")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
+    public Resource<PublicationNotesDto> updatePublicationNotes(@PathVariable String pubId,
+                                                                @PathVariable String noteId,
+                                                                @Valid  @RequestBody  PublicationNotesDto publicationNotesDto,
+                                                                HttpServletRequest request) {
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
+        return publicationNotesDtoAssembler.toResource(publicationNotesService.updateNotes(publicationNotesDto, user, pubId, noteId));
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping (value = "/{pubId}/notes/{noteId}")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
+    public void deletePublicationNotes(@PathVariable String pubId,
+                                       @PathVariable String noteId) {
+        publicationNotesService.deleteNotes(pubId, noteId);
     }
 
 }

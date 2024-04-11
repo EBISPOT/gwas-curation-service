@@ -36,33 +36,48 @@ public class PublicationNotesServiceImpl implements PublicationNotesService {
 
     public PublicationNotes createNotes(PublicationNotesDto publicationNotesDto, User user, String pubId) {
         Publication publication = publicationService.getPublicationDetailsByPmidOrPubId(pubId,false);
-        PublicationNotes publicationNotes = null;
         if(publication == null) {
             throw new EntityNotFoundException("PublicationId not found");
         }
         publicationNotesDto.setPublicationId(publication.getId());
-        Optional<PublicationNotes> optPubNotes = publicationNotesRepository.findByPublicationId(publication.getId());
-        if (optPubNotes.isPresent()) {
-            publicationNotes = optPubNotes.get();
+        PublicationNotes publicationNotes = publicationNotesDtoAssembler.disassemble(publicationNotesDto, user);
+        return publicationNotesRepository.insert(publicationNotes);
+    }
+
+    public Page<PublicationNotes> getNotes(String pubId, Pageable pageable) {
+
+        return publicationNotesRepository.findByPublicationId(pubId, pageable);
+
+    }
+
+    public PublicationNotes updateNotes(PublicationNotesDto publicationNotesDto, User user, String pubId, String noteId) {
+        Publication publication = publicationService.getPublicationDetailsByPmidOrPubId(pubId,false);
+        PublicationNotes publicationNotes = null;
+        if(publication == null) {
+            throw new EntityNotFoundException("PublicationId not found"+pubId);
+        }
+        Optional<PublicationNotes> optPubExists = publicationNotesRepository.findById(noteId);
+        if (optPubExists.isPresent()) {
+            publicationNotes = optPubExists.get();
             publicationNotes.setNotes(publicationNotesDto.getNotes());
             publicationNotes.setUpdated(new Provenance(DateTime.now(), user.getId()));
-        }
-        else {
-            publicationNotes = publicationNotesDtoAssembler.disassemble(publicationNotesDto, user);
+        } else {
+            throw new EntityNotFoundException("Publication Note  not found "+noteId);
         }
         return publicationNotesRepository.save(publicationNotes);
     }
 
-    public PublicationNotes getNotes(String pubId) {
-
-        Optional<PublicationNotes> optionalPubNotes = publicationNotesRepository.findByPublicationId(pubId);
-        if(optionalPubNotes.isPresent()) {
-            return optionalPubNotes.get();
-        }else{
-            return null;
+    public void deleteNotes(String pubId, String noteId) {
+        Publication publication = publicationService.getPublicationDetailsByPmidOrPubId(pubId,false);
+        if(publication == null) {
+            throw new EntityNotFoundException("PublicationId not found"+pubId);
+        }
+        Optional<PublicationNotes> optPubExists = publicationNotesRepository.findById(noteId);
+        if (optPubExists.isPresent()) {
+            publicationNotesRepository.delete(optPubExists.get());
+        }else {
+            throw new EntityNotFoundException("Publication Note  not found "+noteId);
         }
     }
-    
-
 
 }

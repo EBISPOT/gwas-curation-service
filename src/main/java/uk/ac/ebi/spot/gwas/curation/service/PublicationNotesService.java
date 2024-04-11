@@ -13,6 +13,10 @@ public interface PublicationNotesService {
     PublicationNotes createNotes(PublicationNotesDto notesDto, User user, String pubId);
 
 
-    PublicationNotes getNotes(String pubId);
+    Page<PublicationNotes> getNotes(String pubId, Pageable pageable);
+
+    PublicationNotes updateNotes(PublicationNotesDto publicationNotesDto, User user, String pubId, String noteId);
+
+    void deleteNotes(String pubId, String noteId);
 
 }
