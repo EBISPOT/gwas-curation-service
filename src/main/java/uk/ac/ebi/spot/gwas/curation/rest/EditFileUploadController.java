@@ -69,7 +69,7 @@ public class EditFileUploadController {
 
         String jwtToken = CurationUtil.parseJwt(request);
         ResponseEntity<Resource<FileUploadDto>> fileUploadDtoResource = editFileUploadService.uploadEditFIle(jwtToken, submissionId, file );
-        studiesService.sendMetaDataMessageToQueue(submissionId);
+        //studiesService.sendMetaDataMessageToQueue(submissionId);
         return fileUploadDtoResource.getBody();
     }
 
