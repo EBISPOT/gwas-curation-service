@@ -4,6 +4,7 @@ import uk.ac.ebi.spot.gwas.curation.solr.domain.StudySolr;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.domain.StudyIngestEntry;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyRabbitMessage;
 
 public interface StudySolrIndexerService {
 
@@ -15,5 +16,5 @@ public interface StudySolrIndexerService {
 
     public StudySolr getDetailsFromSolr(String seqId);
 
-    public void syncSolrWithStudies(StudyDto studyDto);
+    void syncSolrWithStudies(StudyRabbitMessage studyRabbitMessage);
 }
