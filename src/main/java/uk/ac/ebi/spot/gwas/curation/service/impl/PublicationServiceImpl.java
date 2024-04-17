@@ -354,9 +354,8 @@ public class PublicationServiceImpl implements PublicationService {
         return reports;
     }
 
-    //adds curationStatus and assigns curator to publication
     @Override
-    public PublicationDto updatePublicationCurationDetails(String pubmedId, PublicationDto publicationDto, User user) {
+    public PublicationDto patchPublication(String pubmedId, PublicationDto publicationDto, User user) {
         if ((publicationDto.getCurationStatus() == null || publicationDto.getCurationStatus().getCurationStatusId() == null)
                 && (publicationDto.getCurator() == null || publicationDto.getCurator().getCuratorId() == null)) {
             throw new IllegalArgumentException("both curationStatus.id and curator.id are null, at least one required");

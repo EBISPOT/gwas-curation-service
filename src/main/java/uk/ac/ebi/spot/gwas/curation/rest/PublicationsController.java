@@ -1,7 +1,6 @@
 package uk.ac.ebi.spot.gwas.curation.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -80,11 +79,11 @@ public class PublicationsController {
                 new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
     }
 
-    @PatchMapping(value = "/{pmid}/curation")
+    @PatchMapping(value = "/{pmid}")
     @PreAuthorize("hasRole('self.GWAS_Curator')")
-    public PublicationDto patchCurationDetails(@PathVariable String pmid, @RequestBody PublicationDto publicationDto, HttpServletRequest request) {
+    public PublicationDto patchPublication(@PathVariable String pmid, @RequestBody PublicationDto publicationDto, HttpServletRequest request) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        return publicationService.updatePublicationCurationDetails(pmid, publicationDto, user);
+        return publicationService.patchPublication(pmid, publicationDto, user);
     }
 
     @ResponseStatus(HttpStatus.OK)
