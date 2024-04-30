@@ -9,5 +9,6 @@ public interface BodyOfWorkService {
 
     BodyOfWork retrieveBodyOfWork(String bodyOfWork);
 
+    BodyOfWork findById(String id);
 
 }
