@@ -92,7 +92,7 @@ public class PublicationDtoAssembler implements ResourceAssembler<Publication, R
                 .submissionIds(Optional.ofNullable(submissionRepository.findByPublicationIdAndArchived(publication.getId(), false, Pageable.unpaged()))
                         .map(submissions -> submissions
                                 .stream()
-                                .map(Submission::getPublicationId)
+                                .map(Submission::getId)
                                 .collect(Collectors.toList())
                         )
                         .orElse(null)
