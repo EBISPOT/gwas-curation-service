@@ -24,6 +24,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.CorrespondingAuthorDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.PublicationDto;
 
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -92,6 +93,8 @@ public class PublicationDtoAssembler implements ResourceAssembler<Publication, R
                 .submissionIds(Optional.ofNullable(submissionRepository.findByPublicationIdAndArchived(publication.getId(), false, Pageable.unpaged()))
                         .map(submissions -> submissions
                                 .stream()
+                                // METADATA before SS
+                                .sorted(Comparator.comparing(Submission::getType))
                                 .map(Submission::getId)
                                 .collect(Collectors.toList())
                         )
