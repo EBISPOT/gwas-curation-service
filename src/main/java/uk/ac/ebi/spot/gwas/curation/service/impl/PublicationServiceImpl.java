@@ -18,9 +18,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.spot.gwas.curation.rabbitmq.PublicationMQProducer;
 import uk.ac.ebi.spot.gwas.curation.repository.*;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationDtoAssembler;
 
+import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationRabbitMessageAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.EuropepmcPubMedSearchService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationAuthorService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
@@ -80,6 +82,12 @@ public class PublicationServiceImpl implements PublicationService {
 
     @Autowired
     StudyRepository studyRepository;
+
+    @Autowired
+    PublicationMQProducer publicationMQProducer;
+
+    @Autowired
+    PublicationRabbitMessageAssembler publicationRabbitMessageAssembler;
 
     public void fillSubmitterForOldPublications() {
         List<Publication> publications = publicationRepository.findByStatusNot("ELIGIBLE");
@@ -193,6 +201,7 @@ public class PublicationServiceImpl implements PublicationService {
      catch (NullPointerException npe) {
          log.error("Warning: EMPC Import - Null pointer exception when assigning CurationStatus/Curator for pmid");
      }
+     publication.setCreated(new Provenance(DateTime.now(), user.getId()));
      publication.setStatus(PublicationStatus.ELIGIBLE.name());
      addFirstAuthorToPublication(publication, europePMCData,  user);
      return  publication;
@@ -331,6 +340,7 @@ public class PublicationServiceImpl implements PublicationService {
 
                         try {
                         Publication publicationImported = importNewPublication(pmid, user);
+                        publicationMQProducer.send(publicationRabbitMessageAssembler.assemble(publicationImported));
                         PublicationStatusReport statusReport = new PublicationStatusReport();
                         statusReport.setPmid(pmid);
                         statusReport.setPublicationDto(publicationDtoAssembler.assemble(publicationImported, user));
@@ -376,6 +386,7 @@ public class PublicationServiceImpl implements PublicationService {
             }
             publication.setCuratorId(publicationDto.getCurator().getCuratorId());
         }
+        publication.setUpdated(new Provenance(DateTime.now(), user.getId()));
         publication = publicationRepository.save(publication);
         return publicationDtoAssembler.assemble(publication, user);
     }
