@@ -89,6 +89,12 @@ public class PublicationServiceImpl implements PublicationService {
     @Autowired
     PublicationRabbitMessageAssembler publicationRabbitMessageAssembler;
 
+    @Autowired
+    PublicationRabbitMessageService publicationRabbitMessageService;
+
+    @Autowired
+    UserService userService;
+
     public void fillSubmitterForOldPublications() {
         List<Publication> publications = publicationRepository.findByStatusNot("ELIGIBLE");
         publications
@@ -338,27 +344,32 @@ public class PublicationServiceImpl implements PublicationService {
                 reports.add(statusReport);
             } else {
 
-                        try {
-                        Publication publicationImported = importNewPublication(pmid, user);
-                        publicationMQProducer.send(publicationRabbitMessageAssembler.assemble(publicationImported));
-                        PublicationStatusReport statusReport = new PublicationStatusReport();
-                        statusReport.setPmid(pmid);
-                        statusReport.setPublicationDto(publicationDtoAssembler.assemble(publicationImported, user));
-                        statusReport.setStatus("PMID saved");
-                        reports.add(statusReport);
-                    } catch (EuropePMCException ex){
-                        PublicationStatusReport statusReport = new PublicationStatusReport();
-                        statusReport.setPmid(pmid);
-                        statusReport.setStatus("Couldn't contact EPMC API");
-                        reports.add(statusReport);
-                    }catch (PubmedLookupException ex) {
-                        PublicationStatusReport statusReport = new PublicationStatusReport();
-                        statusReport.setPmid(pmid);
-                        statusReport.setStatus("PMID not found in EPMC");
-                        reports.add(statusReport);
-                    }
-
+                try {
+                    Publication publicationImported = importNewPublication(pmid, user);
+                    List<PublicationAuthor>  authors = publicationRabbitMessageService.
+                            getAuthorDetails(publicationImported.getAuthors());
+                    PublicationAuthor firstAuthor = publicationRabbitMessageService.
+                            getFirstAuthor(publicationImported.getFirstAuthorId());
+                    publicationMQProducer.send(publicationRabbitMessageAssembler.assemble(publicationImported, authors,
+                            firstAuthor, user));
+                    PublicationStatusReport statusReport = new PublicationStatusReport();
+                    statusReport.setPmid(pmid);
+                    statusReport.setPublicationDto(publicationDtoAssembler.assemble(publicationImported, user));
+                    statusReport.setStatus("PMID saved");
+                    reports.add(statusReport);
+                } catch (EuropePMCException ex){
+                    PublicationStatusReport statusReport = new PublicationStatusReport();
+                    statusReport.setPmid(pmid);
+                    statusReport.setStatus("Couldn't contact EPMC API");
+                    reports.add(statusReport);
+                }catch (PubmedLookupException ex) {
+                    PublicationStatusReport statusReport = new PublicationStatusReport();
+                    statusReport.setPmid(pmid);
+                    statusReport.setStatus("PMID not found in EPMC");
+                    reports.add(statusReport);
                 }
+
+            }
 
         });
         return reports;

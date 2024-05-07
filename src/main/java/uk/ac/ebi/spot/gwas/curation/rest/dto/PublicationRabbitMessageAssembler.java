@@ -6,8 +6,11 @@ import uk.ac.ebi.spot.gwas.curation.repository.PublicationAuthorRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.UserRepository;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
+import uk.ac.ebi.spot.gwas.deposition.domain.PublicationAuthor;
+import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationRabbitMessage;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 @Component
@@ -22,20 +25,14 @@ public class PublicationRabbitMessageAssembler {
     @Autowired
     PublicationAuthorDtoAssembler publicationAuthorDtoAssembler;
 
-   public PublicationRabbitMessage assemble(Publication publication) {
+   public PublicationRabbitMessage assemble(Publication publication, List<PublicationAuthor> authors,
+                                            PublicationAuthor firstAuthor, User user) {
        return PublicationRabbitMessage.builder()
                .pmid(publication.getPmid())
-               .authors( publication.getAuthors() != null ?
-                       publication.getAuthors().stream()
-                       .map(id -> publicationAuthorRepository.findById(id))
-                       .filter(Optional::isPresent)
-                       .map(Optional::get)
-                       .map(pubAuthor ->  publicationAuthorDtoAssembler.assemble(pubAuthor,
-                               userRepository.findById(pubAuthor.getCreated().getUserId()).get()))
-                       .collect(Collectors.toList()) : null)
-               .firstAuthor(publicationAuthorDtoAssembler.assemble( publicationAuthorRepository.
-                                       findById(publication.getFirstAuthorId()).get()
-                               , userRepository.findById(publication.getCreated().getUserId()).get()))
+               .authors(authors.stream()
+                       .map(pubAuthor ->  publicationAuthorDtoAssembler.assemble(pubAuthor,user))
+                       .collect(Collectors.toList()))
+               .firstAuthor(publicationAuthorDtoAssembler.assemble(firstAuthor, user))
                .publicationDate(CurationUtil.convertLocalDateToString(publication.getPublicationDate()))
                .title(publication.getTitle())
                .journal(publication.getJournal())
