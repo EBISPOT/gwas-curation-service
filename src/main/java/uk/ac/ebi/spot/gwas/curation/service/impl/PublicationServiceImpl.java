@@ -103,7 +103,7 @@ public class PublicationServiceImpl implements PublicationService {
                 .forEach(publication -> {
                     //log.info("Looking for submitter for pmid {}", publication.getPmid());
                     String submitter = Optional.ofNullable(submissionRepository.findByPublicationIdAndArchived(publication.getId(),
-                                    false, Pageable.unpaged() ))
+                                    false, Pageable.unpaged()))
                             .map(page -> page.stream().findFirst())
                             .filter(Optional::isPresent)
                             .map(Optional::get)
