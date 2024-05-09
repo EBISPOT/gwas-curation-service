@@ -9,4 +9,8 @@ public interface PublicationAuthorRepository extends MongoRepository<Publication
 
     Optional<PublicationAuthor> findByFullNameAndFirstNameAndLastNameAndInitialsAndAffiliation(
             String fullName, String firstName, String lastName, String initials, String affiliation);
+
+
+    @Override
+    Iterable<PublicationAuthor> findAllById(Iterable<String> strings);
 }

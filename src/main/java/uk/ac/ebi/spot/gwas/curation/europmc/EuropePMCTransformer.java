@@ -80,16 +80,18 @@ public class EuropePMCTransformer {
         String medlineAbbreviation = "";
         if(result.getElectronicPublicationDate() != null) {
             datePublication = result.getElectronicPublicationDate();
-        }else {
+        }
             JournalInfo journalInfo = result.getJournalInfo();
             Journal journal;
             if (journalInfo != null) {
-                datePublication = journalInfo.getPrintPublicationDate();
+                if(result.getElectronicPublicationDate() == null) {
+                    datePublication = journalInfo.getPrintPublicationDate();
+                }
             }
             journal = journalInfo.getJournal();
             if(journal != null)
                 medlineAbbreviation = journal.getMedlineAbbreviation();
-        }
+
 
         if (datePublication.contains("/")) {
             datePublication = datePublication.replace("/", "-");
