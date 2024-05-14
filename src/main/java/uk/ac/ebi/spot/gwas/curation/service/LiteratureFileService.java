@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface LiteratureFileService {
 
-    public List<LiteratureFile> createLiteratureFile(LiteratureFileDto fileDto, String pubmedId, User user);
+    List<LiteratureFile> createLiteratureFile(LiteratureFileDto fileDto, String pubmedId, User user);
 
-    public LiteratureFile getLiteratureFile(String fileId, String pubmedId);
+    LiteratureFile getLiteratureFile(String fileId, String pubmedId);
 }

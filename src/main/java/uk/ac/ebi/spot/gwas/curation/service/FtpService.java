@@ -8,11 +8,11 @@ import java.io.InputStream;
 
 public interface FtpService {
 
-    public String uploadAndGetFileName(MultipartFile multipartFile, String destDir);
+    String uploadAndGetFileName(MultipartFile multipartFile, String destDir);
 
-    public void uploadToFtp(InputStream inputStream, String fileName, String destDir);
+    void uploadToFtp(InputStream inputStream, String fileName, String destDir);
 
-    public InputStreamResource downloadFile(String fileName, String subFolder);
+    InputStreamResource downloadFile(String fileName, String subFolder);
 
-    public FTPClient connectToFtp();
+    FTPClient connectToFtp();
 }
