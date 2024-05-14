@@ -36,8 +36,6 @@ public class SubmissionDtoAssembler {
                 .editTemplate(editTemplate)
                 .lockDetails(lockDetailsDto)
                 .agreedToCc0(submission.isAgreedToCc0())
-                .openTargetsFlag(submission.getOpenTargetsFlag())
-                .userRequestedFlag(submission.getUserRequestedFlag())
                 .type(submission.getType())
                 .build();
     }

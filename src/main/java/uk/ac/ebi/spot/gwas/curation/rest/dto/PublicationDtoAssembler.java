@@ -100,6 +100,8 @@ public class PublicationDtoAssembler implements ResourceAssembler<Publication, R
                         )
                         .orElse(null)
                 )
+                .isUserRequested(publication.getIsUserRequested())
+                .isOpenTargets(publication.getIsOpenTargets())
                 .build();
     }
 
@@ -117,7 +119,10 @@ public class PublicationDtoAssembler implements ResourceAssembler<Publication, R
                 null,
                 publicationDto.getCreated() != null ? provenanceDtoAssembler.disassemble(publicationDto.getCreated(), user) : null,
                 publicationDto.getUpdated() != null ? provenanceDtoAssembler.disassemble(publicationDto.getUpdated(), user) : null,
-                null);
+                null,
+                publicationDto.getIsUserRequested(),
+                publicationDto.getIsOpenTargets()
+        );
     }
 
     @Override

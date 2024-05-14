@@ -377,10 +377,6 @@ public class PublicationServiceImpl implements PublicationService {
 
     @Override
     public PublicationDto patchPublication(String pubmedId, PublicationDto publicationDto, User user) {
-        if ((publicationDto.getCurationStatus() == null || publicationDto.getCurationStatus().getCurationStatusId() == null)
-                && (publicationDto.getCurator() == null || publicationDto.getCurator().getCuratorId() == null)) {
-            throw new IllegalArgumentException("both curationStatus.id and curator.id are null, at least one required");
-        }
         Publication publication = publicationRepository
                 .findByPmid(pubmedId)
                 .orElseThrow(() -> new EntityNotFoundException("publication id not found"));
@@ -395,6 +391,12 @@ public class PublicationServiceImpl implements PublicationService {
                 throw new EntityNotFoundException("curator.id not found");
             }
             publication.setCuratorId(publicationDto.getCurator().getCuratorId());
+        }
+        if (publicationDto.getIsUserRequested() != null) {
+            publication.setIsUserRequested(publicationDto.getIsUserRequested());
+        }
+        if (publicationDto.getIsOpenTargets() != null) {
+            publication.setIsOpenTargets(publicationDto.getIsOpenTargets());
         }
         publication.setUpdated(new Provenance(DateTime.now(), user.getId()));
         publication = publicationRepository.save(publication);
