@@ -45,3 +45,12 @@ ftp:
   user: ${ftp-user}
   pass: ${ftp-pass}
   app_folder: /curation_app_literature_upload
+
+springdoc:
+  swagger-ui:
+    url: /curation-doc.yaml
+    layout: BaseLayout
+    disable-swagger-default-url: true
+    path: /documentation
+  api-docs:
+    path: /curation-doc
