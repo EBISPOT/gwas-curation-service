@@ -76,6 +76,6 @@ rabbitmq:
     exchange-name: metadata-yml-update-exchange-sandbox
     routing-key: metadata-yml-update-route-sandbox
   publication:
-    queue-name:
-    exchange-name:
-    routing-key:
+    queue-name: publication-sandbox
+    exchange-name: publication-exchange-sandbox
+    routing-key: publication-route-sandbox
