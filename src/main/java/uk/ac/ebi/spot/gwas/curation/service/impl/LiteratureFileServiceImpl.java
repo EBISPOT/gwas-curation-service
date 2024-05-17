@@ -1,6 +1,8 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.LiteratureRepository;
 import uk.ac.ebi.spot.gwas.curation.service.LiteratureFileService;
@@ -52,5 +54,11 @@ public class LiteratureFileServiceImpl implements LiteratureFileService {
         return literatureRepository.findByIdAndPubmedId(fileId, pubmedId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("File id: %s not found for pubmed id: %s", fileId, pubmedId)));
     }
+
+    @Override
+    public Page<LiteratureFile> getLiteratureFiles(Pageable pageable, String pubmedId) {
+        return literatureRepository.findByPubmedId(pageable, pubmedId);
+    }
+
 
 }

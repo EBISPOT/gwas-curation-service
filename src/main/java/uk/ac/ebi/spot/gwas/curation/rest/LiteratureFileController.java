@@ -3,6 +3,14 @@ package uk.ac.ebi.spot.gwas.curation.rest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.data.web.SortDefault;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.LiteratureFileAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.impl.FtpServiceImpl;
 import uk.ac.ebi.spot.gwas.curation.service.LiteratureFileService;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
@@ -43,12 +52,14 @@ public class LiteratureFileController {
     UserService userService;
     @Autowired
     JWTService jwtService;
+    @Autowired
+    private LiteratureFileAssembler literatureFileAssembler;
 
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     @PostMapping("/{pubmedId}" + DepositionCurationConstants.API_LITERATURE_FILES)
     public ResponseEntity<LiteratureFileDto> createLiteratureFiles(@PathVariable("pubmedId") String pubmedId,
-                                                         @Valid LiteratureFileDto fileDto, BindingResult result,
-                                                         HttpServletRequest request) {
+                                                                   @Valid LiteratureFileDto fileDto, BindingResult result,
+                                                                   HttpServletRequest request) {
         if (result.hasErrors()) {
             throw new FileValidationException(result);
         }
@@ -61,7 +72,16 @@ public class LiteratureFileController {
     }
 
     @PreAuthorize("hasRole('self.GWAS_Curator')")
-    @GetMapping("/{pubmedId}/"+DepositionCurationConstants.API_LITERATURE_FILES+"/{fileId}")
+    @GetMapping(value="/{pubmedId}/" + DepositionCurationConstants.API_LITERATURE_FILES, produces = MediaType.APPLICATION_JSON_VALUE)
+    public PagedResources<Resource<LiteratureFileDto>> getLiteratureFiles(PagedResourcesAssembler<LiteratureFile> assembler,
+                                                                          @PathVariable("pubmedId") String pubmedId,
+                                                                          @SortDefault Pageable pageable) {
+        Page<LiteratureFile> files = literatureFileService.getLiteratureFiles(pageable, pubmedId);
+        return assembler.toResource(files, literatureFileAssembler);
+    }
+
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
+    @GetMapping("/{pubmedId}/" + DepositionCurationConstants.API_LITERATURE_FILES + "/{fileId}")
     public ResponseEntity<InputStreamResource> downloadFiles(@PathVariable("pubmedId") String pubmedId,
                                                              @PathVariable("fileId") String fileId,
                                                              HttpServletResponse response) throws IOException {
