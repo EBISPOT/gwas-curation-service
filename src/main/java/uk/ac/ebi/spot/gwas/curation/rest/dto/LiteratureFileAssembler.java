@@ -4,8 +4,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.spot.gwas.deposition.domain.LiteratureFile;
-import uk.ac.ebi.spot.gwas.deposition.domain.Sample;
-import uk.ac.ebi.spot.gwas.deposition.dto.SampleDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.LiteratureFileDto;
 
 @Component
