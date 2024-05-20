@@ -78,12 +78,16 @@ public class LiteratureFileController {
         return assembler.toResource(files, literatureFileAssembler);
     }
 
-    @PreAuthorize("hasRole('self.GWAS_Curator')")
+//    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @GetMapping("/{pubmedId}/" + DepositionCurationConstants.API_LITERATURE_FILES + "/{fileId}")
     public ResponseEntity<InputStreamResource> downloadFiles(@PathVariable("pubmedId") String pubmedId,
                                                              @PathVariable("fileId") String fileId,
                                                              HttpServletResponse response) throws IOException {
+
+        log.info("Attempting to download literature file for pubmedId: {} and file: {}", pubmedId, fileId);
         LiteratureFile file = literatureFileService.getLiteratureFile(fileId, pubmedId);
+        log.info("File was found in database: {}", file.getName());
+
         InputStreamResource resource = ftpService.downloadFile(file.getName(), pubmedId);
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM + ";charset=utf-8");
         response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
