@@ -11,4 +11,4 @@ ADD target/gwas-curation-service-*.jar /home/gwas-curation-service/
 USER gwas-curation-service
 
 # Launch application server
-ENTRYPOINT exec $JAVA_HOME/bin/java $XMX $XMS -jar -Dspring.profiles.active=$ENVIRONMENT -Dspring.rabbitmq.password=$RABBIT_PWD /home/gwas-curation-service/gwas-curation-service-*.jar
+ENTRYPOINT exec $JAVA_HOME/bin/java $XMX $XMS -jar -Dspring.profiles.active=$ENVIRONMENT -Dspring.rabbitmq.password=$RABBIT_PWD -Dftp.link=$FTP_LINK -Dftp.user=$FTP_USER -Dftp.pass=$FTP_PASS /home/gwas-curation-service/gwas-curation-service-*.jar

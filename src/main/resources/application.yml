@@ -41,9 +41,9 @@ europepmc:
 
 
 ftp:
-  link: ${ftp-link}
-  user: ${ftp-user}
-  pass: ${ftp-pass}
+  link:
+  user:
+  pass:
   app_folder: /curation_app_literature_upload
 
 springdoc:
