@@ -20,6 +20,9 @@ image:
     secretsKey: ""
     rabbitSecretsName: ""
     rabbitSecretsKey: ""
+    ftpSecretsLink: "ftp-link"
+    ftpSecretsUser: "ftp-user"
+    ftpSecretsPwd: "ftp-pwd"
   volume:
     claimName: gwas-depo-logs
 

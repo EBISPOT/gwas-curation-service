@@ -79,5 +79,3 @@ rabbitmq:
     queue-name: publication-sandbox
     exchange-name: publication-exchange-sandbox
     routing-key: publication-route-sandbox
-
-
