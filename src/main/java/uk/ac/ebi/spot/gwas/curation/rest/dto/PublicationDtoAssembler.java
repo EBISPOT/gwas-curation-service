@@ -89,7 +89,7 @@ public class PublicationDtoAssembler implements ResourceAssembler<Publication, R
                 .curationStatus(publication.getCurationStatusId() != null ? curationStatusDTOAssembler.assemble(curationStatusService.findCurationStatus(publication.getCurationStatusId())) : null)
                 .curator(publication.getCuratorId() != null ? curatorDTOAssembler.assemble(curatorService.findCuratorDetails(publication.getCuratorId())): null)
                 .submitter(publication.getSubmitter())
-                .bodyOfWorkId(bodyOfWorkRepository.findByPmidsContains(publication.getPmid()).map(BodyOfWork::getId).orElse(null))
+                .bodyOfWorkId(bodyOfWorkRepository.findFirstByPmidsContains(publication.getPmid()).map(BodyOfWork::getId).orElse(null))
                 .submissionIds(Optional.ofNullable(submissionRepository.findByPublicationIdAndArchived(publication.getId(), false, Pageable.unpaged()))
                         .map(submissions -> submissions
                                 .stream()

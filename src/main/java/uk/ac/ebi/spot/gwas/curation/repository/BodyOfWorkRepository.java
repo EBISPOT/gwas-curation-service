@@ -7,8 +7,7 @@ import java.util.Optional;
 
 public interface BodyOfWorkRepository extends MongoRepository<BodyOfWork, String> {
 
-
     Optional<BodyOfWork> findByBowIdAndArchived(String bodyOfWorkId, boolean archived);
     Optional<BodyOfWork> findByBowId(String bodyOfWorkId);
-    Optional<BodyOfWork> findByPmidsContains(String bodyOfWorkId);
+    Optional<BodyOfWork> findFirstByPmidsContains(String bodyOfWorkId);
 }
