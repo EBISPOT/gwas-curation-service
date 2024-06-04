@@ -22,6 +22,8 @@ public interface StudiesService {
 
     Study updateStudies(Study study);
 
+
+
     public Page<Study> getStudies(String submissionId,  Pageable page);
 
     public Page<StudySolr> getStudies(Pageable page, SearchStudyDTO searchStudyDTO);

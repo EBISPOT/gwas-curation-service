@@ -100,11 +100,14 @@ public class StudiesController {
     public  Resource<StudyDto> updateStudies(@PathVariable String studyId, @PathVariable String submissionId, @Valid @RequestBody StudyDto studyDto, HttpServletRequest request) {
         List<String> traitIds = null;
         List<String> efoTraitIds = null;
-        if(studiesService.getStudy(studyId) != null ) {
+        Study oldStudy = studiesService.getStudy(studyId);
+            if( oldStudy != null ) {
             log.info("Disease Traits from request:" + studyDto.getDiseaseTrait());
             /*if (studyDto.getDiseaseTraits() != null && !studyDto.getDiseaseTraits().isEmpty()) {
                 traitIds = studiesService.getTraitsIDsFromDB(studyDto.getDiseaseTraits(), studyId);
             }*/
+
+
             Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyId);
             if (studyDto.getDiseaseTrait() != null ) {
 
