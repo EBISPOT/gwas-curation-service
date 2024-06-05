@@ -14,7 +14,8 @@ public class LiteratureFileAssembler implements ResourceAssembler<LiteratureFile
 
         LiteratureFileDto literatureFileDto = LiteratureFileDto.builder()
                 .id(literatureFile.getId())
-                .fileName(literatureFile.getName())
+                .fileOriginalName((literatureFile.getFileOriginalName() == null)? literatureFile.getName() : literatureFile.getFileOriginalName())
+                .name(literatureFile.getName())
                 .createdBy(literatureFile.getCreatedBy())
                 .createDate(literatureFile.getCreateDate()).build();
         return new Resource<>(literatureFileDto);

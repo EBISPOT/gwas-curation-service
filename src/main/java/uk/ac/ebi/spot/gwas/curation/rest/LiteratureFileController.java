@@ -34,7 +34,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -70,7 +73,7 @@ public class LiteratureFileController {
     }
 
     @PreAuthorize("hasRole('self.GWAS_Curator')")
-    @GetMapping(value="/{pubmedId}/" + DepositionCurationConstants.API_LITERATURE_FILES, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{pubmedId}/" + DepositionCurationConstants.API_LITERATURE_FILES, produces = MediaType.APPLICATION_JSON_VALUE)
     public PagedResources<Resource<LiteratureFileDto>> getLiteratureFiles(PagedResourcesAssembler<LiteratureFile> assembler,
                                                                           @PathVariable("pubmedId") String pubmedId,
                                                                           @SortDefault Pageable pageable) {
@@ -78,7 +81,7 @@ public class LiteratureFileController {
         return assembler.toResource(files, literatureFileAssembler);
     }
 
-//    @PreAuthorize("hasRole('self.GWAS_Curator')")
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @GetMapping("/{pubmedId}/" + DepositionCurationConstants.API_LITERATURE_FILES + "/{fileId}")
     public ResponseEntity<InputStreamResource> downloadFiles(@PathVariable("pubmedId") String pubmedId,
                                                              @PathVariable("fileId") String fileId,
@@ -93,6 +96,19 @@ public class LiteratureFileController {
         response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
         response.getOutputStream().flush();
         return ResponseEntity.ok().body(resource);
+    }
+
+    @DeleteMapping("/{pubmedId}/" + DepositionCurationConstants.API_LITERATURE_FILES + "/{fileId}")
+    public Map<String, Object> deleteFiles(@PathVariable("pubmedId") String pubmedId,
+                                           @PathVariable("fileId") String fileId)  {
+        Map<String, Object> xyz = new HashMap<>();
+        LiteratureFile file = literatureFileService.getLiteratureFile(fileId, pubmedId);
+        boolean report = ftpService.deleteFile(file.getName(), pubmedId);
+        if (report){
+            xyz = literatureFileService.deleteLiteratureFile(file);
+            xyz.put("Literature name: " + file.getName(), "deleted from disk");
+        }
+        return xyz;
     }
 
 

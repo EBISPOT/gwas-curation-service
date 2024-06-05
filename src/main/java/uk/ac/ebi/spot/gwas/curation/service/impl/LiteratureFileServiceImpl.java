@@ -13,9 +13,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.LiteratureFileDto;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class LiteratureFileServiceImpl implements LiteratureFileService {
@@ -40,6 +38,7 @@ public class LiteratureFileServiceImpl implements LiteratureFileService {
             String newFileName = ftpService.uploadAndGetFileName(multipartFile, pubmedId);
             LiteratureFile literatureFile = LiteratureFile.builder()
                     .name(newFileName)
+                    .name(multipartFile.getOriginalFilename())
                     .pubmedId(pubmedId)
                     .createdBy(user.getEmail())
                     .build();
@@ -53,6 +52,12 @@ public class LiteratureFileServiceImpl implements LiteratureFileService {
     public LiteratureFile getLiteratureFile(String fileId, String pubmedId) {
         return literatureRepository.findByIdAndPubmedId(fileId, pubmedId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("File id: %s not found for pubmed id: %s", fileId, pubmedId)));
+    }
+
+    @Override
+    public Map<String, Object> deleteLiteratureFile(LiteratureFile literatureFile) {
+        literatureRepository.delete(literatureFile);
+        return Collections.singletonMap("Literature name: " + literatureFile.getName(), "deleted from database");
     }
 
     @Override
