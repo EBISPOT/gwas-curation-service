@@ -1,5 +1,7 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +10,7 @@ import uk.ac.ebi.spot.gwas.curation.repository.LiteratureRepository;
 import uk.ac.ebi.spot.gwas.curation.service.LiteratureFileService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
 import uk.ac.ebi.spot.gwas.deposition.domain.LiteratureFile;
+import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
 import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.LiteratureFileDto;
@@ -15,6 +18,7 @@ import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 import java.util.*;
 
+@Slf4j
 @Service
 public class LiteratureFileServiceImpl implements LiteratureFileService {
 
@@ -37,10 +41,13 @@ public class LiteratureFileServiceImpl implements LiteratureFileService {
         fileDto.getMultipartFile().forEach(multipartFile -> {
             String newFileName = ftpService.uploadAndGetFileName(multipartFile, pubmedId);
             LiteratureFile literatureFile = LiteratureFile.builder()
-                    .name(newFileName)
-                    .name(multipartFile.getOriginalFilename())
+                    .originalFileName(multipartFile.getOriginalFilename())
+                    .onDiskFileName(newFileName)
                     .pubmedId(pubmedId)
-                    .createdBy(user.getEmail())
+                    .created(Provenance.builder()
+                            .userId(user.getEmail())
+                            .timestamp(new DateTime())
+                            .build())
                     .build();
             literatureRepository.save(literatureFile);
             literatureFiles.add(literatureFile);
@@ -57,13 +64,12 @@ public class LiteratureFileServiceImpl implements LiteratureFileService {
     @Override
     public Map<String, Object> deleteLiteratureFile(LiteratureFile literatureFile) {
         literatureRepository.delete(literatureFile);
-        return Collections.singletonMap("Literature name: " + literatureFile.getName(), "deleted from database");
+        return Collections.singletonMap("Literature name: " + literatureFile.getOriginalFileName(), "deleted from database");
     }
 
     @Override
     public Page<LiteratureFile> getLiteratureFiles(Pageable pageable, String pubmedId) {
         return literatureRepository.findByPubmedId(pageable, pubmedId);
     }
-
 
 }

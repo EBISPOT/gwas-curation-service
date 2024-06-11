@@ -34,7 +34,7 @@ public class FtpServiceImpl implements FtpService {
             String extension = FilenameUtils.getExtension(file.getOriginalFilename());
             String baseName = FilenameUtils.getBaseName(file.getOriginalFilename());
             log.info("Original Filename: {}", baseName);
-            fileName.set(String.format("%s__%s.%s", baseName, UUID.randomUUID(), extension));
+            fileName.set(String.format("%s_%s.%s", baseName, UUID.randomUUID(), extension));
             try {
                 uploadToFtp(multipartFile.getInputStream(), fileName.get(), destDir);
             } catch (IOException e) {

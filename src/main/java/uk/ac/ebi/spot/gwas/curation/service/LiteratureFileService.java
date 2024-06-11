@@ -17,4 +17,5 @@ public interface LiteratureFileService {
     Map<String, Object> deleteLiteratureFile(LiteratureFile literatureFile);
 
     Page<LiteratureFile> getLiteratureFiles(Pageable pageable, String pubmedId);
+
 }

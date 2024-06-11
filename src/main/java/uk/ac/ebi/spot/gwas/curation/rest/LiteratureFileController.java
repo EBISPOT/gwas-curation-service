@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,18 +58,19 @@ public class LiteratureFileController {
 
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     @PostMapping("/{pubmedId}" + DepositionCurationConstants.API_LITERATURE_FILES)
-    public ResponseEntity<LiteratureFileDto> createLiteratureFiles(@PathVariable("pubmedId") String pubmedId,
+    public ResponseEntity<List<LiteratureFileDto>> createLiteratureFiles(@PathVariable("pubmedId") String pubmedId,
                                                                    @Valid LiteratureFileDto fileDto, BindingResult result,
                                                                    HttpServletRequest request) {
         if (result.hasErrors()) {
             throw new FileValidationException(result);
         }
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        List<LiteratureFile> files = literatureFileService.createLiteratureFile(fileDto, pubmedId, user);
-        fileDto.setId(files.get(0).getId());
+        List<LiteratureFile> literatureFiles = literatureFileService.createLiteratureFile(fileDto, pubmedId, user);
+
+        List<LiteratureFileDto> fileDtoList = LiteratureFileAssembler.assemble(literatureFiles);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-                .buildAndExpand(files.get(0).getId()).toUri();
-        return new ResponseEntity<>(fileDto, ResponseEntity.created(location).build().getHeaders(), HttpStatus.CREATED);
+                .buildAndExpand(literatureFiles.get(0).getId()).toUri();
+        return new ResponseEntity<>(fileDtoList, ResponseEntity.created(location).build().getHeaders(), HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('self.GWAS_Curator')")
@@ -88,11 +90,11 @@ public class LiteratureFileController {
 
         log.info("Attempting to download literature file for pubmedId: {} and file: {}", pubmedId, fileId);
         LiteratureFile file = literatureFileService.getLiteratureFile(fileId, pubmedId);
-        log.info("File was found in database: {}", file.getName());
+        log.info("File was found in database: {}", file.getOriginalFileName());
 
-        InputStreamResource resource = ftpService.downloadFile(file.getName(), pubmedId);
+        InputStreamResource resource = ftpService.downloadFile(file.getOnDiskFileName(), pubmedId);
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM + ";charset=utf-8");
-        response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
+        response.setHeader("Content-Disposition", "attachment; filename=" + file.getOriginalFileName());
         response.getOutputStream().flush();
         return ResponseEntity.ok().body(resource);
     }
@@ -100,16 +102,14 @@ public class LiteratureFileController {
     @DeleteMapping("/{pubmedId}/" + DepositionCurationConstants.API_LITERATURE_FILES + "/{fileId}")
     public Map<String, Object> deleteFiles(@PathVariable("pubmedId") String pubmedId,
                                            @PathVariable("fileId") String fileId)  {
-        Map<String, Object> xyz = new HashMap<>();
+        Map<String, Object> report = new HashMap<>();
         LiteratureFile file = literatureFileService.getLiteratureFile(fileId, pubmedId);
-        boolean report = ftpService.deleteFile(file.getName(), pubmedId);
-        if (report){
-            xyz = literatureFileService.deleteLiteratureFile(file);
-            xyz.put("Literature name: " + file.getName(), "deleted from disk");
+        boolean fileDeleteSuccess = ftpService.deleteFile(file.getOnDiskFileName(), pubmedId);
+        if (fileDeleteSuccess){
+            report = literatureFileService.deleteLiteratureFile(file);
         }
-        return xyz;
+        return report;
     }
-
 
 }
 
