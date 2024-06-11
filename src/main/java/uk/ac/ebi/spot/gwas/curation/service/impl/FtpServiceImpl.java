@@ -14,7 +14,7 @@ import uk.ac.ebi.spot.gwas.deposition.config.FtpConfig;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 
 import java.io.*;
-import java.net.UnknownHostException;;
+import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
