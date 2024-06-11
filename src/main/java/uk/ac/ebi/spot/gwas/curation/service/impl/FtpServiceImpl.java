@@ -34,7 +34,7 @@ public class FtpServiceImpl implements FtpService {
             String extension = FilenameUtils.getExtension(file.getOriginalFilename());
             String baseName = FilenameUtils.getBaseName(file.getOriginalFilename());
             log.info("Original Filename: {}", baseName);
-            fileName.set(String.format("%s__%s.%s", baseName, UUID.randomUUID(), extension));
+            fileName.set(String.format("%s_%s.%s", baseName, UUID.randomUUID(), extension));
             try {
                 uploadToFtp(multipartFile.getInputStream(), fileName.get(), destDir);
             } catch (IOException e) {
@@ -64,7 +64,6 @@ public class FtpServiceImpl implements FtpService {
     @Override
     public InputStreamResource downloadFile(String fileName, String subFolder) {
         String destination = String.format("%s/%s", ftpConfig.getAppFolder(), subFolder);
-        log.info("Parameters: {} / {} / {}, ", ftpConfig.getAppFolder(), ftpConfig.getFtpUser(), ftpConfig.getFtpPass());
         FTPClient client = connectToFtp();
         try {
             client.changeWorkingDirectory(destination);
@@ -76,6 +75,24 @@ public class FtpServiceImpl implements FtpService {
             log.error("something went wrong {}", e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean deleteFile(String fileName, String subFolder) {
+        String destination = String.format("%s/%s", ftpConfig.getAppFolder(), subFolder);
+        FTPClient client = connectToFtp();
+        boolean deleted;
+        try {
+            client.changeWorkingDirectory(destination);
+            deleted = client.deleteFile(fileName);
+            if (!deleted){
+                log.info("{} file was not deleted", fileName);
+            }else {
+                log.info("{} file was deleted", fileName);
+            }
+        } catch (IOException e) {
+            throw new FileProcessingException(String.format("File was not deleted, due to error: %s", e.getMessage()));
+        }
+        return deleted;
     }
 
     @Override
