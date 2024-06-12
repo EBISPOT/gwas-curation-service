@@ -1,0 +1,3017 @@
+openapi: 3.0.1
+info:
+  title: Curation Service API
+  description: Curation Service Microservices
+  version: "1.0"
+servers:
+- url: http://localhost:8081
+  description: Generated server url
+paths:
+  /v1/submissions/{submissionId}/studies/{studyId}:
+    get:
+      tags:
+      - studies-controller
+      operationId: getStudy
+      parameters:
+      - name: studyId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceStudyDto'
+    put:
+      tags:
+      - studies-controller
+      operationId: updateStudies
+      parameters:
+      - name: studyId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudyDto'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceStudyDto'
+  /v1/submissions/{submissionId}/lock:
+    put:
+      tags:
+      - edit-file-upload-controller
+      operationId: lockSubmission
+      parameters:
+      - name: lockStatus
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/ResourceSubmissionDto'
+  /v1/submissions/{submissionId}/associations/approve-snps:
+    put:
+      tags:
+      - association-controller
+      operationId: approveSnps
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        204:
+          description: No Content
+  /v1/reported-traits/{traitId}:
+    get:
+      tags:
+      - disease-trait-controller
+      operationId: getDiseaseTrait
+      parameters:
+      - name: traitId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceDiseaseTraitDto'
+    put:
+      tags:
+      - disease-trait-controller
+      operationId: updateDiseaseTraits
+      parameters:
+      - name: traitId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiseaseTraitDto'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceDiseaseTraitDto'
+    patch:
+      tags:
+      - disease-trait-controller
+      operationId: patchDiseaseTrait
+      parameters:
+      - name: traitId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonPatch'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json-patch+json:
+              schema:
+                $ref: '#/components/schemas/ResourceDiseaseTraitDto'
+  /v1/publications/{pubId}/notes/{noteId}:
+    put:
+      tags:
+      - publication-notes-controller
+      operationId: updatePublicationNotes
+      parameters:
+      - name: pubId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicationNotesDto'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResourcePublicationNotesDto'
+    delete:
+      tags:
+      - publication-notes-controller
+      operationId: deletePublicationNotes
+      parameters:
+      - name: pubId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        204:
+          description: No Content
+  /v1/publications/{pmid}/link-submission:
+    put:
+      tags:
+      - publications-controller
+      operationId: linkSubmission
+      parameters:
+      - name: pmid
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: submissionId
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+  /v1/publications/utils/fill-submitter-for-old-publications:
+    put:
+      tags:
+      - publications-controller
+      operationId: fillSubmitterForOldPublications
+      responses:
+        200:
+          description: OK
+  /v1/efo-traits/{traitId}:
+    get:
+      tags:
+      - efo-trait-controller
+      operationId: getEfoTrait
+      parameters:
+      - name: traitId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResourceEfoTraitDto'
+    put:
+      tags:
+      - efo-trait-controller
+      operationId: fullyUpdateEfoTrait
+      parameters:
+      - name: traitId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EfoTraitDto'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResourceEfoTraitDto'
+  /v1/submissions/{submissionId}/uploads/edit:
+    post:
+      tags:
+      - edit-file-upload-controller
+      operationId: uploadEditFile
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Created
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/ResourceFileUploadDto'
+  /v1/submissions/{submissionId}/studies/sampledescription/files:
+    get:
+      tags:
+      - study-traits-upload-file-controller
+      operationId: getSampleDescriptions
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            multipart/form-data:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: byte
+    post:
+      tags:
+      - study-traits-upload-file-controller
+      operationId: uploadSampleDescriptions
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - multipartFile
+              type: object
+              properties:
+                multipartFile:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: OK
+          content:
+            multipart/form-data:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: byte
+  /v1/submissions/{submissionId}/studies/multi-traits/files:
+    post:
+      tags:
+      - study-traits-upload-file-controller
+      operationId: uploadMultiTraitStudyMapping
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - multipartFile
+              type: object
+              properties:
+                multipartFile:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UploadReportWrapper'
+  /v1/reported-traits/files:
+    post:
+      tags:
+      - disease-trait-file-upload-controller
+      operationId: uploadDiseaseTraits
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - multipartFile
+              type: object
+              properties:
+                multipartFile:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: OK
+          content:
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/UploadReportWrapper'
+  /v1/reported-traits/analysis:
+    post:
+      tags:
+      - disease-trait-file-upload-controller
+      operationId: similaritySearchAnalysis
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - multipartFile
+              type: object
+              properties:
+                multipartFile:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceAnalysisCacheDto'
+  /v1/reported-traits:
+    get:
+      tags:
+      - disease-trait-controller
+      operationId: getDiseaseTraits_1
+      parameters:
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      - name: trait
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: studyId
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedResourcesDiseaseTraitDto'
+    post:
+      tags:
+      - disease-trait-controller
+      operationId: addDiseaseTraits
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiseaseTraitDto'
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceDiseaseTraitDto'
+  /v1/publications/{pubId}/notes:
+    get:
+      tags:
+      - publication-notes-controller
+      operationId: getPublicationNotes
+      parameters:
+      - name: pubId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PagedResourcesPublicationNotesDto'
+    post:
+      tags:
+      - publication-notes-controller
+      operationId: createPublicationNotes
+      parameters:
+      - name: pubId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicationNotesDto'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResourcePublicationNotesDto'
+  /v1/publications/{pmids}:
+    post:
+      tags:
+      - publications-controller
+      operationId: createPublication
+      parameters:
+      - name: pmids
+        in: path
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicationStatusReport'
+  /v1/efo-traits:
+    get:
+      tags:
+      - efo-trait-controller
+      operationId: getEfoTraits
+      parameters:
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      - name: trait
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PagedResourcesEfoTraitDto'
+    post:
+      tags:
+      - efo-trait-controller
+      operationId: createEfoTrait
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EfoTraitDto'
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResourceEfoTraitDto'
+  /v1/efo-traits/bulk-upload:
+    post:
+      tags:
+      - efo-trait-controller
+      operationId: createEfoTraits
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileUploadRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UploadReportWrapper'
+  /v1/curation-status:
+    get:
+      tags:
+      - curation-status-controller
+      operationId: getAllCurationStatus
+      parameters:
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PagedResourcesCurationStatusDTO'
+    post:
+      tags:
+      - curation-status-controller
+      operationId: createCurationStatus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurationStatusDTO'
+        required: true
+      responses:
+        201:
+          description: Created
+  /publications/{pubmedId}/literature-files:
+    post:
+      tags:
+      - literature-controller
+      operationId: createLiteratureFiles
+      parameters:
+      - name: pubmedId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileDto'
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FileDto'
+  /v1/submissions/{submissionId}:
+    get:
+      tags:
+      - submissions-controller
+      operationId: getSubmission
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceSubmissionDto'
+    patch:
+      tags:
+      - submissions-controller
+      operationId: patchSubmission
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmissionDto'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResourceSubmissionDto'
+  /v1/submissions/{submissionId}/studies/sampledescription:
+    get:
+      tags:
+      - studies-controller
+      operationId: getSampleDescription
+      parameters:
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedResourcesStudySampleDescPatchRequest'
+    patch:
+      tags:
+      - studies-controller
+      operationId: patchSampleDescription
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/StudySampleDescPatchRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudySampleDescPatchRequest'
+  /v1/publications/{pmid}:
+    patch:
+      tags:
+      - publications-controller
+      operationId: patchPublication
+      parameters:
+      - name: pmid
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicationDto'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PublicationDto'
+  /v1/submissions/{submissionId}/versions:
+    get:
+      tags:
+      - submission-diff-controller
+      operationId: diffVersionSubmissions
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VersionSummary'
+  /v1/submissions/{submissionId}/studies/{studyId}/diseasetraits:
+    get:
+      tags:
+      - studies-controller
+      operationId: getDiseaseTraits
+      parameters:
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      - name: studyId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceDiseaseTraitDto'
+  /v1/submissions/{submissionId}/studies:
+    get:
+      tags:
+      - studies-controller
+      operationId: getStudies
+      parameters:
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedResourcesStudyDto'
+  /v1/submissions/{submissionId}/associations/snp-validation-report:
+    get:
+      tags:
+      - association-controller
+      operationId: getSnpValidationReport
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: byte
+  /v1/submissions/{submissionId}/associations/snp-status:
+    get:
+      tags:
+      - association-controller
+      operationId: getSnpStatus
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SnpStatusReportDto'
+  /v1/submissions:
+    get:
+      tags:
+      - submissions-controller
+      operationId: getSubmissions
+      parameters:
+      - name: searchSubmissionDTO
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/SearchSubmissionDTO'
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedResourcesSubmissionDto'
+  /v1/studies:
+    get:
+      tags:
+      - filter-studies-controller
+      operationId: getStudies_1
+      parameters:
+      - name: searchStudyDTO
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/SearchStudyDTO'
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedResourcesStudyDto'
+  /v1/solr/studies/{studyId}:
+    get:
+      tags:
+      - solr-study-controller
+      operationId: getStudyFromSolr
+      parameters:
+      - name: studyId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResourceStudySolrDTO'
+  /v1/reported-traits/templates:
+    get:
+      tags:
+      - disease-trait-file-upload-controller
+      operationId: fileUploadTemplateDownload
+      parameters:
+      - name: file
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: byte
+  /v1/reported-traits/analysis/{analysisId}:
+    get:
+      tags:
+      - disease-trait-file-upload-controller
+      operationId: similaritySearchAnalysisCsvDownload
+      parameters:
+      - name: analysisId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: byte
+  /v1/reindex-studies:
+    get:
+      tags:
+      - study-ingest-service-controller
+      operationId: reindexSolrStudies
+      responses:
+        204:
+          description: No Content
+  /v1/publications:
+    get:
+      tags:
+      - publications-controller
+      operationId: search
+      parameters:
+      - name: searchPublicationDTO
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/SearchPublicationDTO'
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PagedResourcesPublicationDto'
+  /v1/publications/{pmid}/linked-submissions:
+    get:
+      tags:
+      - publications-controller
+      operationId: matchPublication
+      parameters:
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      - name: pmid
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedResourcesMatchPublicationReportDTO'
+  /v1/publications/{id}:
+    get:
+      tags:
+      - publications-controller
+      operationId: getPublication
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResourcePublicationDto'
+  /v1/publications/search/{pubId}:
+    get:
+      tags:
+      - publication-solr-controller
+      operationId: getPublication_1
+      parameters:
+      - name: pubId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResourceSolrPublicationDTO'
+  /v1/publications/search:
+    get:
+      tags:
+      - publication-solr-controller
+      operationId: getPublications
+      parameters:
+      - name: searchPublicationDTO
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/SearchPublicationDTO'
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedResourcesSolrPublicationDTO'
+  /v1/javers/submissions/{submissionId}/changes:
+    get:
+      tags:
+      - javers-audit-controller
+      operationId: getSubmissionChanges
+      parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JaversChangeWrapper'
+  /v1/ingest-studies:
+    get:
+      tags:
+      - study-ingest-service-controller
+      operationId: ingestStudies
+      responses:
+        204:
+          description: No Content
+  /v1/efo-traits/export:
+    get:
+      tags:
+      - efo-trait-controller
+      operationId: exportTraits
+      parameters:
+      - name: trait
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: byte
+  /v1/efo-traits/download-template:
+    get:
+      tags:
+      - efo-trait-controller
+      operationId: downloadCreationTemplate
+      responses:
+        200:
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: byte
+  /v1/curators:
+    get:
+      tags:
+      - curator-controller
+      operationId: getCurators
+      parameters:
+      - name: assembler
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/PagedResourcesAssembler'
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PagedResourcesCuratorDTO'
+  /v1/curators/{curatorId}:
+    get:
+      tags:
+      - curator-controller
+      operationId: getCuratorDetails
+      parameters:
+      - name: curatorId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResourceCuratorDTO'
+  /v1/curation-status/{curatorStatusId}:
+    get:
+      tags:
+      - curation-status-controller
+      operationId: getCurationStatus
+      parameters:
+      - name: curatorStatusId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ResourceCurationStatusDTO'
+  /publications/{pubmedId}/literature-files/{fileId}:
+    get:
+      tags:
+      - literature-controller
+      operationId: downloadFiles
+      parameters:
+      - name: pubmedId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: fileId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+  /v1/reported-traits/{traitIds}:
+    delete:
+      tags:
+      - disease-trait-controller
+      operationId: deleteDiseaseTraits
+      parameters:
+      - name: traitIds
+        in: path
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        204:
+          description: No Content
+  /v1/remove-studies:
+    delete:
+      tags:
+      - study-ingest-service-controller
+      operationId: removeStudies
+      responses:
+        200:
+          description: OK
+  /v1/efo-traits/{traitIds}:
+    delete:
+      tags:
+      - efo-trait-controller
+      operationId: deleteEfoTrait
+      parameters:
+      - name: traitIds
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        204:
+          description: No Content
+components:
+  schemas:
+    AssociationDto:
+      required:
+      - effect_allele
+      - effect_allele_frequency
+      - pvalue
+      - study_tag
+      - variant_id
+      type: object
+      properties:
+        study_tag:
+          type: string
+        haplotype_id:
+          type: string
+        variant_id:
+          type: string
+        pvalue:
+          type: string
+        pvalue_text:
+          type: string
+        proxy_variant:
+          type: string
+        effect_allele:
+          type: string
+        other_allele:
+          type: string
+        effect_allele_frequency:
+          type: number
+          format: double
+        odds_ratio:
+          type: number
+          format: double
+        beta:
+          type: number
+          format: double
+        beta_unit:
+          type: string
+        ci_lower:
+          type: number
+          format: double
+        ci_upper:
+          type: number
+          format: double
+        standard_error:
+          type: number
+          format: double
+    DiseaseTraitDto:
+      type: object
+      properties:
+        diseaseTraitId:
+          type: string
+        trait:
+          type: string
+        created:
+          $ref: '#/components/schemas/ProvenanceDto'
+        updated:
+          $ref: '#/components/schemas/ProvenanceDto'
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    EfoTraitDto:
+      type: object
+      properties:
+        efoTraitId:
+          type: string
+        trait:
+          type: string
+        uri:
+          type: string
+        shortForm:
+          type: string
+        created:
+          $ref: '#/components/schemas/ProvenanceDto'
+        updated:
+          $ref: '#/components/schemas/ProvenanceDto'
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    Link:
+      type: object
+      properties:
+        rel:
+          type: string
+          xml:
+            attribute: true
+        href:
+          type: string
+          xml:
+            attribute: true
+        hreflang:
+          type: string
+          xml:
+            attribute: true
+        media:
+          type: string
+          xml:
+            attribute: true
+        title:
+          type: string
+          xml:
+            attribute: true
+        type:
+          type: string
+          xml:
+            attribute: true
+        deprecation:
+          type: string
+          xml:
+            attribute: true
+    NoteDto:
+      type: object
+      properties:
+        study_tag:
+          type: string
+        note:
+          type: string
+        note_subject:
+          type: string
+        status:
+          type: string
+    ProvenanceDto:
+      required:
+      - timestamp
+      - user
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserDto'
+        timestamp:
+          type: string
+          format: date-time
+    SampleDto:
+      required:
+      - ancestry_category
+      - country_recruitement
+      - size
+      - stage
+      - study_tag
+      type: object
+      properties:
+        study_tag:
+          type: string
+        note:
+          type: string
+          writeOnly: true
+        size:
+          type: integer
+          format: int32
+        cases:
+          type: integer
+          format: int32
+        controls:
+          type: integer
+          format: int32
+        sample_description:
+          type: string
+        ancestry_category:
+          type: string
+        ancestry:
+          type: string
+        ancestry_description:
+          type: string
+        country_recruitement:
+          type: string
+        caseControlStudy:
+          type: boolean
+        ancestryMethod:
+          type: string
+        stage:
+          type: string
+    StudyDto:
+      required:
+      - study_tag
+      type: object
+      properties:
+        study_tag:
+          type: string
+        studyId:
+          type: string
+        study_accession:
+          type: string
+        genotyping_technology:
+          type: string
+        array_manufacturer:
+          type: string
+        array_information:
+          type: string
+        imputation:
+          type: boolean
+        variant_count:
+          type: integer
+          format: int32
+        sample_description:
+          type: string
+        statistical_model:
+          type: string
+        study_description:
+          type: string
+        trait:
+          type: string
+        efo_trait:
+          type: string
+        background_trait:
+          type: string
+        background_efo_trait:
+          type: string
+        summary_statistics_file:
+          type: string
+        raw_sumstats_file:
+          type: string
+        checksum:
+          type: string
+        summary_statistics_assembly:
+          type: string
+        readme_file:
+          type: string
+        cohort:
+          type: string
+        cohort_id:
+          type: string
+        associations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssociationDto'
+        samples:
+          type: array
+          items:
+            $ref: '#/components/schemas/SampleDto'
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteDto'
+        agreedToCc0:
+          type: boolean
+        diseaseTrait:
+          $ref: '#/components/schemas/DiseaseTraitDto'
+        efoTraits:
+          type: array
+          items:
+            $ref: '#/components/schemas/EfoTraitDto'
+        backgroundEfoTraits:
+          type: array
+          items:
+            $ref: '#/components/schemas/EfoTraitDto'
+        initialSampleDescription:
+          type: string
+        replicateSampleDescription:
+          type: string
+        sumstats_flag:
+          type: boolean
+        pooled_flag:
+          type: boolean
+        gxe_flag:
+          type: boolean
+        submissionId:
+          type: string
+        imputationPanel:
+          type: string
+        imputationSoftware:
+          type: string
+        adjustedCovariates:
+          type: string
+        minor_allele_frequency_lower_limit:
+          type: number
+          format: double
+        sex:
+          type: string
+        coordinateSystem:
+          type: string
+        analysisSoftware:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    UserDto:
+      required:
+      - email
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        nickname:
+          type: string
+        userReference:
+          type: string
+        domains:
+          type: array
+          items:
+            type: string
+    ResourceStudyDto:
+      required:
+      - study_tag
+      type: object
+      properties:
+        study_tag:
+          type: string
+        studyId:
+          type: string
+        study_accession:
+          type: string
+        genotyping_technology:
+          type: string
+        array_manufacturer:
+          type: string
+        array_information:
+          type: string
+        imputation:
+          type: boolean
+        variant_count:
+          type: integer
+          format: int32
+        sample_description:
+          type: string
+        statistical_model:
+          type: string
+        study_description:
+          type: string
+        trait:
+          type: string
+        efo_trait:
+          type: string
+        background_trait:
+          type: string
+        background_efo_trait:
+          type: string
+        summary_statistics_file:
+          type: string
+        raw_sumstats_file:
+          type: string
+        checksum:
+          type: string
+        summary_statistics_assembly:
+          type: string
+        readme_file:
+          type: string
+        cohort:
+          type: string
+        cohort_id:
+          type: string
+        associations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssociationDto'
+        samples:
+          type: array
+          items:
+            $ref: '#/components/schemas/SampleDto'
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteDto'
+        agreedToCc0:
+          type: boolean
+        diseaseTrait:
+          $ref: '#/components/schemas/DiseaseTraitDto'
+        efoTraits:
+          type: array
+          items:
+            $ref: '#/components/schemas/EfoTraitDto'
+        backgroundEfoTraits:
+          type: array
+          items:
+            $ref: '#/components/schemas/EfoTraitDto'
+        initialSampleDescription:
+          type: string
+        replicateSampleDescription:
+          type: string
+        sumstats_flag:
+          type: boolean
+        pooled_flag:
+          type: boolean
+        gxe_flag:
+          type: boolean
+        submissionId:
+          type: string
+        imputationPanel:
+          type: string
+        imputationSoftware:
+          type: string
+        adjustedCovariates:
+          type: string
+        minor_allele_frequency_lower_limit:
+          type: number
+          format: double
+        sex:
+          type: string
+        coordinateSystem:
+          type: string
+        analysisSoftware:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    AuthorDto:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        group:
+          type: string
+        email:
+          type: string
+    BodyOfWorkDto:
+      required:
+      - title
+      type: object
+      properties:
+        bodyOfWorkId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        firstAuthor:
+          $ref: '#/components/schemas/AuthorDto'
+        lastAuthor:
+          $ref: '#/components/schemas/AuthorDto'
+        journal:
+          type: string
+        doi:
+          type: string
+        url:
+          type: string
+        correspondingAuthors:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthorDto'
+        prePrintServer:
+          type: string
+        preprintServerDOI:
+          type: string
+        embargoDate:
+          type: string
+          format: date
+        embargoUntilPublished:
+          type: boolean
+        pmids:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    CorrespondingAuthorDto:
+      required:
+      - authorName
+      type: object
+      properties:
+        authorName:
+          type: string
+        email:
+          type: string
+    CurationStatusDTO:
+      type: object
+      properties:
+        curationStatusId:
+          type: string
+        status:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    CuratorDTO:
+      type: object
+      properties:
+        curatorId:
+          type: string
+        lastName:
+          type: string
+        firstName:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    FileUploadDto:
+      required:
+      - fileName
+      - fileSize
+      - fileUploadId
+      - status
+      type: object
+      properties:
+        fileUploadId:
+          type: string
+        status:
+          type: string
+        type:
+          type: string
+        fileName:
+          type: string
+        fileSize:
+          type: integer
+          format: int64
+        errors:
+          type: array
+          items:
+            type: string
+        summaryStatsStatuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/SummaryStatsStatusDto'
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    LockDetailsDto:
+      required:
+      - lockedBy
+      - status
+      type: object
+      properties:
+        lockedBy:
+          $ref: '#/components/schemas/ProvenanceDto'
+        status:
+          type: string
+    PublicationAuthorDto:
+      type: object
+      properties:
+        fullName:
+          type: string
+        fullNameStandard:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        initials:
+          type: string
+        affiliation:
+          type: string
+        orcid:
+          type: string
+        created:
+          $ref: '#/components/schemas/ProvenanceDto'
+        updated:
+          $ref: '#/components/schemas/ProvenanceDto'
+    PublicationDto:
+      required:
+      - title
+      type: object
+      properties:
+        publicationId:
+          type: string
+        pmid:
+          type: string
+        journal:
+          type: string
+        title:
+          type: string
+        firstAuthor:
+          type: string
+        publicationDate:
+          type: string
+          format: date
+        correspondingAuthor:
+          $ref: '#/components/schemas/CorrespondingAuthorDto'
+        status:
+          type: string
+        created:
+          $ref: '#/components/schemas/ProvenanceDto'
+        updated:
+          $ref: '#/components/schemas/ProvenanceDto'
+        authors:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicationAuthorDto'
+        curationStatus:
+          $ref: '#/components/schemas/CurationStatusDTO'
+        curator:
+          $ref: '#/components/schemas/CuratorDTO'
+        submitter:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        bodyOfWorkId:
+          type: string
+        submissionIds:
+          type: array
+          items:
+            type: string
+    ResourceSubmissionDto:
+      required:
+      - created
+      - date_submitted
+      - metadata_status
+      - submissionId
+      - submission_status
+      - summary_statistics_status
+      type: object
+      properties:
+        submissionId:
+          type: string
+        publication:
+          $ref: '#/components/schemas/PublicationDto'
+        bodyOfWork:
+          $ref: '#/components/schemas/BodyOfWorkDto'
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileUploadDto'
+        globusFolder:
+          type: string
+        globusOriginId:
+          type: string
+        study_count:
+          type: integer
+          format: int32
+        sample_count:
+          type: integer
+          format: int32
+        association_count:
+          type: integer
+          format: int32
+        submission_status:
+          type: string
+        metadata_status:
+          type: string
+        summary_statistics_status:
+          type: string
+        date_submitted:
+          type: string
+          format: date
+        provenanceType:
+          type: string
+        created:
+          $ref: '#/components/schemas/ProvenanceDto'
+        lastUpdated:
+          $ref: '#/components/schemas/ProvenanceDto'
+        editTemplate:
+          $ref: '#/components/schemas/ProvenanceDto'
+        lockDetails:
+          $ref: '#/components/schemas/LockDetailsDto'
+        agreedToCc0:
+          type: boolean
+        opentargets_flag:
+          type: boolean
+        userrequested_flag:
+          type: boolean
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        type:
+          type: string
+    SubmissionDto:
+      required:
+      - created
+      - date_submitted
+      - metadata_status
+      - submissionId
+      - submission_status
+      - summary_statistics_status
+      type: object
+      properties:
+        submissionId:
+          type: string
+        publication:
+          $ref: '#/components/schemas/PublicationDto'
+        bodyOfWork:
+          $ref: '#/components/schemas/BodyOfWorkDto'
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileUploadDto'
+        globusFolder:
+          type: string
+        globusOriginId:
+          type: string
+        study_count:
+          type: integer
+          format: int32
+        sample_count:
+          type: integer
+          format: int32
+        association_count:
+          type: integer
+          format: int32
+        submission_status:
+          type: string
+        metadata_status:
+          type: string
+        summary_statistics_status:
+          type: string
+        date_submitted:
+          type: string
+          format: date
+        provenanceType:
+          type: string
+        created:
+          $ref: '#/components/schemas/ProvenanceDto'
+        lastUpdated:
+          $ref: '#/components/schemas/ProvenanceDto'
+        editTemplate:
+          $ref: '#/components/schemas/ProvenanceDto'
+        lockDetails:
+          $ref: '#/components/schemas/LockDetailsDto'
+        agreedToCc0:
+          type: boolean
+        opentargets_flag:
+          type: boolean
+        userrequested_flag:
+          type: boolean
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        type:
+          type: string
+    SummaryStatsStatusDto:
+      required:
+      - id
+      - status
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        error:
+          type: string
+    ResourceDiseaseTraitDto:
+      type: object
+      properties:
+        diseaseTraitId:
+          type: string
+        trait:
+          type: string
+        created:
+          $ref: '#/components/schemas/ProvenanceDto'
+        updated:
+          $ref: '#/components/schemas/ProvenanceDto'
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    PublicationNotesDto:
+      type: object
+      properties:
+        noteId:
+          type: string
+        publicationId:
+          type: string
+        notes:
+          type: string
+        created:
+          $ref: '#/components/schemas/ProvenanceDto'
+        updated:
+          $ref: '#/components/schemas/ProvenanceDto'
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    ResourcePublicationNotesDto:
+      type: object
+      properties:
+        noteId:
+          type: string
+        publicationId:
+          type: string
+        notes:
+          type: string
+        created:
+          $ref: '#/components/schemas/ProvenanceDto'
+        updated:
+          $ref: '#/components/schemas/ProvenanceDto'
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    ResourceEfoTraitDto:
+      type: object
+      properties:
+        efoTraitId:
+          type: string
+        trait:
+          type: string
+        uri:
+          type: string
+        shortForm:
+          type: string
+        created:
+          $ref: '#/components/schemas/ProvenanceDto'
+        updated:
+          $ref: '#/components/schemas/ProvenanceDto'
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    ResourceFileUploadDto:
+      required:
+      - fileName
+      - fileSize
+      - fileUploadId
+      - status
+      type: object
+      properties:
+        fileUploadId:
+          type: string
+        status:
+          type: string
+        type:
+          type: string
+        fileName:
+          type: string
+        fileSize:
+          type: integer
+          format: int64
+        errors:
+          type: array
+          items:
+            type: string
+        summaryStatsStatuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/SummaryStatsStatusDto'
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    UploadReportWrapper:
+      type: object
+      properties:
+        uploadReport:
+          type: array
+          items:
+            type: string
+            format: byte
+        hasErrors:
+          type: boolean
+    AnalysisDTO:
+      type: object
+      properties:
+        degree:
+          type: number
+          format: double
+        user_term:
+          type: string
+        similar_term:
+          type: string
+    ResourceAnalysisCacheDto:
+      type: object
+      properties:
+        uniqueId:
+          type: string
+        analysisResult:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalysisDTO'
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    PublicationStatusReport:
+      type: object
+      properties:
+        publicationDto:
+          $ref: '#/components/schemas/PublicationDto'
+        pmid:
+          type: string
+        status:
+          type: string
+    FileUploadRequest:
+      type: object
+      properties:
+        multipartFile:
+          type: string
+          format: binary
+        fileProvided:
+          type: boolean
+    FileDto:
+      type: object
+      properties:
+        id:
+          type: string
+        fileName:
+          type: string
+    StudySampleDescPatchRequest:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        GCST:
+          type: string
+        initialSampleDescription:
+          type: string
+        replicateSampleDescription:
+          type: string
+        studyTag:
+          type: string
+    JsonPatch:
+      type: object
+    CurrentVersionSummary:
+      type: object
+      properties:
+        totalStudies:
+          type: integer
+          format: int32
+        totalAcscns:
+          type: integer
+          format: int32
+        totalSamples:
+          type: integer
+          format: int32
+    DiffPropertyObject:
+      type: object
+      properties:
+        property:
+          type: string
+        oldValue:
+          type: object
+        newValue:
+          type: object
+    FileSummaryStats:
+      type: object
+      properties:
+        fileName:
+          type: string
+        fileId:
+          type: string
+    VersionDiffStats:
+      type: object
+      properties:
+        identifier:
+          type: string
+        ascnsAdded:
+          type: integer
+          format: int32
+        ascnsRemoved:
+          type: integer
+          format: int32
+        samplesAdded:
+          type: integer
+          format: int32
+        samplesRemoved:
+          type: integer
+          format: int32
+        studyTagsAdded:
+          type: string
+        studyTagsRemoved:
+          type: string
+        edited:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiffPropertyObject'
+        studies:
+          type: array
+          items:
+            $ref: '#/components/schemas/VersionDiffStats'
+        associations:
+          type: array
+          items:
+            $ref: '#/components/schemas/VersionDiffStats'
+        samples:
+          type: array
+          items:
+            $ref: '#/components/schemas/VersionDiffStats'
+    VersionSummary:
+      type: object
+      properties:
+        currentVersionSummary:
+          $ref: '#/components/schemas/CurrentVersionSummary'
+        versionSummaryStats:
+          $ref: '#/components/schemas/VersionSummaryStats'
+        versionDiffStats:
+          $ref: '#/components/schemas/VersionDiffStats'
+        oldFileDetails:
+          $ref: '#/components/schemas/FileSummaryStats'
+        newFileDetails:
+          $ref: '#/components/schemas/FileSummaryStats'
+    VersionSummaryStats:
+      type: object
+      properties:
+        studiesAdded:
+          type: integer
+          format: int32
+        studiesRemoved:
+          type: integer
+          format: int32
+        ascnsAdded:
+          type: integer
+          format: int32
+        ascnsRemoved:
+          type: integer
+          format: int32
+        samplesAdded:
+          type: integer
+          format: int32
+        samplesRemoved:
+          type: integer
+          format: int32
+        reportedTraitsAdded:
+          type: integer
+          format: int32
+        reportedTraitsRemoved:
+          type: integer
+          format: int32
+        efoTraitsAdded:
+          type: integer
+          format: int32
+        efoTraitsRemoved:
+          type: integer
+          format: int32
+    PagedResourcesAssembler:
+      type: object
+      properties:
+        forceFirstAndLastRels:
+          type: boolean
+          writeOnly: true
+    Pageable:
+      type: object
+      properties:
+        page:
+          minimum: 0
+          type: integer
+          format: int32
+        size:
+          minimum: 1
+          type: integer
+          format: int32
+        sort:
+          type: array
+          items:
+            type: string
+    PageMetadata:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int64
+          xml:
+            attribute: true
+        totalElements:
+          type: integer
+          format: int64
+          xml:
+            attribute: true
+        totalPages:
+          type: integer
+          format: int64
+          xml:
+            attribute: true
+        number:
+          type: integer
+          format: int64
+          xml:
+            attribute: true
+    PagedResourcesStudySampleDescPatchRequest:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        content:
+          type: array
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/StudySampleDescPatchRequest'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      xml:
+        name: pagedEntities
+    PagedResourcesStudyDto:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        content:
+          type: array
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/StudyDto'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      xml:
+        name: pagedEntities
+    SnpStatusReportDto:
+      type: object
+      properties:
+        noApprovedSnps:
+          type: integer
+          format: int32
+        noValidSnps:
+          type: integer
+          format: int32
+    SearchSubmissionDTO:
+      type: object
+      properties:
+        pmid:
+          type: string
+        bowId:
+          type: string
+        metaStatus:
+          type: string
+        ssStatus:
+          type: string
+        submissionStatus:
+          type: string
+        lockStatus:
+          type: string
+    PagedResourcesSubmissionDto:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        content:
+          type: array
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/SubmissionDto'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      xml:
+        name: pagedEntities
+    SearchStudyDTO:
+      type: object
+      properties:
+        efo-trait:
+          type: string
+          writeOnly: true
+        reported-trait:
+          type: string
+          writeOnly: true
+        pmid:
+          type: string
+        submissionId:
+          type: string
+        bowId:
+          type: string
+        sumstatsFlag:
+          type: boolean
+        pooledFlag:
+          type: boolean
+        gxeFlag:
+          type: boolean
+        note:
+          type: string
+        accessionId:
+          type: string
+        efoTrait:
+          type: string
+        reportedTrait:
+          type: string
+    ResourceStudySolrDTO:
+      type: object
+      properties:
+        reportedTrait:
+          type: string
+        efoTraits:
+          type: array
+          items:
+            type: string
+        notes:
+          type: array
+          items:
+            type: string
+        pmid:
+          type: string
+        submissionId:
+          type: string
+        publicationDate:
+          type: string
+          format: date
+        firstAuthor:
+          type: string
+        title:
+          type: string
+        sumstatsFlag:
+          type: boolean
+        pooledFlag:
+          type: boolean
+        gxeFlag:
+          type: boolean
+        accessionId:
+          type: string
+        bowId:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    PagedResourcesDiseaseTraitDto:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        content:
+          type: array
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/DiseaseTraitDto'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      xml:
+        name: pagedEntities
+    SearchPublicationDTO:
+      type: object
+      properties:
+        pmid:
+          type: string
+        curator:
+          type: string
+        curationStatus:
+          type: string
+        title:
+          type: string
+        submitter:
+          type: string
+        firstAuthor:
+          type: string
+    PagedResourcesPublicationDto:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        content:
+          type: array
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/PublicationDto'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      xml:
+        name: pagedEntities
+    PagedResourcesPublicationNotesDto:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        content:
+          type: array
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/PublicationNotesDto'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      xml:
+        name: pagedEntities
+    MatchPublicationReportDTO:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        submissionID:
+          type: string
+        pubMedID:
+          type: string
+        author:
+          type: string
+        title:
+          type: string
+        doi:
+          type: string
+        cosScore:
+          type: string
+        levDistance:
+          type: string
+        jwScore:
+          type: string
+    PagedResourcesMatchPublicationReportDTO:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        content:
+          type: array
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/MatchPublicationReportDTO'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      xml:
+        name: pagedEntities
+    ResourcePublicationDto:
+      required:
+      - title
+      type: object
+      properties:
+        publicationId:
+          type: string
+        pmid:
+          type: string
+        journal:
+          type: string
+        title:
+          type: string
+        firstAuthor:
+          type: string
+        publicationDate:
+          type: string
+          format: date
+        correspondingAuthor:
+          $ref: '#/components/schemas/CorrespondingAuthorDto'
+        status:
+          type: string
+        created:
+          $ref: '#/components/schemas/ProvenanceDto'
+        updated:
+          $ref: '#/components/schemas/ProvenanceDto'
+        authors:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicationAuthorDto'
+        curationStatus:
+          $ref: '#/components/schemas/CurationStatusDTO'
+        curator:
+          $ref: '#/components/schemas/CuratorDTO'
+        submitter:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        bodyOfWorkId:
+          type: string
+        submissionIds:
+          type: array
+          items:
+            type: string
+    ResourceSolrPublicationDTO:
+      type: object
+      properties:
+        pmid:
+          type: string
+        title:
+          type: string
+        firstAuthor:
+          type: string
+        status:
+          type: string
+        journal:
+          type: string
+        publicationDate:
+          type: string
+          format: date
+        correspondingAuthor:
+          type: string
+        curator:
+          type: string
+        curationStatus:
+          type: string
+        submitter:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    SolrPublicationDTO:
+      type: object
+      properties:
+        pmid:
+          type: string
+        title:
+          type: string
+        firstAuthor:
+          type: string
+        status:
+          type: string
+        journal:
+          type: string
+        publicationDate:
+          type: string
+          format: date
+        correspondingAuthor:
+          type: string
+        curator:
+          type: string
+        curationStatus:
+          type: string
+        submitter:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    PagedResourcesSolrPublicationDTO:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        content:
+          type: array
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/SolrPublicationDTO'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      xml:
+        name: pagedEntities
+    CommitMetadata:
+      type: object
+      properties:
+        author:
+          type: string
+        properties:
+          type: array
+          items:
+            type: string
+        commitDate:
+          type: string
+        id:
+          type: number
+          format: double
+    ElementChange:
+      type: object
+      properties:
+        elementChangeType:
+          type: string
+        index:
+          type: integer
+          format: int32
+        value:
+          type: object
+        leftValue:
+          type: object
+        rightValue:
+          type: object
+    GlobalId:
+      type: object
+      properties:
+        entity:
+          type: string
+        cdoId:
+          type: string
+    JaversChangeWrapper:
+      type: object
+      properties:
+        changeType:
+          type: string
+        globalId:
+          $ref: '#/components/schemas/GlobalId'
+        commitMetadata:
+          $ref: '#/components/schemas/CommitMetadata'
+        property:
+          type: string
+        left:
+          type: object
+        right:
+          type: object
+        elementChanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/ElementChange'
+    PagedResourcesEfoTraitDto:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        content:
+          type: array
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/EfoTraitDto'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      xml:
+        name: pagedEntities
+    PagedResourcesCuratorDTO:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        content:
+          type: array
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/CuratorDTO'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      xml:
+        name: pagedEntities
+    ResourceCuratorDTO:
+      type: object
+      properties:
+        curatorId:
+          type: string
+        lastName:
+          type: string
+        firstName:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+    PagedResourcesCurationStatusDTO:
+      type: object
+      properties:
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'
+        content:
+          type: array
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/CurationStatusDTO'
+        page:
+          $ref: '#/components/schemas/PageMetadata'
+      xml:
+        name: pagedEntities
+    ResourceCurationStatusDTO:
+      type: object
+      properties:
+        curationStatusId:
+          type: string
+        status:
+          type: string
+        links:
+          type: array
+          xml:
+            name: link
+            namespace: http://www.w3.org/2005/Atom
+          items:
+            $ref: '#/components/schemas/Link'

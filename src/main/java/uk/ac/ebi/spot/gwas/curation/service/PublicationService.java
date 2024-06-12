@@ -36,4 +36,10 @@ public interface PublicationService {
     void linkSubmission(String pmid, String submissionId);
 
     void fillSubmitterForOldPublications();
+
+    Publication getPublicationFromPmid(String pmid);
+
+    String getCurationStatusEventDetails(PublicationDto publicationDto);
+
+    String getCuratorEventDetails(PublicationDto publicationDto);
 }

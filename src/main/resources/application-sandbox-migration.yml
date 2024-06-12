@@ -93,6 +93,13 @@ goci:
       search-reported-traits: /api/v1/disease-traits/search
 
 
+audit:
+  service:
+    url: http://gwas-audit-service-dev:8080
+  endpoints:
+    pub-audit-entries: /publication-audit-entries
+    publication: /v1/publications
+
 rabbitmq:
   queue-name: study_change_sandbox
   exchange-name: study_change_exchange_sandbox

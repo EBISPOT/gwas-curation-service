@@ -20,9 +20,7 @@ import uk.ac.ebi.spot.gwas.curation.rabbitmq.StudyIngestPublisher;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
-import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
-import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyRabbitMessageAssembler;
-import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.*;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
@@ -81,6 +79,12 @@ public class StudiesServiceImpl implements StudiesService {
 
     @Autowired
     StudyRabbitMessageAssembler studyRabbitMessageAssembler;
+
+    @Autowired
+    DiseaseTraitDtoAssembler diseaseTraitDtoAssembler;
+
+    @Autowired
+    EfoTraitDtoAssembler efoTraitDtoAssembler;
 
     @Override
     public Study updateStudies(Study study) {
@@ -574,6 +578,34 @@ public class StudiesServiceImpl implements StudiesService {
         return studyRepository.readByIdIn(ids);
     }
 
+    public String diffDiseaseTrait(String submissionId, String studyTag, String oldDiseaseTraitId, String newDiseaseTraitId) {
+      Optional<DiseaseTrait> optOldDiseaseTrait =  diseaseTraitService.getDiseaseTrait(oldDiseaseTraitId);
+      DiseaseTraitDto oldDiseaseTraitDto = optOldDiseaseTrait.isPresent() ?
+              diseaseTraitDtoAssembler.assemble(optOldDiseaseTrait.get())
+                : null;
+      Optional<DiseaseTrait> optNewDiseaseTrait =  diseaseTraitService.getDiseaseTrait(newDiseaseTraitId);
+      DiseaseTraitDto newDiseaseTraitDto = optNewDiseaseTrait.isPresent() ?
+                diseaseTraitDtoAssembler.assemble(optNewDiseaseTrait.get())
+                : null;
+      return String.format("Submission Id %s Study Tag %s update from  %s to %s", submissionId, studyTag, oldDiseaseTraitDto.getTrait(), newDiseaseTraitDto.getTrait());
+    }
 
+    public String diffEFOTrait(String submissionId, String studyTag, List<String> oldEFOTraitIds, List<String> newEFOTraitIds) {
+
+      String oldEFOTraits =  oldEFOTraitIds.stream().map(id -> efoTraitService.getEfoTrait(id))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(EfoTrait::getTrait)
+                .collect(Collectors.joining("|"));
+
+        String newEFOTraits =  newEFOTraitIds.stream().map(id -> efoTraitService.getEfoTrait(id))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(EfoTrait::getTrait)
+                .collect(Collectors.joining("|"));
+
+
+        return String.format("Submission Id %s Study Tag %s update from  %s to %s", submissionId, studyTag, oldEFOTraits, newEFOTraits);
+    }
 
 }

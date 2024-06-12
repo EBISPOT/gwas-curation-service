@@ -55,9 +55,9 @@ gwas-curation-service:
 
 audit:
   service:
-    url: http://gwas-audit-service:8080
+    url: http://localhost:8085
   endpoints:
-    pub-audit-entries: /v1/publication-audit-entries
+    pub-audit-entries: /publication-audit-entries
     publication: /v1/publications
 
 
@@ -87,5 +87,3 @@ rabbitmq:
     queue-name: publication-sandbox
     exchange-name: publication-exchange-sandbox
     routing-key: publication-route-sandbox
-
-

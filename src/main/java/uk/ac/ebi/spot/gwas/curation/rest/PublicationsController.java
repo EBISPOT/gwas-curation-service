@@ -18,10 +18,12 @@ import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.MatchPublicationReportDTOAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.JWTService;
+import uk.ac.ebi.spot.gwas.curation.service.PublicationAuditService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
+import uk.ac.ebi.spot.gwas.deposition.audit.constants.PublicationEventType;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
@@ -35,6 +37,7 @@ import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_PUBLICATIONS)
@@ -58,12 +61,25 @@ public class PublicationsController {
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
 
+
+    @Autowired
+    PublicationAuditService publicationAuditService;
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/{pmids}",produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     public List<PublicationStatusReport> createPublication(@PathVariable List<String> pmids, HttpServletRequest request ) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        return publicationService.createPublication(pmids, user);
+        String pubmedIds = pmids.stream().collect(Collectors.joining(","));
+        String publicationEvent = String.format("Pmid-%s", pubmedIds);
+        List<PublicationStatusReport> statusReports = publicationService.createPublication(pmids, user);
+        pmids.forEach(pmid -> {
+          Publication publication =  publicationService.getPublicationFromPmid(pmid);
+            publicationAuditService.createAuditEvent(PublicationEventType.PMID_CREATED.name(), publication.getId(), publicationEvent,
+                    true, user);
+        });
+
+        return statusReports;
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -82,7 +98,14 @@ public class PublicationsController {
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     public PublicationDto patchPublication(@PathVariable String pmid, @RequestBody PublicationDto publicationDto, HttpServletRequest request) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        return publicationService.patchPublication(pmid, publicationDto, user);
+        PublicationDto updatedPublicationDto = publicationService.patchPublication(pmid, publicationDto, user);
+        String curatorEvent = publicationService.getCuratorEventDetails(publicationDto);
+        publicationAuditService.createAuditEvent(PublicationEventType.CURATED_UPDATED.name(),
+                publicationDto.getPublicationId(), curatorEvent, true,  user);
+        String curationStatusEvent = publicationService.getCurationStatusEventDetails(publicationDto);
+        publicationAuditService.createAuditEvent(PublicationEventType.CURATION_STATUS_UPDATED.name(),
+                publicationDto.getPublicationId(), curationStatusEvent, true,  user);
+        return updatedPublicationDto;
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -121,9 +144,9 @@ public class PublicationsController {
         }
     }
 
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/{pmid}/link-submission")
-    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public void linkSubmission(@PathVariable String pmid, @RequestParam String submissionId) {
         publicationService.linkSubmission(pmid, submissionId);
     }

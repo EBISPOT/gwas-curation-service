@@ -178,12 +178,6 @@ public class SubmissionServiceImpl implements SubmissionService {
 
         Optional.ofNullable(submissionDto.getSubmissionStatus()).ifPresent(status -> submission.setOverallStatus(submissionDto.getSubmissionStatus()));
 
-        if (submissionDto.getOpenTargetsFlag() != null) {
-            submission.setOpenTargetsFlag(submissionDto.getOpenTargetsFlag());
-        }
-        if (submissionDto.getUserRequestedFlag() != null) {
-            submission.setUserRequestedFlag(submissionDto.getUserRequestedFlag());
-        }
         return submissionRepository.save(submission);
 
     }

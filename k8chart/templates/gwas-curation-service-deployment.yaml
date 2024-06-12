@@ -55,6 +55,21 @@ spec:
             secretKeyRef:
               name: {{.Values.image.env.rabbitSecretsName}}
               key: {{.Values.image.env.rabbitSecretsKey}}
+        - name: FTP_LINK
+          valueFrom:
+            secretKeyRef:
+              name: {{.Values.image.env.secretsName}}
+              key: {{.Values.image.env.ftpSecretsLink}}
+        - name: FTP_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{.Values.image.env.secretsName}}
+              key: {{.Values.image.env.ftpSecretsUser}}
+        - name: FTP_PASS
+          valueFrom:
+            secretKeyRef:
+              name: {{.Values.image.env.secretsName}}
+              key: {{.Values.image.env.ftpSecretsPwd}}
       volumes:
       - name: log
         persistentVolumeClaim:
