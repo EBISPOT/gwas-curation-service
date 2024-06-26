@@ -6,6 +6,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.LiteratureFile;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.LiteratureFileDto;
 import java.util.List;
+import java.util.Map;
 
 public interface LiteratureFileService {
 
@@ -13,5 +14,8 @@ public interface LiteratureFileService {
 
     LiteratureFile getLiteratureFile(String fileId, String pubmedId);
 
+    Map<String, Object> deleteLiteratureFile(LiteratureFile literatureFile);
+
     Page<LiteratureFile> getLiteratureFiles(Pageable pageable, String pubmedId);
+
 }

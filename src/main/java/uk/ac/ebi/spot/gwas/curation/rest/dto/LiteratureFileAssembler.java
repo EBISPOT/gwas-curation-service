@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 import uk.ac.ebi.spot.gwas.deposition.domain.LiteratureFile;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.LiteratureFileDto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class LiteratureFileAssembler implements ResourceAssembler<LiteratureFile, Resource<LiteratureFileDto>> {
 
@@ -14,10 +17,27 @@ public class LiteratureFileAssembler implements ResourceAssembler<LiteratureFile
 
         LiteratureFileDto literatureFileDto = LiteratureFileDto.builder()
                 .id(literatureFile.getId())
-                .fileName(literatureFile.getName())
-                .createdBy(literatureFile.getCreatedBy())
-                .createDate(literatureFile.getCreateDate()).build();
+                .originalFileName(literatureFile.getOriginalFileName())
+                .onDiskFileName(literatureFile.getOnDiskFileName())
+                .createDate(literatureFile.getCreated().getTimestamp().toDate())
+                .createdBy(literatureFile.getCreated().getUserId())
+                .build();
         return new Resource<>(literatureFileDto);
     }
+
+
+    public static List<LiteratureFileDto> assemble(List<LiteratureFile> literatureFiles) {
+        List<LiteratureFileDto> fileDtoList = new ArrayList<>();
+        literatureFiles.forEach(literatureFile -> fileDtoList.add(
+                LiteratureFileDto.builder()
+                        .id(literatureFile.getId())
+                        .originalFileName(literatureFile.getOriginalFileName())
+                        .onDiskFileName(literatureFile.getOnDiskFileName())
+                        .createDate(literatureFile.getCreated().getTimestamp().toDate())
+                        .createdBy(literatureFile.getCreated().getUserId())
+                        .build()));
+        return fileDtoList;
+    }
+
 
 }
