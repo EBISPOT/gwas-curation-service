@@ -53,4 +53,8 @@ public class UserServiceImpl implements UserService {
         log.info("Returning user: {}", userOpt.get().getName());
         return userOpt.get();
     }
+
+    public User findUserDetailsUsingEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email).orElse(null);
+    }
 }
