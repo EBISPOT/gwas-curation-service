@@ -471,4 +471,22 @@ public class PublicationServiceImpl implements PublicationService {
         studyRepository.saveAll(studies);
     }
 
+    public Publication getPublicationFromPmid(String pmid) {
+        return publicationRepository.findByPmid(pmid).orElse(null);
+    }
+
+
+    public String getCurationStatusEventDetails(PublicationDto publicationDto){
+        if (publicationDto.getCurationStatus() != null ) {
+            return String.format("Publication %s %s",publicationDto.getPublicationId(),publicationDto.getCurationStatus().getStatus());
+        }
+        return null;
+    }
+
+    public String getCuratorEventDetails(PublicationDto publicationDto) {
+        if (publicationDto.getCurator() != null ) {
+            return String.format("Publication %s %s %s",publicationDto.getPublicationId(),publicationDto.getCurator().getFirstName(), publicationDto.getCurator().getLastName());
+        }
+        return null;
+    }
 }

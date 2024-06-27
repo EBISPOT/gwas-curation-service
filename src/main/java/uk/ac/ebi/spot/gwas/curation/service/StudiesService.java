@@ -1,5 +1,6 @@
 package uk.ac.ebi.spot.gwas.curation.service;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import uk.ac.ebi.spot.gwas.curation.solr.domain.StudySolr;
@@ -21,6 +22,10 @@ public interface StudiesService {
     Study getStudyByAccession(String accessionId, String submissionId);
 
     Study updateStudies(Study study);
+
+    String diffDiseaseTrait(String submissionId, String studyTag, String oldDiseaseTraitId, String newDiseaseTraitId);
+
+    String diffEFOTrait(String submissionId, String studyTag, List<String> oldEFOTraitIds, List<String> newEFOTraitIds);
 
     public Page<Study> getStudies(String submissionId,  Pageable page);
 

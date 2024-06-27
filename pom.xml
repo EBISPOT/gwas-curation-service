@@ -190,7 +190,7 @@
         <dependency>
             <groupId>uk.ac.ebi.spot.gwasdepo</groupId>
             <artifactId>gwasdepo-commons</artifactId>
-            <version>1.0.42-SNAPSHOT</version>
+            <version>1.0.45-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -272,6 +272,10 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

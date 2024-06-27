@@ -30,6 +30,15 @@ public class RestInteractionConfig {
     @Value("${gwas-ingest-service.endpoints.submission-envelope}")
     private String submissionEnvelopeEndpoint;
 
+    @Value("${audit.service.url}")
+    private String auditServiceUri;
+
+    @Value("${audit.endpoints.publication}")
+    private String  auditServicePublicationEndpoint;
+
+    @Value("${audit.endpoints.pub-audit-entries}")
+    private String auditServicePubAuditEntriesEndpoint;
+
     public String getDepositionServiceUrl() {
         return depositionServiceUrl;
     }
@@ -56,5 +65,17 @@ public class RestInteractionConfig {
 
     public String getSubmissionEnvelopeEndpoint() {
         return submissionEnvelopeEndpoint;
+    }
+
+    public String getAuditServiceUri() {
+        return auditServiceUri;
+    }
+
+    public String getAuditServicePublicationEndpoint() {
+        return auditServicePublicationEndpoint;
+    }
+
+    public String getAuditServicePubAuditEntriesEndpoint() {
+        return auditServicePubAuditEntriesEndpoint;
     }
 }

@@ -12,7 +12,6 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,17 +19,21 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
-import uk.ac.ebi.spot.gwas.curation.rabbitmq.MetadataYmlUpdatePublisher;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
-import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
+import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
+import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
+import uk.ac.ebi.spot.gwas.deposition.audit.constants.PublicationEventType;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
+import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudySampleDescPatchRequest;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,6 +55,9 @@ public class StudiesController {
     StudyDtoAssembler studyDtoAssembler;
 
     @Autowired
+    DiseaseTraitService diseaseTraitService;
+
+    @Autowired
     StudySampleDescPatchRequestAssembler studySampleDescPatchRequestAssembler;
 
     @Autowired
@@ -59,6 +65,13 @@ public class StudiesController {
 
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
+    @Autowired
+    UserService userService;
+    @Autowired
+    JWTService jwtService;
+
+    @Autowired
+    PublicationAuditService publicationAuditService;
 
 
     @ResponseStatus(HttpStatus.OK)
@@ -100,26 +113,51 @@ public class StudiesController {
     public  Resource<StudyDto> updateStudies(@PathVariable String studyId, @PathVariable String submissionId, @Valid @RequestBody StudyDto studyDto, HttpServletRequest request) {
         List<String> traitIds = null;
         List<String> efoTraitIds = null;
-        if(studiesService.getStudy(studyId) != null ) {
+        List<String> oldEfoTraitIds = null;
+        Study oldStudy = studiesService.getStudy(studyId);
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
+        if( oldStudy != null ) {
             log.info("Disease Traits from request:" + studyDto.getDiseaseTrait());
             /*if (studyDto.getDiseaseTraits() != null && !studyDto.getDiseaseTraits().isEmpty()) {
                 traitIds = studiesService.getTraitsIDsFromDB(studyDto.getDiseaseTraits(), studyId);
             }*/
             Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyId);
+
+
             if (studyDto.getDiseaseTrait() != null ) {
 
                 study.setDiseaseTrait(studyDto.getDiseaseTrait().getDiseaseTraitId());
             }
+            String diseaseTraitEvent = studiesService.diffDiseaseTrait(submissionId, oldStudy.getStudyTag()
+                    , oldStudy.getDiseaseTrait(), study.getDiseaseTrait()); // Added to handle event tracking and compare the reported trait change
+            log.info("diseaseTraitEvent is {}"+diseaseTraitEvent);
+            if(oldStudy.getEfoTraits() != null && !oldStudy.getEfoTraits().isEmpty()) {
+                oldEfoTraitIds = study.getEfoTraits();
+            }
+
             if (studyDto.getEfoTraits() != null && !studyDto.getEfoTraits().isEmpty()) {
                 efoTraitIds = studyDto.getEfoTraits().stream().map(EfoTraitDto::getEfoTraitId).collect(Collectors.toList());
                 study.setEfoTraits(efoTraitIds);
             }
+            String efoTraitEvent = studiesService.diffEFOTrait(submissionId, oldStudy.getStudyTag(),
+                    oldEfoTraitIds, efoTraitIds );
+            log.info("efoTraitEvent is {}",efoTraitEvent);
+
             if (studyDto.getBackgroundEfoTraits() != null) {
                 efoTraitIds = studyDto.getBackgroundEfoTraits().stream().map(EfoTraitDto::getEfoTraitId).collect(Collectors.toList());
                 study.setBackgroundEfoTraits(efoTraitIds);
             }
 
-            Study studyUpdated = studiesService.updateStudies(study);
+            Study studyUpdated = studiesService.updateStudies(study);  // Added to handle event tracking and compare the reported trait change
+
+            publicationAuditService.createAuditEvent(PublicationEventType.TRAIT_UPDATED.name(),
+                    submissionId, diseaseTraitEvent,
+                    false,
+                    user);
+            publicationAuditService.createAuditEvent(PublicationEventType.TRAIT_UPDATED.name(),
+                    submissionId, efoTraitEvent,
+                    false,
+                    user);
             return studyDtoAssembler.toResource(studyUpdated);
         } else {
             throw new EntityNotFoundException("Study not found "+ studyId);
@@ -167,10 +205,16 @@ public class StudiesController {
     @PatchMapping(value = "/{submissionId}"+DepositionCurationConstants.API_STUDIES+DepositionCurationConstants.API_SAMPLEDESCRIPTION,produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     public List<StudySampleDescPatchRequest> patchSampleDescription(@PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID) String submissionId,
-                                                                    @Valid @RequestBody List<StudySampleDescPatchRequest> studySampleDescPatchRequests){
-
+                                                                    @Valid @RequestBody List<StudySampleDescPatchRequest> studySampleDescPatchRequests,
+                                                                    HttpServletRequest request) {
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         List<StudySampleDescPatchRequest> sampleDescPatchRequests = studiesService.updateSampleDescription(studySampleDescPatchRequests, submissionId);
         studiesService.sendMetaDataMessageToQueue(submissionId);
+        String submissionEvent = String.format("SubmissionId-%s",submissionId);
+        publicationAuditService.createAuditEvent(PublicationEventType.SAMPLE_UPDATED.name(),
+                submissionId, submissionEvent,
+                false,
+                user);
         return sampleDescPatchRequests;
 
     }

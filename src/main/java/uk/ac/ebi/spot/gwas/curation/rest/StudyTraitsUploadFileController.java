@@ -12,10 +12,12 @@ import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.JWTService;
+import uk.ac.ebi.spot.gwas.curation.service.PublicationAuditService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
+import uk.ac.ebi.spot.gwas.deposition.audit.constants.PublicationEventType;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
@@ -45,6 +47,9 @@ public class StudyTraitsUploadFileController {
     @Autowired
     FileHandler fileHandler;
 
+    @Autowired
+    PublicationAuditService publicationAuditService;
+
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_MULTI_TRAITS + "/files")
     @PreAuthorize("hasRole('self.GWAS_Curator')")
@@ -53,12 +58,15 @@ public class StudyTraitsUploadFileController {
         if(multipartFile.isEmpty()){
             throw new FileProcessingException("File not found");
         }
-        userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         MultiTraitStudyMappingDto multiTraitStudyMappingDto = new MultiTraitStudyMappingDto("","","","", "");
         List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = (List<MultiTraitStudyMappingDto>) fileHandler.disassemble(multipartFile, MultiTraitStudyMappingDto.class,  multiTraitStudyMappingDto);
         //List<MultiTraitStudyMappingDto> multiTraitStudyMappingDtos = studyPatchRequestAssembler.disassembleForMultiTraitMapping(multipartFile);
         UploadReportWrapper traitUploadReport = studiesService.updateMultiTraitsForStudies(multiTraitStudyMappingDtos, submissionId);
         studiesService.sendMetaDataMessageToQueue(submissionId);
+        String uploadTraitsEvent = String.format("SubmissionId-%s Bulk Upload", submissionId);
+        publicationAuditService.createAuditEvent(PublicationEventType.TRAIT_UPDATED.name(), submissionId,
+                uploadTraitsEvent, false, user); // Added to handle event tracking
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         return new HttpEntity<>(traitUploadReport, responseHeaders);
@@ -91,12 +99,16 @@ public class StudyTraitsUploadFileController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('self.GWAS_Curator')")
-    public HttpEntity<byte[]> uploadSampleDescriptions(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile) {
+    public HttpEntity<byte[]> uploadSampleDescriptions(@PathVariable String submissionId, @RequestParam MultipartFile multipartFile, HttpServletRequest request) {
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         StudySampleDescPatchWrapper studySampleDescPatchWrapper = new StudySampleDescPatchWrapper("","","","");
         List<StudySampleDescPatchWrapper>  sampleDescPatchWrapperRequests =  (List<StudySampleDescPatchWrapper>) fileHandler.disassemble(multipartFile, StudySampleDescPatchWrapper.class,studySampleDescPatchWrapper);
         List<StudySampleDescPatchRequest> sampleDescPatchRequests = sampleDescPatchWrapperRequests.stream().map(studySampleDescPatchRequestAssembler::disassembleWrapper).collect(Collectors.toList());
         byte[] result = studiesService.uploadSampleDescriptions(sampleDescPatchRequests, submissionId);
         studiesService.sendMetaDataMessageToQueue(submissionId);
+        String sampleUpdateEvent = String.format("SubmissionId-%s Bulk Upload", submissionId);
+        publicationAuditService.createAuditEvent(PublicationEventType.SAMPLE_UPDATED.name(), submissionId,
+                sampleUpdateEvent, false, user); // Added to handle event tracking
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=studySampleDescriptions_Extract");
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);

@@ -53,6 +53,14 @@ gwas-curation-service:
     endpoints:
       javers-submission: /v1/javers
 
+audit:
+  service:
+    url: http://localhost:8085
+  endpoints:
+    pub-audit-entries: /publication-audit-entries
+    publication: /v1/publications
+
+
 gwas-ingest-service:
   url: http://localhost:8082/gwas/ingest/api
   endpoints:
