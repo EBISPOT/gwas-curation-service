@@ -12,7 +12,7 @@ server:
 logging:
   level:
     org:
-      springframework: DEBUG
+      springframework: ERROR
 
 spring:
   rabbitmq:
@@ -31,7 +31,7 @@ gwas-curation:
   auth:
     enabled: ${auth-enable}
     curators:
-      auth-mechanism: EMAIL_WHITELISTING
+      auth-mechanism: JWT_DOMAIN
   solr:
     enabled: true
 
@@ -48,7 +48,7 @@ gwas-deposition-service:
 
 
 gwas-curation-service:
-  url: http://localhost:8080
+  url: http://localhost:8081/gwas/depo-curation/api
   javers:
     endpoints:
       javers-submission: /v1/javers
@@ -67,7 +67,7 @@ gwas-ingest-service:
     submission-envelope: /v1/submission-envelopes
 
 goci:
-  url: http://localhost:8080
+  url: http://localhost:8081
   diseaseTraits:
     endpoints:
       reported-traits-upload: /api/v1/disease-traits/uploads

@@ -121,15 +121,18 @@ public class StudiesController {
             /*if (studyDto.getDiseaseTraits() != null && !studyDto.getDiseaseTraits().isEmpty()) {
                 traitIds = studiesService.getTraitsIDsFromDB(studyDto.getDiseaseTraits(), studyId);
             }*/
+            String diseaseTraitEvent = "";
+            String efoTraitEvent = "";
             Study study = studyDtoAssembler.disassembleForExsitingStudy(studyDto, studyId);
 
 
             if (studyDto.getDiseaseTrait() != null ) {
 
                 study.setDiseaseTrait(studyDto.getDiseaseTrait().getDiseaseTraitId());
+                diseaseTraitEvent = studiesService.diffDiseaseTrait(submissionId, oldStudy.getStudyTag()
+                        , oldStudy.getDiseaseTrait(), study.getDiseaseTrait());
             }
-            String diseaseTraitEvent = studiesService.diffDiseaseTrait(submissionId, oldStudy.getStudyTag()
-                    , oldStudy.getDiseaseTrait(), study.getDiseaseTrait()); // Added to handle event tracking and compare the reported trait change
+            // Added to handle event tracking and compare the reported trait change
             log.info("diseaseTraitEvent is {}"+diseaseTraitEvent);
             if(oldStudy.getEfoTraits() != null && !oldStudy.getEfoTraits().isEmpty()) {
                 oldEfoTraitIds = study.getEfoTraits();
@@ -138,9 +141,10 @@ public class StudiesController {
             if (studyDto.getEfoTraits() != null && !studyDto.getEfoTraits().isEmpty()) {
                 efoTraitIds = studyDto.getEfoTraits().stream().map(EfoTraitDto::getEfoTraitId).collect(Collectors.toList());
                 study.setEfoTraits(efoTraitIds);
+                efoTraitEvent = studiesService.diffEFOTrait(submissionId, oldStudy.getStudyTag(),
+                        oldEfoTraitIds, efoTraitIds );
             }
-            String efoTraitEvent = studiesService.diffEFOTrait(submissionId, oldStudy.getStudyTag(),
-                    oldEfoTraitIds, efoTraitIds );
+
             log.info("efoTraitEvent is {}",efoTraitEvent);
 
             if (studyDto.getBackgroundEfoTraits() != null) {
@@ -149,15 +153,19 @@ public class StudiesController {
             }
 
             Study studyUpdated = studiesService.updateStudies(study);  // Added to handle event tracking and compare the reported trait change
+            if( !diseaseTraitEvent.isEmpty() ) {
+                publicationAuditService.createAuditEvent(PublicationEventType.TRAIT_UPDATED.name(),
+                        submissionId, diseaseTraitEvent,
+                        false,
+                        user);
+            }
 
-            publicationAuditService.createAuditEvent(PublicationEventType.TRAIT_UPDATED.name(),
-                    submissionId, diseaseTraitEvent,
-                    false,
-                    user);
-            publicationAuditService.createAuditEvent(PublicationEventType.TRAIT_UPDATED.name(),
-                    submissionId, efoTraitEvent,
-                    false,
-                    user);
+            if( !efoTraitEvent.isEmpty() ) {
+                publicationAuditService.createAuditEvent(PublicationEventType.TRAIT_UPDATED.name(),
+                        submissionId, efoTraitEvent,
+                        false,
+                        user);
+            }
             return studyDtoAssembler.toResource(studyUpdated);
         } else {
             throw new EntityNotFoundException("Study not found "+ studyId);

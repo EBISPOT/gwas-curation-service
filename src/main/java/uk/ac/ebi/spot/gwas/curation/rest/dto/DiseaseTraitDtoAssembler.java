@@ -56,14 +56,14 @@ public class DiseaseTraitDtoAssembler implements ResourceAssembler<DiseaseTrait,
                 .updated(diseaseTrait.getUpdated() != null ? ProvenanceDtoAssembler.assemble(diseaseTrait.getUpdated(),
                         userService.getUser(diseaseTrait.getUpdated().getUserId())) : null)
                 .build();
-        log.info("DiseaseTraitDtoAssembler Buider->"+diseaseTraitDTO);
+        //log.info("DiseaseTraitDtoAssembler Buider->"+diseaseTraitDTO);
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(
                 ControllerLinkBuilder.methodOn(DiseaseTraitController.class).getDiseaseTrait(diseaseTrait.getId()));
         Resource<DiseaseTraitDto> resource = new Resource<>(diseaseTraitDTO);
         //resource.add(controllerLinkBuilder.withSelfRel());
         resource.add(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).withRel(DepositionCurationConstants.LINKS_PARENT));
 
-        log.info("DiseaseTraitDtoAssembler Resource->"+resource);
+        //log.info("DiseaseTraitDtoAssembler Resource->"+resource);
         return resource;
     }
 

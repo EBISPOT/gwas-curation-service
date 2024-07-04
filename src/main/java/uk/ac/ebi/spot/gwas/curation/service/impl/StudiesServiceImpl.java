@@ -579,24 +579,35 @@ public class StudiesServiceImpl implements StudiesService {
     }
 
     public String diffDiseaseTrait(String submissionId, String studyTag, String oldDiseaseTraitId, String newDiseaseTraitId) {
-      Optional<DiseaseTrait> optOldDiseaseTrait =  diseaseTraitService.getDiseaseTrait(oldDiseaseTraitId);
-      DiseaseTraitDto oldDiseaseTraitDto = optOldDiseaseTrait.isPresent() ?
-              diseaseTraitDtoAssembler.assemble(optOldDiseaseTrait.get())
-                : null;
+        Optional<DiseaseTrait> optOldDiseaseTrait;
+        DiseaseTraitDto oldDiseaseTraitDto = null;
+        if(oldDiseaseTraitId != null ) {
+            optOldDiseaseTrait = diseaseTraitService.getDiseaseTrait(oldDiseaseTraitId);
+            oldDiseaseTraitDto = optOldDiseaseTrait.isPresent() ?
+                    diseaseTraitDtoAssembler.assemble(optOldDiseaseTrait.get())
+                    : null;
+        }
       Optional<DiseaseTrait> optNewDiseaseTrait =  diseaseTraitService.getDiseaseTrait(newDiseaseTraitId);
       DiseaseTraitDto newDiseaseTraitDto = optNewDiseaseTrait.isPresent() ?
                 diseaseTraitDtoAssembler.assemble(optNewDiseaseTrait.get())
                 : null;
-      return String.format("Submission Id %s Study Tag %s update from  %s to %s", submissionId, studyTag, oldDiseaseTraitDto.getTrait(), newDiseaseTraitDto.getTrait());
+      if(oldDiseaseTraitId != null) {
+          return String.format("Submission Id %s Study Tag %s Reported Trait updated from  %s to %s", submissionId, studyTag, oldDiseaseTraitDto.getTrait(), newDiseaseTraitDto.getTrait());
+      } else {
+          return String.format("Submission Id %s Study Tag %s Reported Trait updated to  %s", submissionId, studyTag, newDiseaseTraitDto.getTrait());
+      }
     }
 
     public String diffEFOTrait(String submissionId, String studyTag, List<String> oldEFOTraitIds, List<String> newEFOTraitIds) {
+        String oldEFOTraits = null;
 
-      String oldEFOTraits =  oldEFOTraitIds.stream().map(id -> efoTraitService.getEfoTrait(id))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(EfoTrait::getTrait)
-                .collect(Collectors.joining("|"));
+        if(oldEFOTraitIds != null) {
+            oldEFOTraits = oldEFOTraitIds.stream().map(id -> efoTraitService.getEfoTrait(id))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(EfoTrait::getTrait)
+                    .collect(Collectors.joining("|"));
+        }
 
         String newEFOTraits =  newEFOTraitIds.stream().map(id -> efoTraitService.getEfoTrait(id))
                 .filter(Optional::isPresent)
@@ -604,8 +615,11 @@ public class StudiesServiceImpl implements StudiesService {
                 .map(EfoTrait::getTrait)
                 .collect(Collectors.joining("|"));
 
-
-        return String.format("Submission Id %s Study Tag %s update from  %s to %s", submissionId, studyTag, oldEFOTraits, newEFOTraits);
+        if( oldEFOTraitIds != null) {
+            return String.format("Submission Id %s Study Tag %s EFO Trait updated from  %s to %s", submissionId, studyTag, oldEFOTraits, newEFOTraits);
+        } else{
+            return String.format("Submission Id %s Study Tag %s EFO Trait updated to %s", submissionId, studyTag, newEFOTraits);
+        }
     }
 
 }
