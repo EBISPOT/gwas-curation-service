@@ -67,7 +67,7 @@ public class JaversAuditController {
     @GetMapping(value = "/submissions/{submissionId}/changes",
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('self.GWAS_Curator')")
+    //@PreAuthorize("hasRole('self.GWAS_Curator')")
     public List<JaversChangeWrapper> getSubmissionChanges(@PathVariable  String submissionId, HttpServletRequest request) throws Exception {
         User user = userService.findUser(jwtService.extractUser(HeadersUtil.extractJWT(request)), false);
         Submission submission = submissionService.getSubmission(submissionId, user);

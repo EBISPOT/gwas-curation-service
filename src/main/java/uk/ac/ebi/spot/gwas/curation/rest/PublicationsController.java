@@ -1,5 +1,7 @@
 package uk.ac.ebi.spot.gwas.curation.rest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +23,7 @@ import uk.ac.ebi.spot.gwas.curation.service.JWTService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationAuditService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
+import uk.ac.ebi.spot.gwas.curation.service.impl.PublicationServiceImpl;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.deposition.audit.constants.PublicationEventType;
@@ -43,6 +46,7 @@ import java.util.stream.Collectors;
 @RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_PUBLICATIONS)
 public class PublicationsController {
 
+    private static final Logger log = LoggerFactory.getLogger(PublicationsController.class);
     @Autowired
     UserService userService;
 
@@ -97,14 +101,19 @@ public class PublicationsController {
     @PatchMapping(value = "/{pmid}")
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     public PublicationDto patchPublication(@PathVariable String pmid, @RequestBody PublicationDto publicationDto, HttpServletRequest request) {
+        log.info("Inside patchPublication {}",pmid);
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
         PublicationDto updatedPublicationDto = publicationService.patchPublication(pmid, publicationDto, user);
-        String curatorEvent = publicationService.getCuratorEventDetails(publicationDto);
-        publicationAuditService.createAuditEvent(PublicationEventType.CURATED_UPDATED.name(),
-                publicationDto.getPublicationId(), curatorEvent, true,  user);
-        String curationStatusEvent = publicationService.getCurationStatusEventDetails(publicationDto);
-        publicationAuditService.createAuditEvent(PublicationEventType.CURATION_STATUS_UPDATED.name(),
-                publicationDto.getPublicationId(), curationStatusEvent, true,  user);
+        if (publicationDto.getCurator() != null) {
+            String curatorEvent = publicationService.getCuratorEventDetails(updatedPublicationDto);
+            publicationAuditService.createAuditEvent(PublicationEventType.CURATOR_UPDATED.name(),
+                    updatedPublicationDto.getPublicationId(), curatorEvent, true, user);
+        }
+        if (publicationDto.getCurationStatus() != null) {
+            String curationStatusEvent = publicationService.getCurationStatusEventDetails(updatedPublicationDto);
+            publicationAuditService.createAuditEvent(PublicationEventType.CURATION_STATUS_UPDATED.name(),
+                    updatedPublicationDto.getPublicationId(), curationStatusEvent, true, user);
+        }
         return updatedPublicationDto;
     }
 

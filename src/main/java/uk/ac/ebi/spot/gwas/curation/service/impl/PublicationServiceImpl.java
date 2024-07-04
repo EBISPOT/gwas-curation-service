@@ -478,14 +478,14 @@ public class PublicationServiceImpl implements PublicationService {
 
     public String getCurationStatusEventDetails(PublicationDto publicationDto){
         if (publicationDto.getCurationStatus() != null ) {
-            return String.format("Publication %s %s",publicationDto.getPublicationId(),publicationDto.getCurationStatus().getStatus());
+            return String.format("Publication %s %s",publicationDto.getPmid(),publicationDto.getCurationStatus().getStatus());
         }
         return null;
     }
 
     public String getCuratorEventDetails(PublicationDto publicationDto) {
         if (publicationDto.getCurator() != null ) {
-            return String.format("Publication %s %s %s",publicationDto.getPublicationId(),publicationDto.getCurator().getFirstName(), publicationDto.getCurator().getLastName());
+            return String.format("Publication %s %s %s",publicationDto.getPmid(),publicationDto.getCurator().getFirstName(), publicationDto.getCurator().getLastName());
         }
         return null;
     }

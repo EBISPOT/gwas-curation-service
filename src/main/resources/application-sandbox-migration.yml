@@ -48,7 +48,7 @@ gwas-curation:
   auth:
     enabled: true
     curators:
-      auth-mechanism: EMAIL_WHITELISTING
+      auth-mechanism: JWT_DOMAIN
   #db: deposition-backend-sandbox
   db: gwasdepo
   proxy-prefix:
