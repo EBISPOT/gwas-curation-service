@@ -10,6 +10,8 @@ import uk.ac.ebi.spot.gwas.curation.service.PublicationAuditEntryService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
 import uk.ac.ebi.spot.gwas.deposition.audit.PublicationAuditEntryDto;
 
+import uk.ac.ebi.spot.gwas.deposition.audit.PublicationAuditEventMap;
+import uk.ac.ebi.spot.gwas.deposition.audit.constants.PublicationEventType;
 import uk.ac.ebi.spot.gwas.deposition.domain.Provenance;
 import uk.ac.ebi.spot.gwas.deposition.domain.PublicationAuditEntry;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -26,11 +28,14 @@ public class PublicationAuditEntryDtoAssembler extends ResourceSupport implement
 
     @Autowired
     PublicationAuditEntryService publicationAuditEntryService;
+
+    @Autowired
+    PublicationAuditEventMap publicationAuditEventMap;
     @Override
     public Resource<PublicationAuditEntryDto> toResource(PublicationAuditEntry auditEntry) {
         PublicationAuditEntryDto publicationAuditEntryDto = PublicationAuditEntryDto.builder()
                 .publicationId(auditEntry.getPublicationId())
-                .event(auditEntry.getEvent())
+                .event(publicationAuditEventMap.getAuditEventMap().get(auditEntry.getEvent()))
                 .eventDetails(auditEntry.getEventDetails())
                 .provenanceDto(ProvenanceDtoAssembler.assemble(new Provenance(auditEntry.getTimestamp(),
                                 userService.findUserDetailsUsingEmail(auditEntry.getUserId()).getId()),
