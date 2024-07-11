@@ -51,6 +51,8 @@ gwas-deposition-service:
       submission: /gwas/deposition/api/v1/submissions/
 
 
+
+
 gwas-curation-service:
   url: http://localhost:8080
   javers:
@@ -62,6 +64,13 @@ gwas-ingest-service:
   url: http://gwas-ingest-service:8080/gwas/ingest/api
   endpoints:
     submission-envelope: /v1/submission-envelopes
+
+audit:
+  service:
+    url: http://gwas-audit-service:8080
+  endpoints:
+    pub-audit-entries: /publication-audit-entries
+    publication: /v1/publications
 
 rabbitmq:
   queue-name: study_change
