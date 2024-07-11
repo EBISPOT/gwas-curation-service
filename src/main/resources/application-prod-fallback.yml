@@ -44,6 +44,8 @@ email:
   enabled: false
 
 
+
+
 gwas-deposition-service:
   url: http://gwas-deposition-backend:8080
   fileupload:
@@ -62,6 +64,13 @@ gwas-ingest-service:
   url: http://gwas-ingest-service:8080/gwas/ingest/api
   endpoints:
     submission-envelope: /v1/submission-envelopes
+
+audit:
+  service:
+    url: http://gwas-audit-service:8080
+  endpoints:
+    pub-audit-entries: /publication-audit-entries
+    publication: /v1/publications
 
 rabbitmq:
   queue-name: study_change
