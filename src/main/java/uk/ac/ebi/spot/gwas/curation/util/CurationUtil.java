@@ -3,11 +3,13 @@ package uk.ac.ebi.spot.gwas.curation.util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
+import uk.ac.ebi.spot.gwas.deposition.util.DateTimeCommon;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
@@ -84,5 +86,8 @@ public class CurationUtil {
         return true;
     }
 
-
+    public static String convertLocalDateToString(LocalDate localDate) {
+        DateTimeFormatter isoDateFormat = DateTimeCommon.getIsoDateFormatter();
+        return isoDateFormat.print(localDate);
+    }
 }

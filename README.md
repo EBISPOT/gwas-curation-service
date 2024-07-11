@@ -58,8 +58,10 @@ Before you begin, ensure you have met the following requirements:
 ## Running from Intellij 
 1. After step 2 above 
 1. Go to Run > Edit Configurations 
-1. A dialog box will appear. Under the Environment section, you can add arguments to the Program arguments input field separated by back slash e.g `--auth-enable=false \ --mongo-server=mongodb-url:port`
-  
+1. A dialog box will appear. 
+1. Insert in the VM Options text field: -Dmongo-server={mongo-db-server-url} -Dauth-enable={true or false} -Dftp-user=... -Dftp-pass=... -Dftp-link=...
+1. Insert in the Environment Variable text Field: DB_USER={mongo-database-user} DB_PASSWORD={mongo-database-password}
+1. Access the app on url: http://localhost:{server:port}/{server:servlet:context-path}/v1 as specified in the application-local.yaml property file e.g http://localhost:8081/gwas/depo-curation/api/v1/ 
  
 ### Contributing  
   

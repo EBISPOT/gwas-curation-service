@@ -18,9 +18,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.spot.gwas.curation.rabbitmq.PublicationMQProducer;
 import uk.ac.ebi.spot.gwas.curation.repository.*;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationDtoAssembler;
 
+import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationRabbitMessageAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.EuropepmcPubMedSearchService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationAuthorService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
@@ -81,6 +83,18 @@ public class PublicationServiceImpl implements PublicationService {
     @Autowired
     StudyRepository studyRepository;
 
+    @Autowired
+    PublicationMQProducer publicationMQProducer;
+
+    @Autowired
+    PublicationRabbitMessageAssembler publicationRabbitMessageAssembler;
+
+    @Autowired
+    PublicationRabbitMessageService publicationRabbitMessageService;
+
+    @Autowired
+    UserService userService;
+
     public void fillSubmitterForOldPublications() {
         List<Publication> publications = publicationRepository.findByStatusNot("ELIGIBLE");
         publications
@@ -89,7 +103,7 @@ public class PublicationServiceImpl implements PublicationService {
                 .forEach(publication -> {
                     //log.info("Looking for submitter for pmid {}", publication.getPmid());
                     String submitter = Optional.ofNullable(submissionRepository.findByPublicationIdAndArchived(publication.getId(),
-                                    false, Pageable.unpaged() ))
+                                    false, Pageable.unpaged()))
                             .map(page -> page.stream().findFirst())
                             .filter(Optional::isPresent)
                             .map(Optional::get)
@@ -193,6 +207,7 @@ public class PublicationServiceImpl implements PublicationService {
      catch (NullPointerException npe) {
          log.error("Warning: EMPC Import - Null pointer exception when assigning CurationStatus/Curator for pmid");
      }
+     publication.setCreated(new Provenance(DateTime.now(), user.getId()));
      publication.setStatus(PublicationStatus.ELIGIBLE.name());
      addFirstAuthorToPublication(publication, europePMCData,  user);
      return  publication;
@@ -329,38 +344,39 @@ public class PublicationServiceImpl implements PublicationService {
                 reports.add(statusReport);
             } else {
 
-                        try {
-                        Publication publicationImported = importNewPublication(pmid, user);
-                        PublicationStatusReport statusReport = new PublicationStatusReport();
-                        statusReport.setPmid(pmid);
-                        statusReport.setPublicationDto(publicationDtoAssembler.assemble(publicationImported, user));
-                        statusReport.setStatus("PMID saved");
-                        reports.add(statusReport);
-                    } catch (EuropePMCException ex){
-                        PublicationStatusReport statusReport = new PublicationStatusReport();
-                        statusReport.setPmid(pmid);
-                        statusReport.setStatus("Couldn't contact EPMC API");
-                        reports.add(statusReport);
-                    }catch (PubmedLookupException ex) {
-                        PublicationStatusReport statusReport = new PublicationStatusReport();
-                        statusReport.setPmid(pmid);
-                        statusReport.setStatus("PMID not found in EPMC");
-                        reports.add(statusReport);
-                    }
-
+                try {
+                    Publication publicationImported = importNewPublication(pmid, user);
+                    List<PublicationAuthor>  authors = publicationRabbitMessageService.
+                            getAuthorDetails(publicationImported.getAuthors());
+                    PublicationAuthor firstAuthor = publicationRabbitMessageService.
+                            getFirstAuthor(publicationImported.getFirstAuthorId());
+                    publicationMQProducer.send(publicationRabbitMessageAssembler.assemble(publicationImported, authors,
+                            firstAuthor, user));
+                    PublicationStatusReport statusReport = new PublicationStatusReport();
+                    statusReport.setPmid(pmid);
+                    statusReport.setPublicationDto(publicationDtoAssembler.assemble(publicationImported, user));
+                    statusReport.setStatus("PMID saved");
+                    reports.add(statusReport);
+                } catch (EuropePMCException ex){
+                    PublicationStatusReport statusReport = new PublicationStatusReport();
+                    statusReport.setPmid(pmid);
+                    statusReport.setStatus("Couldn't contact EPMC API");
+                    reports.add(statusReport);
+                }catch (PubmedLookupException ex) {
+                    PublicationStatusReport statusReport = new PublicationStatusReport();
+                    statusReport.setPmid(pmid);
+                    statusReport.setStatus("PMID not found in EPMC");
+                    reports.add(statusReport);
                 }
+
+            }
 
         });
         return reports;
     }
 
-    //adds curationStatus and assigns curator to publication
     @Override
-    public PublicationDto updatePublicationCurationDetails(String pubmedId, PublicationDto publicationDto, User user) {
-        if ((publicationDto.getCurationStatus() == null || publicationDto.getCurationStatus().getCurationStatusId() == null)
-                && (publicationDto.getCurator() == null || publicationDto.getCurator().getCuratorId() == null)) {
-            throw new IllegalArgumentException("both curationStatus.id and curator.id are null, at least one required");
-        }
+    public PublicationDto patchPublication(String pubmedId, PublicationDto publicationDto, User user) {
         Publication publication = publicationRepository
                 .findByPmid(pubmedId)
                 .orElseThrow(() -> new EntityNotFoundException("publication id not found"));
@@ -376,6 +392,13 @@ public class PublicationServiceImpl implements PublicationService {
             }
             publication.setCuratorId(publicationDto.getCurator().getCuratorId());
         }
+        if (publicationDto.getIsUserRequested() != null) {
+            publication.setIsUserRequested(publicationDto.getIsUserRequested());
+        }
+        if (publicationDto.getIsOpenTargets() != null) {
+            publication.setIsOpenTargets(publicationDto.getIsOpenTargets());
+        }
+        publication.setUpdated(new Provenance(DateTime.now(), user.getId()));
         publication = publicationRepository.save(publication);
         return publicationDtoAssembler.assemble(publication, user);
     }
@@ -448,4 +471,22 @@ public class PublicationServiceImpl implements PublicationService {
         studyRepository.saveAll(studies);
     }
 
+    public Publication getPublicationFromPmid(String pmid) {
+        return publicationRepository.findByPmid(pmid).orElse(null);
+    }
+
+
+    public String getCurationStatusEventDetails(PublicationDto publicationDto){
+        if (publicationDto.getCurationStatus() != null ) {
+            return String.format("Publication %s %s",publicationDto.getPmid(),publicationDto.getCurationStatus().getStatus());
+        }
+        return null;
+    }
+
+    public String getCuratorEventDetails(PublicationDto publicationDto) {
+        if (publicationDto.getCurator() != null ) {
+            return String.format("Publication %s %s %s",publicationDto.getPmid(),publicationDto.getCurator().getFirstName(), publicationDto.getCurator().getLastName());
+        }
+        return null;
+    }
 }

@@ -48,7 +48,7 @@ gwas-curation:
   auth:
     enabled: true
     curators:
-      auth-mechanism: EMAIL_WHITELISTING
+      auth-mechanism: JWT_DOMAIN
   #db: deposition-backend-sandbox
   db: gwasdepo
   proxy-prefix:
@@ -93,6 +93,13 @@ goci:
       search-reported-traits: /api/v1/disease-traits/search
 
 
+audit:
+  service:
+    url: http://gwas-audit-service-dev:8080
+  endpoints:
+    pub-audit-entries: /publication-audit-entries
+    publication: /v1/publications
+
 rabbitmq:
   queue-name: study_change_sandbox
   exchange-name: study_change_exchange_sandbox
@@ -101,3 +108,7 @@ rabbitmq:
     queue-name: metadata-yml-update-sandbox
     exchange-name: metadata-yml-update-exchange-sandbox
     routing-key: metadata-yml-update-route-sandbox
+  publication:
+    queue-name: publication-sandbox
+    exchange-name: publication-exchange-sandbox
+    routing-key: publication-route-sandbox

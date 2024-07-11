@@ -71,3 +71,13 @@ rabbitmq:
     queue-name: metadata-yml-update
     exchange-name: metadata-yml-update-exchange
     routing-key: metadata-yml-update-route
+  publication:
+    queue-name: publication
+    exchange-name: publication-exchange
+    routing-key: publication-route
+
+ftp:
+  link:
+  user:
+  pass:
+  app_folder: /curation_app_literature_upload

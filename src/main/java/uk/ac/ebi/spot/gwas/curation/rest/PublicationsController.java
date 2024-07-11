@@ -1,7 +1,8 @@
 package uk.ac.ebi.spot.gwas.curation.rest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -19,10 +20,13 @@ import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.MatchPublicationReportDTOAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.JWTService;
+import uk.ac.ebi.spot.gwas.curation.service.PublicationAuditService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
 import uk.ac.ebi.spot.gwas.curation.service.UserService;
+import uk.ac.ebi.spot.gwas.curation.service.impl.PublicationServiceImpl;
 import uk.ac.ebi.spot.gwas.curation.util.BackendUtil;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
+import uk.ac.ebi.spot.gwas.deposition.audit.constants.PublicationEventType;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
 import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
@@ -36,11 +40,13 @@ import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = GeneralCommon.API_V1 + DepositionCurationConstants.API_PUBLICATIONS)
 public class PublicationsController {
 
+    private static final Logger log = LoggerFactory.getLogger(PublicationsController.class);
     @Autowired
     UserService userService;
 
@@ -59,12 +65,25 @@ public class PublicationsController {
     @Autowired
     DepositionCurationConfig depositionCurationConfig;
 
+
+    @Autowired
+    PublicationAuditService publicationAuditService;
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/{pmids}",produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     public List<PublicationStatusReport> createPublication(@PathVariable List<String> pmids, HttpServletRequest request ) {
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        return publicationService.createPublication(pmids, user);
+        String pubmedIds = pmids.stream().collect(Collectors.joining(","));
+        String publicationEvent = String.format("Pmid-%s", pubmedIds);
+        List<PublicationStatusReport> statusReports = publicationService.createPublication(pmids, user);
+        pmids.forEach(pmid -> {
+          Publication publication =  publicationService.getPublicationFromPmid(pmid);
+            publicationAuditService.createAuditEvent(PublicationEventType.PMID_CREATED.name(), publication.getId(), publicationEvent,
+                    true, user);
+        });
+
+        return statusReports;
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -79,11 +98,23 @@ public class PublicationsController {
                 new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
     }
 
-    @PatchMapping(value = "/{pmid}/curation")
+    @PatchMapping(value = "/{pmid}")
     @PreAuthorize("hasRole('self.GWAS_Curator')")
-    public PublicationDto patchCurationDetails(@PathVariable String pmid, @RequestBody PublicationDto publicationDto, HttpServletRequest request) {
+    public PublicationDto patchPublication(@PathVariable String pmid, @RequestBody PublicationDto publicationDto, HttpServletRequest request) {
+        log.info("Inside patchPublication {}",pmid);
         User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
-        return publicationService.updatePublicationCurationDetails(pmid, publicationDto, user);
+        PublicationDto updatedPublicationDto = publicationService.patchPublication(pmid, publicationDto, user);
+        if (publicationDto.getCurator() != null) {
+            String curatorEvent = publicationService.getCuratorEventDetails(updatedPublicationDto);
+            publicationAuditService.createAuditEvent(PublicationEventType.CURATOR_UPDATED.name(),
+                    updatedPublicationDto.getPublicationId(), curatorEvent, true, user);
+        }
+        if (publicationDto.getCurationStatus() != null) {
+            String curationStatusEvent = publicationService.getCurationStatusEventDetails(updatedPublicationDto);
+            publicationAuditService.createAuditEvent(PublicationEventType.CURATION_STATUS_UPDATED.name(),
+                    updatedPublicationDto.getPublicationId(), curationStatusEvent, true, user);
+        }
+        return updatedPublicationDto;
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -122,9 +153,9 @@ public class PublicationsController {
         }
     }
 
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/{pmid}/link-submission")
-    @PreAuthorize("hasRole('self.GWAS_Curator')")
     public void linkSubmission(@PathVariable String pmid, @RequestParam String submissionId) {
         publicationService.linkSubmission(pmid, submissionId);
     }

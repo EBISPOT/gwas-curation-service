@@ -15,26 +15,28 @@ public class SubmissionDtoAssembler {
                                          ProvenanceDto lastUpdated,
                                          ProvenanceDto editTemplate,
                                          LockDetailsDto lockDetailsDto) {
-        return new SubmissionDto(submission.getId(),
-                publication,
-                bodyOfWork,
-                fileUploads,
-                submission.getGlobusFolderId(),
-                submission.getGlobusOriginId(),
-                submission.getStudies().size(),
-                submission.getSamples().size(),
-                submission.getAssociations().size(),
-                submission.getOverallStatus(),
-                submission.getMetadataStatus(),
-                submission.getSummaryStatsStatus(),
-                submission.getDateSubmitted(),
-                submission.getProvenanceType(),
-                created, lastUpdated,editTemplate,
-                lockDetailsDto,
-                submission.isAgreedToCc0(),
-                submission.getOpenTargetsFlag(),
-                submission.getUserRequestedFlag()
-
-        );
+        return SubmissionDto
+                .builder()
+                .submissionId(submission.getId())
+                .publication(publication)
+                .bodyOfWork(bodyOfWork)
+                .files(fileUploads)
+                .globusFolder(submission.getGlobusFolderId())
+                .globusOriginId(submission.getGlobusOriginId())
+                .studyCount(submission.getStudies().size())
+                .sampleCount(submission.getSamples().size())
+                .associationCount(submission.getAssociations().size())
+                .submissionStatus(submission.getOverallStatus())
+                .metadataStatus(submission.getMetadataStatus())
+                .summaryStatisticsStatus(submission.getSummaryStatsStatus())
+                .dateSubmitted(submission.getDateSubmitted())
+                .provenanceType(submission.getProvenanceType())
+                .created(created)
+                .lastUpdated(lastUpdated)
+                .editTemplate(editTemplate)
+                .lockDetails(lockDetailsDto)
+                .agreedToCc0(submission.isAgreedToCc0())
+                .type(submission.getType())
+                .build();
     }
 }

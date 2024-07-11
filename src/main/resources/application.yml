@@ -38,3 +38,19 @@ europepmc:
   root: https://www.ebi.ac.uk/europepmc/webservices/rest/
   search:
     pubmed: search?query=ext_id:{idlist} src:med&resulttype=core&format=JSON
+
+
+ftp:
+  link:
+  user:
+  pass:
+  app_folder: /curation_app_literature_upload_dev
+
+springdoc:
+  swagger-ui:
+    url: /curation-doc.yaml
+    layout: BaseLayout
+    disable-swagger-default-url: true
+    path: /documentation
+  api-docs:
+    path: /curation-doc

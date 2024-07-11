@@ -16,7 +16,9 @@ import uk.ac.ebi.spot.gwas.curation.config.RestInteractionConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
 import uk.ac.ebi.spot.gwas.curation.service.*;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
+import uk.ac.ebi.spot.gwas.deposition.audit.constants.PublicationEventType;
 import uk.ac.ebi.spot.gwas.deposition.constants.GeneralCommon;
+import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.FileUploadDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.SubmissionDto;
 import uk.ac.ebi.spot.gwas.deposition.rest.RestRequestUtil;
@@ -52,6 +54,10 @@ public class EditFileUploadController {
 
     @Autowired
     StudiesService studiesService;
+
+    @Autowired
+    PublicationAuditService publicationAuditService;
+
     /*
      * POST /v1/submissions/{submissionId}/edituploads
      */
@@ -68,7 +74,11 @@ public class EditFileUploadController {
                                                   HttpServletRequest request)  {
 
         String jwtToken = CurationUtil.parseJwt(request);
+        User user = userService.findUser(jwtService.extractUser(jwtToken), false);
         ResponseEntity<Resource<FileUploadDto>> fileUploadDtoResource = editFileUploadService.uploadEditFIle(jwtToken, submissionId, file );
+        String submissionEvent = String.format("SubmissionId-%s",submissionId);
+        publicationAuditService.createAuditEvent(PublicationEventType.TEMPLATE_UPLOAD.name(),
+                submissionId,  submissionEvent, false, user);
         //studiesService.sendMetaDataMessageToQueue(submissionId);
         return fileUploadDtoResource.getBody();
     }

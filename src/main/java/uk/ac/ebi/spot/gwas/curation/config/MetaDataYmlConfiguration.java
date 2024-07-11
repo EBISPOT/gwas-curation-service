@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import uk.ac.ebi.spot.gwas.deposition.config.RabbitMQConfigProperties;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.MetadataYmlUpdate;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationRabbitMessage;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyRabbitMessage;
 
 import java.util.HashMap;
@@ -51,6 +52,7 @@ public class MetaDataYmlConfiguration {
         Map<String, Class<?>> idClassMapping = new HashMap<>();
         idClassMapping.put("metadataYmlUpdate", MetadataYmlUpdate.class);
         idClassMapping.put("studyIngest", StudyRabbitMessage.class);
+        idClassMapping.put("publicationRabbitMessage", PublicationRabbitMessage.class);
         classMapper.setIdClassMapping(idClassMapping);
         classMapper.setDefaultType(Map.class);
         classMapper.setTrustedPackages("*");

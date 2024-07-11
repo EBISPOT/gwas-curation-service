@@ -15,6 +15,7 @@ public class DepositionCurationConstants {
     public static final String API_JAVERS_CHANGES = "/changes";
     public static final String API_DISEASE_TRAITS = "/reported-traits";
     public static final String API_DISEASE_TRAITS_FILE_UPLOAD = "/reported-traits/files";
+    public static final String API_LITERATURE_FILES = "/literature-files";
     public static final String PARAM_TRAIT = "trait";
     public static final String PARAM_STUDY_ID = "studyId";
     public static final String PARAM_SUBMISSION_ID = "submissionId";
@@ -42,10 +43,17 @@ public class DepositionCurationConstants {
     public static final String ROUTING_KEY = "study-ingest";
     public static final String API_SOLR_REMOVE = "/remove-studies";
     public static final String API_PUBLICATIONS = "/publications";
+    public static final String API_BODY_OF_WORK = "/body-of-work";
     public static final String API_PUBLICATIONS_SOLR = "/publications/search";
     public static final String API_CURATORS = "/curators";
     public static final String API_CURATION_STATUS = "/curation-status";
 
     public static final String EMAIL_WHITE_LIST = "EMAIL_WHITELISTING";
+
+
+    public static final String API_PUBLICATION = "/publications";
+    public static final String API_PUBLICATION_AUDIT_ENTRIES = "/publication-audit-entries";
+
+    public static final String  PARAM_PUBID = "publicationId";
 
 }

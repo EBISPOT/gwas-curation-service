@@ -21,7 +21,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUser(User user, boolean createIfNotExistent) {
-        log.info("Looking for user [{}]: {}", user.getName(), user.getEmail());
+        //log.info("Looking for user [{}]: {}", user.getName(), user.getEmail());
         Optional<User> userOpt = userRepository.findByEmailIgnoreCase(user.getEmail());
         if (userOpt.isPresent()) {
             User foundUser = userOpt.get();
@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
                 foundUser.setDomains(user.getDomains());
                 foundUser = userRepository.save(foundUser);
             }
-            log.info("Returning existing user: {}", foundUser.getId());
+            //log.info("Returning existing user: {}", foundUser.getId());
             return userOpt.get();
         }
         if (createIfNotExistent) {
@@ -44,13 +44,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUser(String userId) {
-        log.info("Retrieving user: {}", userId);
+        //log.info("Retrieving user: {}", userId);
         Optional<User> userOpt = userRepository.findById(userId);
         if (!userOpt.isPresent()) {
             log.error("Unable to find user: {}", userId);
             throw new EntityNotFoundException("Unable to find user: " + userId);
         }
-        log.info("Returning user: {}", userOpt.get().getName());
+        //log.info("Returning user: {}", userOpt.get().getName());
         return userOpt.get();
+    }
+
+    public User findUserDetailsUsingEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email).orElse(null);
     }
 }

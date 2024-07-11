@@ -13,8 +13,6 @@ import uk.ac.ebi.spot.gwas.deposition.solr.SOLRPublication;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 public interface PublicationService {
 
@@ -32,10 +30,16 @@ public interface PublicationService {
 
 
 
-    PublicationDto updatePublicationCurationDetails(String pmid, PublicationDto publicationDto, User user);
+    PublicationDto patchPublication(String pmid, PublicationDto publicationDto, User user);
 
 
     void linkSubmission(String pmid, String submissionId);
 
     void fillSubmitterForOldPublications();
+
+    Publication getPublicationFromPmid(String pmid);
+
+    String getCurationStatusEventDetails(PublicationDto publicationDto);
+
+    String getCuratorEventDetails(PublicationDto publicationDto);
 }

@@ -19,19 +19,15 @@ public class BodyOfWorkServiceImpl implements BodyOfWorkService {
     @Autowired
     private BodyOfWorkRepository bodyOfWorkRepository;
 
-
-
-
-
     @Override
     public BodyOfWork retrieveBodyOfWork(String bodyOfWorkId) {
-        log.info("[{}] Retrieving body of work: {}", bodyOfWorkId);
+        log.info("Retrieving body of work: {}", bodyOfWorkId);
         Optional<BodyOfWork> optionalBodyOfWork;
 
             optionalBodyOfWork = bodyOfWorkRepository.findByBowIdAndArchived(bodyOfWorkId, false);
 
         if (!optionalBodyOfWork.isPresent()) {
-            log.error("Unable to find body of work with ID: {}", bodyOfWorkId);
+            log.error("Unable to find body of work with GCP ID: {}", bodyOfWorkId);
             throw new EntityNotFoundException("Unable to find body of work with ID: " + bodyOfWorkId);
         }
 
@@ -39,8 +35,20 @@ public class BodyOfWorkServiceImpl implements BodyOfWorkService {
         return optionalBodyOfWork.get();
     }
 
+    @Override
+    public BodyOfWork findById(String id) {
+        log.info("Retrieving body of work with id: {}", id);
+        Optional<BodyOfWork> optionalBodyOfWork;
 
+        optionalBodyOfWork = bodyOfWorkRepository.findById(id);
 
+        if (!optionalBodyOfWork.isPresent()) {
+            log.error("Unable to find body of work with ID: {}", id);
+            throw new EntityNotFoundException("Unable to find body of work with ID: " + id);
+        }
 
+        log.info("Returning body of work with id: {}", optionalBodyOfWork.get().getId());
+        return optionalBodyOfWork.get();
+    }
 
 }
