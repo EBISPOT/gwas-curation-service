@@ -52,6 +52,8 @@ public class StudyDtoAssembler implements ResourceAssembler<Study, Resource<Stud
     @Override
     public Resource<StudyDto>  toResource(Study study) {
 
+        if (study == null) return null;
+
         String traitSeqId = null;
         DiseaseTrait diseaseTrait = null;
         if(study.getDiseaseTrait() != null  ){

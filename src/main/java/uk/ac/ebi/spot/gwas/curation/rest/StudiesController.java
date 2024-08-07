@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -39,6 +40,7 @@ import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -169,15 +171,21 @@ public class StudiesController {
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     public PagedResources<StudyDto> getStudies(PagedResourcesAssembler assembler,
                                                @PathVariable(value = DepositionCurationConstants.PARAM_SUBMISSION_ID)  String submissionId,
-                                               @SortDefault(sort = "accession", direction = Sort.Direction.DESC)
-                                                   @PageableDefault(size = 10, page = 0) Pageable pageable) {
+                                               @RequestParam(required = false) String accession,
+                                               @SortDefault(sort = "accession", direction = Sort.Direction.DESC) Pageable pageable) {
         /*if(searchStudyDTO != null ) {
             log.info("searchStudyDTO Params are ->"+ searchStudyDTO.getReportedTrait());
         }*/
-        Page<Study> studies =  studiesService.getStudies(submissionId, pageable);
+        Page<Study> studies;
+        if (accession == null || accession.isEmpty()) {
+            studies = studiesService.getStudies(submissionId, pageable);
+        }
+        else {
+            studies = new PageImpl<>(Collections.singletonList(studiesService.getStudyByAccession(accession, submissionId)));
+        }
 
         final ControllerLinkBuilder lb = ControllerLinkBuilder.linkTo(ControllerLinkBuilder
-                .methodOn(StudiesController.class).getStudies(assembler, submissionId, pageable));
+                .methodOn(StudiesController.class).getStudies(assembler, submissionId, accession, pageable));
 
         return assembler.toResource(studies, studyDtoAssembler,
                 new Link(BackendUtil.underBasePath(lb, depositionCurationConfig.getProxy_prefix()).toUri().toString()));
