@@ -47,7 +47,7 @@ public class WeeklyPublicationStatsTask {
 
     public void buildStats() {
         log.info("Inside buildStats of WeeklyPublicationStatsTask");
-        DateTime aWeekAgo = DateTime.now().minusDays(30);
+        DateTime aWeekAgo = DateTime.now().minusDays(7);
         PublicationWeeklyStats publicationWeeklyStats =  publicationAuditEntryService.getPublicationStats(aWeekAgo);
         FileOutputStream fos;
         String formattedWeeklyDate = CurationUtil.getCurrentDate();
