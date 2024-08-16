@@ -9,6 +9,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchSubmissionDTO;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.SubmissionEnvelope;
 
 
+import java.util.List;
 import java.util.Map;
 
 public interface SubmissionService {
@@ -24,5 +25,8 @@ public interface SubmissionService {
 
     Submission patchSubmission(SubmissionDto submissionDto, String submissionId);
 
+    List<Submission> getSubmissionForPublication(String pubId);
+
+    Boolean findSumstatsEntries(String submissionId);
 
 }

@@ -190,7 +190,7 @@
         <dependency>
             <groupId>uk.ac.ebi.spot.gwasdepo</groupId>
             <artifactId>gwasdepo-commons</artifactId>
-            <version>1.0.45-SNAPSHOT</version>
+            <version>1.0.47-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -273,6 +273,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>ognl</groupId>
+            <artifactId>ognl</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>

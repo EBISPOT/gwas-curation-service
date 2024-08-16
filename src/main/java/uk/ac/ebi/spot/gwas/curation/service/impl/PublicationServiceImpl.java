@@ -489,4 +489,19 @@ public class PublicationServiceImpl implements PublicationService {
         }
         return null;
     }
+
+
+    public List<Publication>  getTotalPublications() {
+        Long count =  publicationRepository.count();
+        List<Publication> totalPubs = new ArrayList<>();
+        int bucket = 1000;
+        int pages = count.intValue()/bucket;
+        for(int i = 0 ; i <= pages; i++ ) {
+            log.info("page running in getPublicationsWithCurationStatus is {}", i);
+            Pageable pageable = new PageRequest(i, bucket);
+            Page<Publication> publicationPage = publicationRepository.findAll(pageable);
+            publicationPage.stream().forEach(pub -> totalPubs.add(pub));
+        }
+        return totalPubs;
+    }
 }

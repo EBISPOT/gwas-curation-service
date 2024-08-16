@@ -42,4 +42,6 @@ public interface PublicationService {
     String getCurationStatusEventDetails(PublicationDto publicationDto);
 
     String getCuratorEventDetails(PublicationDto publicationDto);
+
+    List<Publication>  getTotalPublications();
 }

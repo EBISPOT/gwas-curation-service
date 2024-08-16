@@ -23,6 +23,7 @@ spring:
 
 quartz:
   scheduler:
+    active: true
     dbName: deposition-backend-sandbox
 
 gwas-curation:

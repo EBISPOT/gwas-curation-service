@@ -5,16 +5,19 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.service.FtpService;
+import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.deposition.config.FtpConfig;
 import uk.ac.ebi.spot.gwas.deposition.exception.FileProcessingException;
 
 import java.io.*;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,6 +45,23 @@ public class FtpServiceImpl implements FtpService {
             }
         });
         return fileName.get();
+    }
+
+
+    public void uploadWeeklyStasFiles(File file) {
+        int year = DateTime.now().year().get();
+        String destDir = String.format("%s/%s", ftpConfig.getWeeklyStatsFolder(), year);
+        String destination = String.format("%s/%s", destDir, file.getName());
+        FTPClient client = connectToFtp();
+        try {
+            if (!client.changeWorkingDirectory(destDir)) {
+                client.makeDirectory(destDir);
+            }
+            client.storeFile(destination, Files.newInputStream(file.toPath()));
+        } catch (IOException ex) {
+            log.error("IO Exception in  uploadWeeklyStasFiles()", ex.getMessage(),ex);
+        }
+
     }
 
     @Override

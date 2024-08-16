@@ -13,6 +13,13 @@ quartz:
     instanceName: curationSchedulerJobSchedulerCluster
     environment-config: quartz/environment-config.yaml
     mongodb-pool-size: 10
+  jobs:
+    weekly-publication-stats:
+      schedule: 0 48 16 * * ?
+    weekly-curationstatus-stats:
+      schedule: 0 02 16 * * ?
+    weekly-curationqueue-stats:
+      schedule: 0 34 17 * * ?
 
 gwas-curation:
   auth:
@@ -24,6 +31,32 @@ gwas-curation:
       jwt-domains: self.GWAS_Curator
   solr:
     enabled: true
+  email-config:
+    to-address: gwas-curator@ebi.ac.uk,gwas-dev-logs@ebi.ac.uk
+    base-url: https://www.ebi.ac.uk/gwas/deposition/submission/
+    docs-url: https://www.ebi.ac.uk/gwas/docs/submission#link-15
+    emails:
+      publicationweeklystats:
+        subject: Weekly Publication stats for %WEEK%
+        success: emails/weekly_publication_success.email
+      curationsnapshotstats:
+        subject: Weekly Curation Snapshot stats for %WEEK%
+        success: emails/weekly_curationsnapshotstats_success.email
+      curationqueue:
+        subject: Weekly Curation Queue for %WEEK%
+        success: emails/weekly_curationqueue_success.email
+    errors:
+      active: false
+      receiver: gwas-dev-logs@ebi.ac.uk
+      subject: GWAS Deposition App - Error encountered
+      email: emails/errors.email
+
+email:
+  enabled: false
+  config:
+    from-address: no-reply@ebi.ac.uk
+    from-name: GWAS Curation
+    retries: 3
 
 spring:
   profiles:
@@ -45,6 +78,7 @@ ftp:
   user:
   pass:
   app_folder: /curation_app_literature_upload_dev
+  weekly_stats_folder: /curation_weekly_stats_dev
 
 springdoc:
   swagger-ui:
