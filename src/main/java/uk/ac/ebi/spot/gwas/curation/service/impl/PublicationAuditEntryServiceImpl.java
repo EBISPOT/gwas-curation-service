@@ -144,19 +144,33 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
         Integer studiesPubStudyCount = filterPublicationAuditEntriesStudies(pubEntries, "Publish Study", PublicationEventType.CURATION_STATUS_UPDATED.name());
         Map<String, String> pubUserMapPubStudy= new HashMap<>();
         Map<String, String> pubUserMapSubComp = new HashMap<>();
-        pubEntries.forEach(pubEntry -> pubUserMapSubComp.put(pubEntry.getPublicationId(), getPublicationAuditPairForSubComplete(pubEntry)));
-        pubEntries.forEach(pubEntry -> pubUserMapPubStudy.put(pubEntry.getPublicationId(), getPublicationAuditPairForPubStudies(pubEntry)));
-        AtomicInteger countSingleLevelComplete = new AtomicInteger();
         pubEntries.forEach(pubEntry -> {
+            if (pubUserMapSubComp.get(pubEntry.getPublicationId()) == null ) {
+                pubUserMapSubComp.put(pubEntry.getPublicationId(), getPublicationAuditPairForSubComplete(pubEntry));
+            }
+        });
+        pubEntries.forEach(pubEntry ->  {
+            if (pubUserMapPubStudy.get(pubEntry.getPublicationId()) == null ) {
+                pubUserMapPubStudy.put(pubEntry.getPublicationId(), getPublicationAuditPairForPubStudies(pubEntry));
+            }
+        });
+        AtomicInteger countSingleLevelComplete = new AtomicInteger();
+        Set<String> uniquePubs = new HashSet<>();
+        pubEntries.forEach(pubEntry -> {
+            log.info("Publication is {}",pubEntry.getPublicationId());
+            log.info("Pub Event Details is {}",pubEntry.getEventDetails());
             String userEmailSubComp = pubUserMapPubStudy.get(pubEntry.getPublicationId());
             log.info("userEmailSubComp {}",userEmailSubComp);
             String userEmailPubStudy = pubUserMapSubComp.get(pubEntry.getPublicationId());
             log.info("userEmailPubStudy {}",userEmailPubStudy);
-            if(userEmailSubComp != null && userEmailPubStudy != null) {
-                if (userEmailSubComp.equalsIgnoreCase(userEmailPubStudy)) {
-                    countSingleLevelComplete.getAndIncrement();
+            if(!uniquePubs.contains(pubEntry.getPublicationId())) {
+                if (userEmailSubComp != null && userEmailPubStudy != null) {
+                    if (userEmailSubComp.equalsIgnoreCase(userEmailPubStudy)) {
+                        countSingleLevelComplete.getAndIncrement();
+                    }
                 }
             }
+            uniquePubs.add(pubEntry.getPublicationId());
         });
 
         PublicationWeeklyStats publicationWeeklyStats = PublicationWeeklyStats.builder()
