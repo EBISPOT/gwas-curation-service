@@ -4,6 +4,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.InputStream;
 
 public interface FtpService {
@@ -15,4 +16,6 @@ public interface FtpService {
     InputStreamResource downloadFile(String fileName, String subFolder);
 
     FTPClient connectToFtp();
+
+    void uploadWeeklyStasFiles(File file);
 }

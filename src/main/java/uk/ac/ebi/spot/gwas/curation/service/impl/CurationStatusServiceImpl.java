@@ -9,6 +9,9 @@ import uk.ac.ebi.spot.gwas.curation.service.CurationStatusService;
 import uk.ac.ebi.spot.gwas.deposition.domain.CurationStatus;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -38,6 +41,13 @@ public class CurationStatusServiceImpl implements CurationStatusService {
     @Override
     public CurationStatus createCurationStatus(String status) {
         return curationStatusRepository.save(new CurationStatus(status));
+    }
+
+    public Map<String, String> getCurationStatusMap() {
+        Map<String, String> curationStatusMap = new HashMap<>();
+        List<CurationStatus> curationStatusList = curationStatusRepository.findAll();
+        curationStatusList.forEach(curStatus -> curationStatusMap.put(curStatus.getId(), curStatus.getStatus()));
+        return curationStatusMap;
     }
 
 }

@@ -77,11 +77,19 @@ public class PublicationsController {
         String pubmedIds = pmids.stream().collect(Collectors.joining(","));
         String publicationEvent = String.format("Pmid-%s", pubmedIds);
         List<PublicationStatusReport> statusReports = publicationService.createPublication(pmids, user);
-        pmids.forEach(pmid -> {
+       /* pmids.forEach(pmid -> {
           Publication publication =  publicationService.getPublicationFromPmid(pmid);
             publicationAuditService.createAuditEvent(PublicationEventType.PMID_CREATED.name(), publication.getId(), publicationEvent,
                     true, user);
+        });*/
+        statusReports.forEach( report -> {
+            if(report.getStatus().equals("PMID saved")) {
+                Publication publication =  publicationService.getPublicationFromPmid(report.getPmid());
+                publicationAuditService.createAuditEvent(PublicationEventType.PMID_CREATED.name(), publication.getId(), publicationEvent,
+                        true, user);
+            }
         });
+
 
         return statusReports;
     }

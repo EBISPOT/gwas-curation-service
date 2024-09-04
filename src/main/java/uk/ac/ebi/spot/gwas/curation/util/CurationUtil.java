@@ -2,10 +2,12 @@ package uk.ac.ebi.spot.gwas.curation.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.util.StringUtils;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
@@ -14,6 +16,7 @@ import uk.ac.ebi.spot.gwas.deposition.util.DateTimeCommon;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,6 +27,7 @@ import java.util.stream.Collectors;
 public class CurationUtil {
 
     private static final Logger log = LoggerFactory.getLogger(CurationUtil.class);
+
 
     public static List<String> sToList(String s) {
         List<String> list = new ArrayList<>();
@@ -90,4 +94,40 @@ public class CurationUtil {
         DateTimeFormatter isoDateFormat = DateTimeCommon.getIsoDateFormatter();
         return isoDateFormat.print(localDate);
     }
+
+    public static String getCurrentDate() {
+        try {
+            DateTimeFormatter isoDateTimeFormatter =  DateTimeCommon.getIsoDateFormatter();
+            String currDate = isoDateTimeFormatter.print(new LocalDate(DateTime.now()));
+            return  currDate;
+        }catch(Exception ex) {
+            log.error("Exception in formatting Current date ",ex.getMessage(),ex);
+        }
+        return null;
+    }
+
+
+    public static String getFormattedDate(LocalDate localDate) {
+        try {
+            DateTimeFormatter isoDateTimeFormatter =  DateTimeCommon.getIsoDateFormatter();
+            String currDate = isoDateTimeFormatter.print(localDate);
+            return  currDate;
+
+        }catch(Exception ex) {
+            log.error("Exception in formatting Current date ",ex.getMessage(),ex);
+        }
+        return null;
+    }
+
+    public static String getDefaultClassPath() {
+        try {
+            return new DefaultResourceLoader().getResource("WeeklyPublicationStats.tsv").getURI().getPath();
+        }catch(IOException ex){
+            log.error("Exception in getDefaultClassPath",ex.getMessage(),ex);
+            return null;
+        }
+
+    }
+
+
 }
