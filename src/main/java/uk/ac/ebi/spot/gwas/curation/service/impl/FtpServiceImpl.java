@@ -58,6 +58,7 @@ public class FtpServiceImpl implements FtpService {
                 client.makeDirectory(destDir);
             }
             client.storeFile(destination, Files.newInputStream(file.toPath()));
+            client.logout();
         } catch (IOException ex) {
             log.error("IO Exception in  uploadWeeklyStasFiles()", ex.getMessage(),ex);
         }

@@ -1,6 +1,5 @@
 package uk.ac.ebi.spot.gwas.curation.scheduler.task;
 
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import uk.ac.ebi.spot.gwas.deposition.audit.CurationQueueStats;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

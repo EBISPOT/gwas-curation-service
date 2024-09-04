@@ -1,30 +1,34 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.spot.gwas.curation.repository.*;
+import uk.ac.ebi.spot.gwas.curation.repository.CurationStatusSnapshotStatsEntryRepository;
+import uk.ac.ebi.spot.gwas.curation.repository.PublicationAuditEntryRepository;
+import uk.ac.ebi.spot.gwas.curation.repository.PublicationWeeklyStatsEntryRepository;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.CurationQueueStatsAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.CurationStatusSnapshotStatsAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.PublicationWeeklyStatsAssembler;
-import uk.ac.ebi.spot.gwas.curation.service.*;
+import uk.ac.ebi.spot.gwas.curation.service.CurationStatusService;
+import uk.ac.ebi.spot.gwas.curation.service.PublicationAuditEntryService;
+import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
+import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 import uk.ac.ebi.spot.gwas.deposition.audit.CurationQueueStats;
 import uk.ac.ebi.spot.gwas.deposition.audit.CurationStatusSnapshotStats;
 import uk.ac.ebi.spot.gwas.deposition.audit.PublicationWeeklyStats;
 import uk.ac.ebi.spot.gwas.deposition.audit.constants.PublicationEventType;
 import uk.ac.ebi.spot.gwas.deposition.constants.SubmissionType;
-import uk.ac.ebi.spot.gwas.deposition.domain.*;
+import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
+import uk.ac.ebi.spot.gwas.deposition.domain.PublicationAuditEntry;
+import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,13 +56,6 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
     @Autowired
     PublicationService publicationService;
 
-    @Autowired
-    PublicationRepository publicationRepository;
-
-
-
-    @Autowired
-    CuratorService curatorService;
 
     @Autowired
     CurationStatusService curationStatusService;
@@ -67,8 +64,6 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
     CurationQueueStatsAssembler curationQueueStatsAssembler;
 
     Map<String, String> curationStatusMap =  null;
-
-    Map<String, String> curatorMap =  null;
 
 
     public PublicationAuditEntry getAuditEntry(String auditEntryId) {
@@ -80,7 +75,6 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
     public List<CurationQueueStats> getCurationQueueStats() {
         List<Publication> totalPubs = publicationService.getTotalPublications();
         log.info("Size of totalPubs {}", totalPubs.size());
-        curatorMap = curatorService.getCuratorsMap();
         return totalPubs.stream().
                 map(pub -> curationQueueStatsAssembler.assembleFromPublication(pub, CurationUtil.getCurrentDate()))
                 .collect(Collectors.toList());
@@ -158,11 +152,11 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
         Set<String> uniquePubs = new HashSet<>();
         pubEntries.forEach(pubEntry -> {
             log.info("Publication is {}",pubEntry.getPublicationId());
-            log.info("Pub Event Details is {}",pubEntry.getEventDetails());
+            log.debug("Pub Event Details is {}",pubEntry.getEventDetails());
             String userEmailSubComp = pubUserMapPubStudy.get(pubEntry.getPublicationId());
-            log.info("userEmailSubComp {}",userEmailSubComp);
+            log.debug("userEmailSubComp {}",userEmailSubComp);
             String userEmailPubStudy = pubUserMapSubComp.get(pubEntry.getPublicationId());
-            log.info("userEmailPubStudy {}",userEmailPubStudy);
+            log.debug("userEmailPubStudy {}",userEmailPubStudy);
             if(!uniquePubs.contains(pubEntry.getPublicationId())) {
                 if (userEmailSubComp != null && userEmailPubStudy != null) {
                     if (userEmailSubComp.equalsIgnoreCase(userEmailPubStudy)) {

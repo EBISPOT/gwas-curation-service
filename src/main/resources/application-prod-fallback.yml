@@ -34,6 +34,7 @@ spring:
 quartz:
   scheduler:
     dbName: gwasdepo
+    active: true
 
 gwas-curation:
   auth:
@@ -90,3 +91,4 @@ ftp:
   user:
   pass:
   app_folder: /curation_app_literature_upload
+  weekly_stats_folder: /curation_weekly_stats

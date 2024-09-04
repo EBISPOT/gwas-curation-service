@@ -17,9 +17,9 @@ quartz:
     weekly-publication-stats:
       schedule: 0 10 16 * * ?
     weekly-curationstatus-stats:
-      schedule: 0 15 11 * * ?
+      schedule: 0 10 17 * * ?
     weekly-curationqueue-stats:
-      schedule: 0 15 11 * * ?
+      schedule: 0 10 18 * * ?
 
 gwas-curation:
   auth:

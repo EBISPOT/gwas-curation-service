@@ -267,7 +267,7 @@ public class SubmissionServiceImpl implements SubmissionService {
                 .map(sub -> sub.getFileUploads())
                 .filter(uploads -> uploads != null & !uploads.isEmpty())
                 .orElse(null);
-        return fileUploads !=null &&  !fileUploads.isEmpty() ? fileUploads.stream()
+        return fileUploads != null &&  !fileUploads.isEmpty() ? fileUploads.stream()
                 .anyMatch(this::existSumstatsEntries) : false;
     }
 
