@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.spot.gwas.curation.config.RestInteractionConfig;
 import uk.ac.ebi.spot.gwas.curation.repository.PublicationRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.SubmissionRepository;
+import uk.ac.ebi.spot.gwas.curation.repository.SummaryStatsEntryRepository;
 import uk.ac.ebi.spot.gwas.curation.service.CuratorAuthService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
 import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
@@ -46,11 +47,16 @@ public class SubmissionServiceImpl implements SubmissionService {
     private PublicationRepository publicationRepository;
 
     @Autowired
+    private SummaryStatsEntryRepository summaryStatsEntryRepository;
+    @Autowired
     @Qualifier("restTemplateCuration")
     RestTemplate restTemplate;
 
     @Autowired
     RestInteractionConfig restInteractionConfig;
+
+
+
 
     @Override
     public Submission getSubmission(String submissionId) {
@@ -250,4 +256,23 @@ public class SubmissionServiceImpl implements SubmissionService {
         }
         return testSub;
     }
+
+    public List<Submission>  getSubmissionForPublication(String pubId) {
+        return submissionRepository.findByPublicationId(pubId);
+    }
+
+
+   public Boolean findSumstatsEntries(String submissionId) {
+    List<String> fileUploads =  submissionRepository.findById(submissionId)
+                .map(sub -> sub.getFileUploads())
+                .filter(uploads -> uploads != null & !uploads.isEmpty())
+                .orElse(null);
+        return fileUploads != null &&  !fileUploads.isEmpty() ? fileUploads.stream()
+                .anyMatch(this::existSumstatsEntries) : false;
+    }
+
+    private Boolean existSumstatsEntries(String fileUploadId) {
+        return !summaryStatsEntryRepository.findByFileUploadId(fileUploadId).isEmpty();
+    }
+
 }

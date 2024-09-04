@@ -8,6 +8,9 @@ import uk.ac.ebi.spot.gwas.curation.repository.CuratorRepository;
 import uk.ac.ebi.spot.gwas.curation.service.CuratorService;
 import uk.ac.ebi.spot.gwas.deposition.domain.Curator;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -35,6 +38,24 @@ public class CuratorServiceImpl implements CuratorService {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .orElse(null);
+    }
+
+
+    public Map<String, String> getCuratorsMap() {
+        Map<String, String> curatorsMap = new HashMap<>();
+        List<Curator> curatorsList = curatorRepository.findAll();
+        curatorsList.forEach(curator -> curatorsMap.put(curator.getId(), getCuratorName(curator)));
+        return curatorsMap;
+    }
+
+    private String getCuratorName(Curator curator) {
+        if(curator.getLastName() != null && curator.getFirstName() != null) {
+            return String.format("%s %s",curator.getFirstName(),curator.getLastName());
+        }else if(curator.getLastName() != null) {
+            return curator.getLastName();
+        }else {
+            return curator.getFirstName();
+        }
     }
 
 }
