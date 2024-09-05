@@ -62,7 +62,7 @@ gwas-curation:
     enabled: true
 
 email:
-  enabled: false
+  enabled: true
 
 
 #gwas-deposition-service:
