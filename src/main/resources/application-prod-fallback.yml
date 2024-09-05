@@ -42,7 +42,7 @@ gwas-curation:
   db: gwasdepo
 
 email:
-  enabled: false
+  enabled: true
 
 
 
