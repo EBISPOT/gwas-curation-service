@@ -15,11 +15,11 @@ quartz:
     mongodb-pool-size: 10
   jobs:
     weekly-publication-stats:
-      schedule: 0 10 16 * * ?
+      schedule: 0 10 16 98 * 1
     weekly-curationstatus-stats:
-      schedule: 0 10 17 * * ?
+      schedule: 0 10 17 98 * 1
     weekly-curationqueue-stats:
-      schedule: 0 10 18 * * ?
+      schedule: 0 10 18 98 * 1
 
 gwas-curation:
   auth:

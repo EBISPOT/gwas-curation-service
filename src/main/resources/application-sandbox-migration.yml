@@ -42,13 +42,7 @@ quartz:
   scheduler:
     #dbName: deposition-backend-sandbox
     dbName: gwasdepo
-  jobs:
-    weekly-publication-stats:
-      schedule: 0 48 16 * * 0
-    weekly-curationstatus-stats:
-      schedule: 0 02 16 * * 0
-    weekly-curationqueue-stats:
-      schedule: 0 32 15 * * 0
+    active: true
 
 gwas-curation:
   auth:
