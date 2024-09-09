@@ -1,6 +1,7 @@
 package uk.ac.ebi.spot.gwas.curation.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
 
@@ -30,6 +31,7 @@ public class DepositionCurationConfig {
     @Value("${gwas-curation.proxy-prefix:#{NULL}}")
     private String proxy_prefix;
 
+
     public String getDbName() {
         return dbName;
     }
@@ -55,4 +57,5 @@ public class DepositionCurationConfig {
     }
 
     public String getProxy_prefix() { return proxy_prefix; }
+
 }

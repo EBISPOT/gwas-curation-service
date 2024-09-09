@@ -7,8 +7,12 @@ import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
+import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
 import uk.ac.ebi.spot.gwas.deposition.util.DateTimeCommon;
@@ -27,6 +31,9 @@ import java.util.stream.Collectors;
 public class CurationUtil {
 
     private static final Logger log = LoggerFactory.getLogger(CurationUtil.class);
+
+    @Value("classpath:WeeklyPublicationStats.tsv")
+    private static Resource classPathResource;
 
 
     public static List<String> sToList(String s) {
@@ -121,7 +128,8 @@ public class CurationUtil {
 
     public static String getDefaultClassPath() {
         try {
-            String path = new DefaultResourceLoader().getResource("WeeklyPublicationStats.tsv").getURI().getPath();
+
+            String path = classPathResource.getURI().getPath();
             String appPath = new DefaultResourceLoader().getResource("application.yml").getURI().getPath();
             log.info("The classpath of WeeklyPublicationStats is {}", path);
             log.info("The classpath of application yamls is {}", appPath);
