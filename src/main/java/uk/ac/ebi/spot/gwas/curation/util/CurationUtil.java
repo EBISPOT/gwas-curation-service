@@ -121,7 +121,11 @@ public class CurationUtil {
 
     public static String getDefaultClassPath() {
         try {
-            return new DefaultResourceLoader().getResource("WeeklyPublicationStats.tsv").getURI().getPath();
+            String path = new DefaultResourceLoader().getResource("WeeklyPublicationStats.tsv").getURI().getPath();
+            String appPath = new DefaultResourceLoader().getResource("application.yml").getURI().getPath();
+            log.info("The classpath of WeeklyPublicationStats is {}", path);
+            log.info("The classpath of application yamls is {}", appPath);
+            return path;
         }catch(IOException ex){
             log.error("Exception in getDefaultClassPath",ex.getMessage(),ex);
             return null;
