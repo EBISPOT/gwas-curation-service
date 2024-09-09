@@ -56,6 +56,7 @@ public class WeeklyCurationQueueTask {
         File weeklyFile = null;
         log.info("Running Publication weekly stats for {}", formattedWeeklyDate);
         try {
+            log.info("Classpath is {}", path);
             int lastIdx = path.lastIndexOf("/");
             String weeklyFilepath = path.substring(0, lastIdx + 1) + filename;
             log.info("The weeklyFilepath is  {}", weeklyFilepath);
