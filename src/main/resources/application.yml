@@ -81,6 +81,12 @@ ftp:
   app_folder: /curation_app_literature_upload_dev
   weekly_stats_folder: /curation_weekly_stats_dev
 
+
+curation:
+  weekly:
+    reports:
+      path: /var/log/gwas/WeeklyPublicationStats.tsv
+
 springdoc:
   swagger-ui:
     url: /curation-doc.yaml

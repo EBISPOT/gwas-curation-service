@@ -32,8 +32,8 @@ public class CurationUtil {
 
     private static final Logger log = LoggerFactory.getLogger(CurationUtil.class);
 
-    @Value("classpath:WeeklyPublicationStats.tsv")
-    private static Resource classPathResource;
+    @Value("${curation.weekly.reports.path}")
+    private static String classPathResource;
 
 
     public static List<String> sToList(String s) {
@@ -128,12 +128,10 @@ public class CurationUtil {
 
     public static String getDefaultClassPath() {
         try {
-
-            String path = classPathResource.getURI().getPath();
             String appPath = new DefaultResourceLoader().getResource("application.yml").getURI().getPath();
-            log.info("The classpath of WeeklyPublicationStats is {}", path);
+            log.info("The classpath of WeeklyPublicationStats is {}", classPathResource);
             log.info("The classpath of application yamls is {}", appPath);
-            return path;
+            return classPathResource;
         }catch(IOException ex){
             log.error("Exception in getDefaultClassPath",ex.getMessage(),ex);
             return null;
