@@ -7,8 +7,12 @@ import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
+import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EFOTraitWrapperDTO;
 import uk.ac.ebi.spot.gwas.deposition.util.DateTimeCommon;
@@ -27,6 +31,7 @@ import java.util.stream.Collectors;
 public class CurationUtil {
 
     private static final Logger log = LoggerFactory.getLogger(CurationUtil.class);
+
 
 
     public static List<String> sToList(String s) {
@@ -117,16 +122,6 @@ public class CurationUtil {
             log.error("Exception in formatting Current date ",ex.getMessage(),ex);
         }
         return null;
-    }
-
-    public static String getDefaultClassPath() {
-        try {
-            return new DefaultResourceLoader().getResource("WeeklyPublicationStats.tsv").getURI().getPath();
-        }catch(IOException ex){
-            log.error("Exception in getDefaultClassPath",ex.getMessage(),ex);
-            return null;
-        }
-
     }
 
 

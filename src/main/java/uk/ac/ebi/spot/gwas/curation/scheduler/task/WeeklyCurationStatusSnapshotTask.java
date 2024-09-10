@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.service.CurationEmailService;
 import uk.ac.ebi.spot.gwas.curation.service.FtpService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationAuditEntryService;
@@ -36,21 +37,25 @@ public class WeeklyCurationStatusSnapshotTask {
 
     FtpService ftpService;
 
+    DepositionCurationConfig depositionCurationConfig;
+
     @Autowired
     public WeeklyCurationStatusSnapshotTask(PublicationAuditEntryService publicationAuditEntryService,
                                             FileHandler fileHandler,
                                             CurationEmailService curationEmailService,
-                                            FtpService ftpService) {
+                                            FtpService ftpService,
+                                            DepositionCurationConfig depositionCurationConfig) {
         this.publicationAuditEntryService = publicationAuditEntryService;
         this.fileHandler = fileHandler;
         this.curationEmailService = curationEmailService;
         this.ftpService = ftpService;
-        path = CurationUtil.getDefaultClassPath();
+        this.depositionCurationConfig = depositionCurationConfig;
     }
 
 
     public void buildStats() {
         log.info("Inside buildStats of WeeklyCurationStatusSnapshotTask");
+        path = depositionCurationConfig.getClassPathResource();
         int dayOfYear = DateTime.now().dayOfYear().get();
         DateTime aWeekAgo = DateTime.now().minusDays(dayOfYear);
         CurationStatusSnapshotStats curationStatusSnapshotStats = publicationAuditEntryService.getCurationStatusSnapshotStats(aWeekAgo);

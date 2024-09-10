@@ -25,8 +25,8 @@ spring:
 
 
   mail:
-    host: outgoing.ebi.ac.uk
-    port: 587
+    host: hh-smtp.ebi.ac.uk
+    port: 25
     properties:
       mail:
         smtp:
@@ -43,6 +43,13 @@ quartz:
     #dbName: deposition-backend-sandbox
     dbName: gwasdepo
     active: true
+  jobs:
+    weekly-publication-stats:
+      schedule: 0 */15 * 98 * *
+    weekly-curationstatus-stats:
+      schedule: 0 */20 * 98 * *
+    weekly-curationqueue-stats:
+      schedule: 0 */25 * 98 * *
 
 gwas-curation:
   auth:

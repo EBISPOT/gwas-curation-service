@@ -15,11 +15,11 @@ quartz:
     mongodb-pool-size: 10
   jobs:
     weekly-publication-stats:
-      schedule: 0 10 16 98 * 1
+      schedule: 0 10 17 98 * 3
     weekly-curationstatus-stats:
-      schedule: 0 10 17 98 * 1
+      schedule: 0 10 17 98 * 3
     weekly-curationqueue-stats:
-      schedule: 0 10 18 98 * 1
+      schedule: 0 10 17 98 * 3
 
 gwas-curation:
   auth:
@@ -80,6 +80,12 @@ ftp:
   pass:
   app_folder: /curation_app_literature_upload_dev
   weekly_stats_folder: /curation_weekly_stats_dev
+
+
+curation:
+  weekly:
+    reports:
+      path: /var/log/gwas/WeeklyPublicationStats.tsv
 
 springdoc:
   swagger-ui:
