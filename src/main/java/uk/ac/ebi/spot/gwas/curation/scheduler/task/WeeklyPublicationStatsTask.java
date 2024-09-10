@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.service.CurationEmailService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationAuditEntryService;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
@@ -35,19 +36,23 @@ public class WeeklyPublicationStatsTask {
 
     CurationEmailService curationEmailService;
 
+    DepositionCurationConfig depositionCurationConfig;
+
     @Autowired
     public WeeklyPublicationStatsTask(PublicationAuditEntryService publicationAuditEntryService,
                                       FileHandler fileHandler,
-                                      CurationEmailService curationEmailService) {
+                                      CurationEmailService curationEmailService,
+                                      DepositionCurationConfig depositionCurationConfig) {
         this.publicationAuditEntryService = publicationAuditEntryService;
         this.fileHandler = fileHandler;
         this.curationEmailService = curationEmailService;
-        path = CurationUtil.getDefaultClassPath();
+        this.depositionCurationConfig = depositionCurationConfig;
     }
 
     public void buildStats() {
         log.info("Inside buildStats of WeeklyPublicationStatsTask");
         DateTime aWeekAgo = DateTime.now().minusDays(7);
+        path = depositionCurationConfig.getClassPathResource();
         PublicationWeeklyStats publicationWeeklyStats =  publicationAuditEntryService.getPublicationStats(aWeekAgo);
         FileOutputStream fos;
         String formattedWeeklyDate = CurationUtil.getCurrentDate();
@@ -59,7 +64,7 @@ public class WeeklyPublicationStatsTask {
         try {
            log.info("The classoath is  {}",path);
            int lastIdx = path.lastIndexOf("/");
-            String weeklyFilepath= path.substring(0,lastIdx+1) + filename;
+           String weeklyFilepath= path.substring(0,lastIdx+1) + filename;
             log.info("The weeklyFilepath is  {}",weeklyFilepath);
             weeklyFile = new File(weeklyFilepath);
             if(!weeklyFile.exists()) {

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
 import uk.ac.ebi.spot.gwas.curation.service.CurationEmailService;
 import uk.ac.ebi.spot.gwas.curation.service.FtpService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationAuditEntryService;
@@ -34,20 +35,24 @@ public class WeeklyCurationQueueTask {
 
     FtpService ftpService;
 
+    DepositionCurationConfig depositionCurationConfig;
+
     @Autowired
     public WeeklyCurationQueueTask(PublicationAuditEntryService publicationAuditEntryService,
                                    FileHandler fileHandler,
                                    CurationEmailService curationEmailService,
-                                   FtpService ftpService) {
+                                   FtpService ftpService,
+                                   DepositionCurationConfig depositionCurationConfig) {
         this.publicationAuditEntryService = publicationAuditEntryService;
         this.fileHandler = fileHandler;
         this.curationEmailService = curationEmailService;
         this.ftpService = ftpService;
-        path = CurationUtil.getDefaultClassPath();
+        this.depositionCurationConfig = depositionCurationConfig;
     }
 
     public void buildStats() {
         log.info("Inside buildStats of WeeklyCurationQueueTask");
+        path = depositionCurationConfig.getClassPathResource();
         List<CurationQueueStats> curationQueueStats = publicationAuditEntryService.getCurationQueueStats();
         FileOutputStream fos;
         String formattedWeeklyDate = CurationUtil.getCurrentDate();
