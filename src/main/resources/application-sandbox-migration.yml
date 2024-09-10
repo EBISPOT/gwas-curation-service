@@ -45,11 +45,11 @@ quartz:
     active: true
   jobs:
     weekly-publication-stats:
-      schedule: 0 */15 * 98 * *
+      schedule: 0 00 18 98 * 3
     weekly-curationstatus-stats:
-      schedule: 0 */20 * 98 * *
+      schedule: 0 00 18 98 * 3
     weekly-curationqueue-stats:
-      schedule: 0 */25 * 98 * *
+      schedule: 0 00 18 98 * 3
 
 gwas-curation:
   auth:
@@ -61,6 +61,9 @@ gwas-curation:
   proxy-prefix:
   solr:
     enabled: true
+  email-config:
+    to-address: gwas-dev-logs@ebi.ac.uk
+    #to-address: sajo@ebi.ac.uk
 
 email:
   enabled: true
