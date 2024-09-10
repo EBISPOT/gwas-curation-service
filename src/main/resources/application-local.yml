@@ -91,6 +91,10 @@ goci:
       reported-traits: /api/v1/disease-traits
       search-reported-traits: /api/v1/disease-traits/search
 
+curation:
+  weekly:
+    reports:
+      path: classpath:WeeklyPublicationStats.tsv
 
 rabbitmq:
   queue-name: study_change_sandbox
