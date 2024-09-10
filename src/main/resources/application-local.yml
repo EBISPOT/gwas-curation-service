@@ -52,6 +52,13 @@ quartz:
     active: true
     dbName: gwasdepo
     isClustered: false
+  jobs:
+    weekly-publication-stats:
+      schedule: 0 09 14 98 * *
+    weekly-curationstatus-stats:
+      schedule: 0 15 22 98 * *
+    weekly-curationqueue-stats:
+      schedule: 0 15 22 98 * *
 
 gwas-deposition-service:
   #url: http://hh-rke-wp-webadmin-09-worker-2.caas.ebi.ac.uk:30183/gwas/deposition/api

@@ -32,8 +32,6 @@ public class CurationUtil {
 
     private static final Logger log = LoggerFactory.getLogger(CurationUtil.class);
 
-    @Value("${curation.weekly.reports.path}")
-    private static String classPathResource;
 
 
     public static List<String> sToList(String s) {
@@ -124,14 +122,6 @@ public class CurationUtil {
             log.error("Exception in formatting Current date ",ex.getMessage(),ex);
         }
         return null;
-    }
-
-    public static String getDefaultClassPath() {
-            //String appPath = new DefaultResourceLoader().getResource("application.yml").getURI().getPath();
-            log.info("The classpath of WeeklyPublicationStats is {}", classPathResource);
-            //log.info("The classpath of application yamls is {}", appPath);
-            return classPathResource;
-
     }
 
 

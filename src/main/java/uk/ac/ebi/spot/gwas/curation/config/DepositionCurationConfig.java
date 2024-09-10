@@ -31,6 +31,9 @@ public class DepositionCurationConfig {
     @Value("${gwas-curation.proxy-prefix:#{NULL}}")
     private String proxy_prefix;
 
+    @Value("${curation.weekly.reports.path}")
+    private  String classPathResource;
+
 
     public String getDbName() {
         return dbName;
@@ -58,4 +61,8 @@ public class DepositionCurationConfig {
 
     public String getProxy_prefix() { return proxy_prefix; }
 
+
+    public String getClassPathResource() {
+        return classPathResource;
+    }
 }
