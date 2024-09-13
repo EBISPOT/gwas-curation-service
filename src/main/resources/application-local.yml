@@ -46,6 +46,8 @@ gwas-curation:
       auth-mechanism: JWT_DOMAIN
   solr:
     enabled: true
+  email-config:
+    to-address: sajo@ebi.ac.uk
 
 quartz:
   scheduler:
