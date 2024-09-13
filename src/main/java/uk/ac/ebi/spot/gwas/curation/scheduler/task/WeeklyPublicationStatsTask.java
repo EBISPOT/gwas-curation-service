@@ -51,7 +51,7 @@ public class WeeklyPublicationStatsTask {
 
     public void buildStats() {
         log.info("Inside buildStats of WeeklyPublicationStatsTask");
-        DateTime aWeekAgo = DateTime.now().minusDays(60);
+        DateTime aWeekAgo = DateTime.now().minusDays(7);
         path = depositionCurationConfig.getClassPathResource();
         PublicationWeeklyStats publicationWeeklyStats =  publicationAuditEntryService.getPublicationStats(aWeekAgo);
         FileOutputStream fos;
