@@ -299,7 +299,7 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
         long bucket = cntPubs/1000;
         List<PublicationAuditEntry> publicationAuditEntries = new ArrayList<>();
         for (int i = 0; i <= bucket; i++ ) {
-            log.info("Solr Index Page running is " + i);
+            log.info("Publication audit page is running " + i);
             Pageable pageable = new PageRequest(i, 1000);
             Page<PublicationAuditEntry> pages = publicationAuditEntryRepository.findAll(pageable);
             publicationAuditEntries.addAll(pages.stream().filter(pubAudit -> pubAudit.getEvent().equals(PublicationEventType.CURATION_STATUS_UPDATED.name()))
