@@ -42,7 +42,7 @@ quartz:
   scheduler:
     #dbName: deposition-backend-sandbox
     dbName: gwasdepo
-    active: true
+    active: false
   jobs:
     weekly-publication-stats:
       schedule: 0 00 18 98 * 3
