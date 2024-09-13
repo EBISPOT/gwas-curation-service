@@ -54,7 +54,7 @@ quartz:
     isClustered: false
   jobs:
     weekly-publication-stats:
-      schedule: 0 47 10 98 * *
+      schedule: 0 34 13 98 * *
     weekly-curationstatus-stats:
       schedule: 0 15 22 98 * *
     weekly-curationqueue-stats:
