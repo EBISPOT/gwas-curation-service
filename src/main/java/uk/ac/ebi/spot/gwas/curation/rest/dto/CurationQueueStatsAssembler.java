@@ -58,7 +58,7 @@ public class CurationQueueStatsAssembler {
                 .curationStatus(publication.getCurationStatusId() != null ? curationStatusMap.get(publication.getCurationStatusId()) : null)
                 .curator(publication.getCuratorId() != null ? curatorMap.get(publication.getCuratorId()) : null)
                 .firstAuthor(publication.getFirstAuthorId() != null ? getFirstAuthorFullName(publicationAuthorService.
-                        getAuthorDetail(publication.getFirstAuthorId())) : null)
+                        getAuthorDetail(publication.getFirstAuthorId())) : publication.getFirstAuthor())
                 .publicationDate(CurationUtil.getFormattedDate(publication.getPublicationDate()))
                 .publicationYear(String.valueOf(publication.getPublicationDate().getYear()))
                 .publicationMonth(String.valueOf(publication.getPublicationDate().getMonthOfYear()))

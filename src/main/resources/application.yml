@@ -15,7 +15,7 @@ quartz:
     mongodb-pool-size: 10
   jobs:
     weekly-publication-stats:
-      schedule: 0 10 17 98 * 3
+      schedule: 0 06 15 98 * 4
     weekly-curationstatus-stats:
       schedule: 0 10 17 98 * 3
     weekly-curationqueue-stats:
