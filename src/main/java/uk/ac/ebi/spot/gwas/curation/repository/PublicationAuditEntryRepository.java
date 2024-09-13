@@ -13,4 +13,6 @@ public interface PublicationAuditEntryRepository extends MongoRepository<Publica
       Page<PublicationAuditEntry> findByPublicationId(String pubId, Pageable pageable);
 
       List<PublicationAuditEntry> findByTimestampAfter(DateTime dateTime);
+
+      Page<PublicationAuditEntry> findAll(Pageable pageable);
 }

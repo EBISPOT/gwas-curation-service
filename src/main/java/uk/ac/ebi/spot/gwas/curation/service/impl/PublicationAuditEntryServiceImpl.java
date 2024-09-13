@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.spot.gwas.curation.repository.CurationStatusSnapshotStatsEntryRepository;
@@ -136,16 +137,30 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
                 .filter(entry -> entry.getEventDetails().contains("Publish Study"))
                 .count();
         Integer studiesPubStudyCount = filterPublicationAuditEntriesStudies(pubEntries, "Publish Study", PublicationEventType.CURATION_STATUS_UPDATED.name());
-        Map<String, String> pubUserMapPubStudy= new HashMap<>();
-        Map<String, String> pubUserMapSubComp = new HashMap<>();
-        pubEntries.forEach(pubEntry -> {
+        Map<String, Set<String>> pubUserMapPubStudy= new HashMap<>();
+        Map<String, Set<String>> pubUserMapSubComp = new HashMap<>();
+        List<PublicationAuditEntry> pubEntriesSubComp = getPubEntriesForSubComplete();
+        pubEntriesSubComp.forEach(pubEntry -> {
             if (pubUserMapSubComp.get(pubEntry.getPublicationId()) == null ) {
-                pubUserMapSubComp.put(pubEntry.getPublicationId(), getPublicationAuditPairForSubComplete(pubEntry));
+                Set<String> subCompList = new HashSet<>();
+                subCompList.add(pubEntry.getUserId());
+                pubUserMapSubComp.put(pubEntry.getPublicationId(), subCompList);
+            } else {
+                pubUserMapSubComp.get(pubEntry.getPublicationId()).add(pubEntry.getUserId());
             }
         });
         pubEntries.forEach(pubEntry ->  {
+            String userId = getPublicationAuditPairForPubStudies(pubEntry);
             if (pubUserMapPubStudy.get(pubEntry.getPublicationId()) == null ) {
-                pubUserMapPubStudy.put(pubEntry.getPublicationId(), getPublicationAuditPairForPubStudies(pubEntry));
+                Set<String> pubStudyList = new HashSet<>();
+                if(userId != null) {
+                    pubStudyList.add(userId);
+                }
+                pubUserMapPubStudy.put(pubEntry.getPublicationId(), pubStudyList);
+            } else {
+                if(userId != null) {
+                    pubUserMapPubStudy.get(pubEntry.getPublicationId()).add(userId);
+                }
             }
         });
         AtomicInteger countSingleLevelComplete = new AtomicInteger();
@@ -153,14 +168,16 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
         pubEntries.forEach(pubEntry -> {
             log.info("Publication is {}",pubEntry.getPublicationId());
             log.debug("Pub Event Details is {}",pubEntry.getEventDetails());
-            String userEmailSubComp = pubUserMapPubStudy.get(pubEntry.getPublicationId());
+            Set<String> userEmailSubComp = pubUserMapPubStudy.get(pubEntry.getPublicationId());
             log.debug("userEmailSubComp {}",userEmailSubComp);
-            String userEmailPubStudy = pubUserMapSubComp.get(pubEntry.getPublicationId());
+            Set<String> userEmailPubStudy = pubUserMapSubComp.get(pubEntry.getPublicationId());
             log.debug("userEmailPubStudy {}",userEmailPubStudy);
             if(!uniquePubs.contains(pubEntry.getPublicationId())) {
-                if (userEmailSubComp != null && userEmailPubStudy != null) {
-                    if (userEmailSubComp.equalsIgnoreCase(userEmailPubStudy)) {
-                        countSingleLevelComplete.getAndIncrement();
+                if (!userEmailSubComp.isEmpty() && !userEmailPubStudy.isEmpty()) {
+                    for( String userPubStudy : userEmailPubStudy) {
+                        if(userEmailSubComp.contains(userPubStudy)) {
+                            countSingleLevelComplete.getAndIncrement();
+                        }
                     }
                 }
             }
@@ -275,6 +292,21 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
         return submissions.stream()
                 .filter(sub -> sub.getType().equals(SubmissionType.METADATA.name()))
                 .findFirst();
+    }
+
+    private List<PublicationAuditEntry> getPubEntriesForSubComplete() {
+        long cntPubs = publicationAuditEntryRepository.count();
+        long bucket = cntPubs/1000;
+        List<PublicationAuditEntry> publicationAuditEntries = new ArrayList<>();
+        for (int i = 0; i <= bucket; i++ ) {
+            log.info("Publication audit page is running " + i);
+            Pageable pageable = new PageRequest(i, 1000);
+            Page<PublicationAuditEntry> pages = publicationAuditEntryRepository.findAll(pageable);
+            publicationAuditEntries.addAll(pages.stream().filter(pubAudit -> pubAudit.getEvent().equals(PublicationEventType.CURATION_STATUS_UPDATED.name()))
+                    .filter(pubAudit -> pubAudit.getEventDetails().contains("Submission complete"))
+                    .collect(Collectors.toList()));
+        }
+        return publicationAuditEntries;
     }
 }
 

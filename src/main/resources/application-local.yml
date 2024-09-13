@@ -46,6 +46,8 @@ gwas-curation:
       auth-mechanism: JWT_DOMAIN
   solr:
     enabled: true
+  email-config:
+    to-address: sajo@ebi.ac.uk
 
 quartz:
   scheduler:
@@ -54,7 +56,7 @@ quartz:
     isClustered: false
   jobs:
     weekly-publication-stats:
-      schedule: 0 09 14 98 * *
+      schedule: 0 34 13 98 * *
     weekly-curationstatus-stats:
       schedule: 0 15 22 98 * *
     weekly-curationqueue-stats:
