@@ -143,13 +143,23 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
         pubEntriesSubComp.forEach(pubEntry -> {
             if (pubUserMapSubComp.get(pubEntry.getPublicationId()) == null ) {
                 Set<String> subCompList = new HashSet<>();
-                subCompList.add(pubEntry.getUserId());
+                if(pubEntry.getUserId() != null) {
+                    subCompList.add(pubEntry.getUserId());
+                }
                 pubUserMapSubComp.put(pubEntry.getPublicationId(), subCompList);
             } else {
-                pubUserMapSubComp.get(pubEntry.getPublicationId()).add(pubEntry.getUserId());
+                if(pubEntry.getUserId() != null) {
+                    pubUserMapSubComp.get(pubEntry.getPublicationId()).add(pubEntry.getUserId());
+                }
             }
         });
-        pubEntries.forEach(pubEntry ->  {
+
+
+        List<PublicationAuditEntry> pubAuditEntriesOnly = pubEntries.stream()
+                .filter(pubEntry -> pubEntry.getPublicationId() != null)
+                        .collect(Collectors.toList());
+
+        pubAuditEntriesOnly.forEach(pubEntry ->  {
             String userId = getPublicationAuditPairForPubStudies(pubEntry);
             if (pubUserMapPubStudy.get(pubEntry.getPublicationId()) == null ) {
                 Set<String> pubStudyList = new HashSet<>();
@@ -165,7 +175,7 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
         });
         AtomicInteger countSingleLevelComplete = new AtomicInteger();
         Set<String> uniquePubs = new HashSet<>();
-        pubEntries.forEach(pubEntry -> {
+        pubAuditEntriesOnly.forEach(pubEntry -> {
             log.info("Publication is {}",pubEntry.getPublicationId());
             log.debug("Pub Event Details is {}",pubEntry.getEventDetails());
             Set<String> userEmailSubComp = pubUserMapPubStudy.get(pubEntry.getPublicationId());
