@@ -15,7 +15,7 @@ quartz:
     mongodb-pool-size: 10
   jobs:
     weekly-publication-stats:
-      schedule: 0 00 21 98 * 1
+      schedule: 0 10 13 98 * 6
     weekly-curationstatus-stats:
       schedule: 0 10 21 98 * 1
     weekly-curationqueue-stats:
@@ -32,8 +32,8 @@ gwas-curation:
   solr:
     enabled: true
   email-config:
-    to-address: gwas-curator@ebi.ac.uk,gwas-dev-logs@ebi.ac.uk
-    #to-address: sajo@ebi.ac.uk
+    #to-address: gwas-curator@ebi.ac.uk,gwas-dev-logs@ebi.ac.uk
+    to-address: sajo@ebi.ac.uk
     base-url: https://www.ebi.ac.uk/gwas/deposition/submission/
     docs-url: https://www.ebi.ac.uk/gwas/docs/submission#link-15
     emails:
