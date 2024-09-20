@@ -183,7 +183,7 @@ public class PublicationAuditEntryServiceImpl implements PublicationAuditEntrySe
             Set<String> userEmailPubStudy = pubUserMapSubComp.get(pubEntry.getPublicationId());
             log.debug("userEmailPubStudy {}",userEmailPubStudy);
             if(!uniquePubs.contains(pubEntry.getPublicationId())) {
-                if (!userEmailSubComp.isEmpty() && !userEmailPubStudy.isEmpty()) {
+                if (userEmailSubComp != null &&  !userEmailSubComp.isEmpty() && userEmailPubStudy != null && !userEmailPubStudy.isEmpty()) {
                     for( String userPubStudy : userEmailPubStudy) {
                         if(userEmailSubComp.contains(userPubStudy)) {
                             countSingleLevelComplete.getAndIncrement();
