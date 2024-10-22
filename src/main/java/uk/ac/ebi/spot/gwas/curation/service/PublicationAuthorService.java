@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface PublicationAuthorService {
 
-    public List<String> addAuthorsForPublication(EuropePMCData europePMCData, User user);
+    public List<String> addAuthorsForPublication(EuropePMCData europePMCData, User user, String publicationId);
 
     public String getFirstAuthorDetails(PublicationAuthorDto publicationAuthorDto, User user);
 
