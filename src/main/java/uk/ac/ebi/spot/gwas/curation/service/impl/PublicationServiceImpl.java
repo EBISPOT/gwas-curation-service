@@ -1,6 +1,7 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.similarity.CosineDistance;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.apache.commons.text.similarity.LevenshteinDistance;
@@ -91,6 +92,9 @@ public class PublicationServiceImpl implements PublicationService {
 
     @Autowired
     PublicationRabbitMessageService publicationRabbitMessageService;
+
+    @Autowired
+    PublicationAuthorsSortRepository publicationAuthorsSortRepository;
 
     @Autowired
     UserService userService;
@@ -195,22 +199,23 @@ public class PublicationServiceImpl implements PublicationService {
 
     public  Publication importNewPublication(String pmid, User user) throws PubmedLookupException, EuropePMCException {
 
-     EuropePMCData europePMCData = europepmcPubMedSearchService.createStudyByPubmed(pmid);
-     PublicationDto publicationDto =  europePMCData.getPublication();
-     Publication publication = publicationDtoAssembler.disassemble(publicationDto, user);
-     publication.setAuthors(publicationAuthorService.
-                addAuthorsForPublication(europePMCData , user));
-     try {
-         publication.setCurationStatusId(curationStatusService.findCurationStatusByStatus("Awaiting submission").getId());
-         publication.setCuratorId(curatorService.findCuratorByLastName("Level 1 Curator").getId());
-     }
-     catch (NullPointerException npe) {
-         log.error("Warning: EMPC Import - Null pointer exception when assigning CurationStatus/Curator for pmid");
-     }
-     publication.setCreated(new Provenance(DateTime.now(), user.getId()));
-     publication.setStatus(PublicationStatus.ELIGIBLE.name());
-     addFirstAuthorToPublication(publication, europePMCData,  user);
-     return  publication;
+        EuropePMCData europePMCData = europepmcPubMedSearchService.createStudyByPubmed(pmid);
+        PublicationDto publicationDto =  europePMCData.getPublication();
+        Publication publication = publicationDtoAssembler.disassemble(publicationDto, user);
+        Publication dbPublication = savePublication(publication);
+        publication.setAuthors(publicationAuthorService.
+                addAuthorsForPublication(europePMCData , user, dbPublication.getId()));
+        try {
+            dbPublication.setCurationStatusId(curationStatusService.findCurationStatusByStatus("Awaiting submission").getId());
+            dbPublication.setCuratorId(curatorService.findCuratorByLastName("Level 1 Curator").getId());
+        }
+        catch (NullPointerException npe) {
+            log.error("Warning: EMPC Import - Null pointer exception when assigning CurationStatus/Curator for pmid");
+        }
+        dbPublication.setCreated(new Provenance(DateTime.now(), user.getId()));
+        dbPublication.setStatus(PublicationStatus.ELIGIBLE.name());
+        addFirstAuthorToPublication(dbPublication, europePMCData,  user);
+        return  publication;
     }
 
     public void addFirstAuthorToPublication(Publication publication, EuropePMCData europePMCData, User user) {
@@ -346,11 +351,11 @@ public class PublicationServiceImpl implements PublicationService {
 
                 try {
                     Publication publicationImported = importNewPublication(pmid, user);
-                    List<PublicationAuthor>  authors = publicationRabbitMessageService.
-                            getAuthorDetails(publicationImported.getAuthors());
+                    Map<Integer, PublicationAuthor> authortSortMap= publicationRabbitMessageService.
+                            getAuthorDetails(publicationImported.getAuthors(), publicationImported.getId());
                     PublicationAuthor firstAuthor = publicationRabbitMessageService.
                             getFirstAuthor(publicationImported.getFirstAuthorId());
-                    publicationMQProducer.send(publicationRabbitMessageAssembler.assemble(publicationImported, authors,
+                    publicationMQProducer.send(publicationRabbitMessageAssembler.assemble(publicationImported, authortSortMap,
                             firstAuthor, user));
                     PublicationStatusReport statusReport = new PublicationStatusReport();
                     statusReport.setPmid(pmid);

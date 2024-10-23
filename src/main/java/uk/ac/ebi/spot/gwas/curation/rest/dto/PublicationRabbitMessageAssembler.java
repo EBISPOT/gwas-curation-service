@@ -10,8 +10,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.PublicationAuthor;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationRabbitMessage;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 @Component
 public class PublicationRabbitMessageAssembler {
@@ -25,17 +24,21 @@ public class PublicationRabbitMessageAssembler {
     @Autowired
     PublicationAuthorDtoAssembler publicationAuthorDtoAssembler;
 
-   public PublicationRabbitMessage assemble(Publication publication, List<PublicationAuthor> authors,
-                                            PublicationAuthor firstAuthor, User user) {
+
+   public PublicationRabbitMessage assemble(Publication publication, Map<Integer, PublicationAuthor> authorSortMap,
+                                            PublicationAuthor firstAuthor,
+                                            User user) {
        return PublicationRabbitMessage.builder()
                .pmid(publication.getPmid())
-               .authors(authors.stream()
-                       .map(pubAuthor ->  publicationAuthorDtoAssembler.assemble(pubAuthor,user))
-                       .collect(Collectors.toList()))
+               .authors(authorSortMap.entrySet().stream()
+                       .collect(Collectors.toMap(Map.Entry::getKey,
+                               e -> publicationAuthorDtoAssembler.assemble(e.getValue(), user))))
                .firstAuthor(publicationAuthorDtoAssembler.assemble(firstAuthor, user))
                .publicationDate(CurationUtil.convertLocalDateToString(publication.getPublicationDate()))
                .title(publication.getTitle())
                .journal(publication.getJournal())
                .build();
    }
+
+
 }
