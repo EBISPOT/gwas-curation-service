@@ -40,6 +40,7 @@ import uk.ac.ebi.spot.gwas.deposition.exception.EuropePMCException;
 import uk.ac.ebi.spot.gwas.deposition.exception.PubmedLookupException;
 import uk.ac.ebi.spot.gwas.deposition.solr.SOLRPublication;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -346,6 +347,7 @@ public class PublicationServiceImpl implements PublicationService {
                 statusReport.setPmid(pmid);
                 statusReport.setPublicationDto(publicationDtoAssembler.assemble(publication, user));
                 statusReport.setStatus("PMID already exists");
+                log.info("PMID already exists {}", pmid);
                 reports.add(statusReport);
             } else {
 
@@ -361,16 +363,19 @@ public class PublicationServiceImpl implements PublicationService {
                     statusReport.setPmid(pmid);
                     statusReport.setPublicationDto(publicationDtoAssembler.assemble(publicationImported, user));
                     statusReport.setStatus("PMID saved");
+                    log.info("PMID saved {}", pmid);
                     reports.add(statusReport);
                 } catch (EuropePMCException ex){
                     PublicationStatusReport statusReport = new PublicationStatusReport();
                     statusReport.setPmid(pmid);
                     statusReport.setStatus("Couldn't contact EPMC API");
+                    log.info("Couldn't contact EPMC API {}", pmid);
                     reports.add(statusReport);
                 }catch (PubmedLookupException ex) {
                     PublicationStatusReport statusReport = new PublicationStatusReport();
                     statusReport.setPmid(pmid);
                     statusReport.setStatus("PMID not found in EPMC");
+                    log.info("PMID not found in EPMC {}", pmid);
                     reports.add(statusReport);
                 }
 
@@ -378,6 +383,18 @@ public class PublicationServiceImpl implements PublicationService {
 
         });
         return reports;
+    }
+
+    public void syncPublication(String pmid, User user) {
+        Publication publication = getPublicationDetailsByPmidOrPubId(pmid, true);
+        if(publication != null) {
+            Map<Integer, PublicationAuthor> authortSortMap = publicationRabbitMessageService.
+                    getAuthorDetails(publication.getAuthors(), publication.getId());
+            PublicationAuthor firstAuthor = publicationRabbitMessageService.
+                    getFirstAuthor(publication.getFirstAuthorId());
+            publicationMQProducer.send(publicationRabbitMessageAssembler.assemble(publication, authortSortMap,
+                    firstAuthor, user));
+        }
     }
 
     @Override

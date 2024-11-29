@@ -95,6 +95,14 @@ public class PublicationsController {
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @PostMapping(value = "/{pmid}" + DepositionCurationConstants.API_SYNC_PUBLICATION,produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
+    public void syncPublication(@PathVariable String pmid, HttpServletRequest request) {
+        User user = userService.findUser(jwtService.extractUser(CurationUtil.parseJwt(request)), false);
+        publicationService.syncPublication(pmid, user);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{pmid}/linked-submissions",produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasRole('self.GWAS_Curator')")
     public PagedResources<MatchPublicationReportDTO> matchPublication(PagedResourcesAssembler assembler, @PathVariable String pmid,
