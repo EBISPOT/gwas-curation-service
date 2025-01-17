@@ -24,7 +24,7 @@ quartz:
 gwas-curation:
   auth:
     enabled: false
-    cert: aap.der
+    cert: keycloak-cert.der
     auto-curator-service-account: auto-curator-service@ebi.ac.uk
     curators:
       auth-mechanism: JWT_DOMAIN
