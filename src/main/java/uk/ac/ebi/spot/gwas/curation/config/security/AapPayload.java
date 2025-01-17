@@ -1,11 +1,13 @@
 package uk.ac.ebi.spot.gwas.curation.config.security;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class AapPayload {
 
     private String iss;
