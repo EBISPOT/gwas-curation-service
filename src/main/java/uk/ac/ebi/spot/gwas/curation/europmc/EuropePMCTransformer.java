@@ -224,7 +224,7 @@ public class EuropePMCTransformer {
 
             String affiliation = getAffliationDetails(investigator);
 
-                if (affiliation.length() > 700)
+                if (affiliation != null && affiliation.length() > 700)
                     publicationAuthorDto.setAffiliation(affiliation.substring(0, 699));
                 else
                     publicationAuthorDto.setAffiliation(affiliation);
