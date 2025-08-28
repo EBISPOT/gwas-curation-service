@@ -53,7 +53,7 @@ public class DepositionCurationConstants {
 
     public static final String API_PUBLICATION = "/publications";
     public static final String API_PUBLICATION_AUDIT_ENTRIES = "/publication-audit-entries";
-
+    public static final String API_SYNC_PUBLICATION = "/sync-publication";
     public static final String  PARAM_PUBID = "publicationId";
 
 }

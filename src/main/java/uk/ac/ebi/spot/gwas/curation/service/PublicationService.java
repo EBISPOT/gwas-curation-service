@@ -11,6 +11,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationStatusReport;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.SearchPublicationDTO;
 import uk.ac.ebi.spot.gwas.deposition.solr.SOLRPublication;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 
@@ -24,14 +25,11 @@ public interface PublicationService {
 
     SOLRPublication getPublicationFromSolr(String id);
 
+    List<PublicationStatusReport>  createPublication(List<String> pmids, User user);
 
-    List<PublicationStatusReport>  createPublication(List<String> pmids, User user) ;
     Page<MatchPublicationReport>  matchPublication(String pmid, Pageable pageable);
 
-
-
     PublicationDto patchPublication(String pmid, PublicationDto publicationDto, User user);
-
 
     void linkSubmission(String pmid, String submissionId);
 
@@ -44,4 +42,6 @@ public interface PublicationService {
     String getCuratorEventDetails(PublicationDto publicationDto);
 
     List<Publication>  getTotalPublications();
+
+    void syncPublication(String pmid, User user);
 }
