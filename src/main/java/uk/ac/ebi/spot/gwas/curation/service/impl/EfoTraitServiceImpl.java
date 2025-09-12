@@ -45,11 +45,21 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         this.fileHandler = fileHandler;
     }
 
+    // Sanitize helper: strips non-ASCII and normalizes whitespace
+    private static String sanitizeTrait(String value) {
+        if (value == null) {
+            return null;
+        }
+        String asciiOnly = value.replaceAll("[^\\x00-\\x7F]", "");
+        return asciiOnly.replaceAll("\\s+", " ").trim();
+    }
+
     @Override
     public EfoTrait createEfoTrait(EfoTrait efoTrait, User user) {
 
         EfoTrait efoTraitCreated = null;
         try {
+            efoTrait.setTrait(sanitizeTrait(efoTrait.getTrait()));
             if(validateEFOTraits(efoTrait)) {
                 efoTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
                 String uri = efoTrait.getUri();
@@ -70,6 +80,7 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         UploadReportWrapper uploadReportWrapper = new UploadReportWrapper();
         efoTraits.forEach(efoTrait -> {
             try {
+                efoTrait.setTrait(sanitizeTrait(efoTrait.getTrait()));
                 if(validateEFOTraits(efoTrait)) {
                     createEfoTrait(efoTrait, user);
                     report.add(new TraitUploadReport(efoTrait.getTrait(), "Trait successfully added : " + efoTrait.getTrait(), null));
@@ -103,8 +114,10 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findById(traitId);
         if (efoTraitOptional.isPresent()) {
             EfoTrait existingTrait = efoTraitOptional.get();
-            if(!existingTrait.getTrait().trim().equals(efoTraitDto.getTrait().trim())) {
-                List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitIgnoreCase(efoTraitDto.getTrait().trim());
+            String sanitizedTrait = sanitizeTrait(efoTraitDto.getTrait());
+
+            if(!existingTrait.getTrait().trim().equals(sanitizedTrait)) {
+                List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitIgnoreCase(sanitizedTrait);
                 if (existingEfoTraits != null && !existingEfoTraits.isEmpty()) {
                     String existingEFOsMessage = "EFO Traits already exists for trait -> " + existingTrait.getTrait().trim();
                     throw new CannotCreateTraitWithDuplicateNameException(existingEFOsMessage);
@@ -136,6 +149,8 @@ public class EfoTraitServiceImpl implements EfoTraitService {
             updatedEfoTrait.setShortForm(uri.substring(uri.lastIndexOf('/') + 1));
             updatedEfoTrait.setCreated(efoTraitOptional.get().getCreated());
             updatedEfoTrait.setUpdated(new Provenance(DateTime.now(), user.getId()));
+            // Apply sanitized trait to the entity before saving
+            updatedEfoTrait.setTrait(sanitizedTrait);
             try {
 
                 return efoTraitRepository.save(updatedEfoTrait);
@@ -191,7 +206,10 @@ public class EfoTraitServiceImpl implements EfoTraitService {
 
     public Boolean validateEFOTraits(EfoTrait efoTrait) {
 
-        List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitIgnoreCase(efoTrait.getTrait().trim());
+        String sanitizedTrait = sanitizeTrait(efoTrait.getTrait());
+        efoTrait.setTrait(sanitizedTrait);
+
+        List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitIgnoreCase(sanitizedTrait);
         List<EfoTrait> existingEfoTraitsUri = efoTraitRepository.findByUri(efoTrait.getUri().trim());
         if(!CurationUtil.validateURLFormat(efoTrait.getUri().trim())) {
             String invalidURIMessage = "The URI value entered \"" + efoTrait.getUri() + "\" is not valid. " +
