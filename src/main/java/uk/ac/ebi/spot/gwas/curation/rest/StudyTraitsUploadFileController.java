@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.MultiTraitStudyMappingDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.JWTService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationAuditService;
@@ -50,6 +51,9 @@ public class StudyTraitsUploadFileController {
     @Autowired
     PublicationAuditService publicationAuditService;
 
+    @Autowired
+    MultiTraitStudyMappingDtoAssembler multiTraitStudyMappingDtoAssembler;
+
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_MULTI_TRAITS + "/files")
     @PreAuthorize("hasRole('self.GWAS_Curator')")
@@ -70,6 +74,22 @@ public class StudyTraitsUploadFileController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         return new HttpEntity<>(traitUploadReport, responseHeaders);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + DepositionCurationConstants.API_MULTI_TRAITS + "/files",
+            produces = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('self.GWAS_Curator')")
+    public HttpEntity<byte[]> downloadMultiTraitStudyMapping(@PathVariable String submissionId) {
+        List<MultiTraitStudyMappingDto>  multiTraitStudyMappingDtos = studiesService.getStudies(submissionId, Pageable.unpaged())
+                .stream().map(multiTraitStudyMappingDtoAssembler::assemble)
+                .collect(Collectors.toList());
+        byte[] result = fileHandler.serializePojoToTsv(multiTraitStudyMappingDtos);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=study-multi-trait.tsv");
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        responseHeaders.add(HttpHeaders.CONTENT_LENGTH, Integer.toString(result.length));
+        return new HttpEntity<>(result, responseHeaders);
     }
 
     @ResponseStatus(HttpStatus.OK)

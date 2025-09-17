@@ -122,3 +122,11 @@ rabbitmq:
     queue-name: publication-sandbox
     exchange-name: publication-exchange-sandbox
     routing-key: publication-route-sandbox
+  efotrait:
+    queue-name: efotrait-sandbox
+    exchange-name: efotrait-exchange-sandbox
+    routing-key: efotrait-route-sandbox
+  diseasetrait:
+    queue-name: diseasetrait-sandbox
+    exchange-name: diseasetrait-exchange-sandbox
+    routing-key: diseasetrait-route-sandbox

@@ -11,9 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.ac.ebi.spot.gwas.deposition.config.RabbitMQConfigProperties;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.MetadataYmlUpdate;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.PublicationRabbitMessage;
-import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudyRabbitMessage;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +51,8 @@ public class MetaDataYmlConfiguration {
         idClassMapping.put("metadataYmlUpdate", MetadataYmlUpdate.class);
         idClassMapping.put("studyIngest", StudyRabbitMessage.class);
         idClassMapping.put("publicationRabbitMessage", PublicationRabbitMessage.class);
+        idClassMapping.put("efoTraitRabbitMessage", EfoTraitRabbitMessage.class);
+        idClassMapping.put("diseaseTraitRabbitMessage", DiseaseTraitRabbitMessage.class);
         classMapper.setIdClassMapping(idClassMapping);
         classMapper.setDefaultType(Map.class);
         classMapper.setTrustedPackages("*");

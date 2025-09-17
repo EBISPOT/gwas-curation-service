@@ -3,8 +3,10 @@ package uk.ac.ebi.spot.gwas.curation.config;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import uk.ac.ebi.spot.gwas.curation.rabbitmq.EFOTraitMQProducer;
 import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.EFOTraitRabbitMessageAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.ProvenanceDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
@@ -40,8 +42,12 @@ public class EfoTraitConfiguration {
     @MockBean
     ProvenanceDtoAssembler provenanceDtoAssembler;
 
+    EFOTraitMQProducer efoTraitMQProducer;
+
+    EFOTraitRabbitMessageAssembler efoTraitRabbitMessageAssembler;
+
     @Bean
     public EfoTraitService efoTraitService() {
-        return new EfoTraitServiceImpl(efoTraitRepository, studyRepository, efoTraitDtoAssembler, fileHandler);
+        return new EfoTraitServiceImpl(efoTraitRepository, studyRepository, efoTraitDtoAssembler, fileHandler, efoTraitMQProducer, efoTraitRabbitMessageAssembler);
     }
 }
