@@ -30,6 +30,7 @@ import uk.ac.ebi.spot.gwas.deposition.exception.CannotCreateTraitWithDuplicateNa
 import uk.ac.ebi.spot.gwas.deposition.exception.CannotDeleteTraitException;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -63,7 +64,18 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         this.diseaseTraitRepository = diseaseTraitRepository;
     }
 
+    // Sanitize helper: Normalises string and strips non-ASCII, i.e. é -> e
+    private static String sanitizeTrait(String value) {
+        value = Normalizer.normalize(value, Normalizer.Form.NFD);
+        if (value == null) {
+            return null;
+        }
+        String asciiOnly = value.replaceAll("[^\\x00-\\x7F]", "");
+        return asciiOnly.replaceAll("\\s+", " ").trim();
+    }
+
     public DiseaseTrait createDiseaseTrait(DiseaseTrait diseaseTrait) {
+        diseaseTrait.setTrait(sanitizeTrait(diseaseTrait.getTrait()));
         Optional<DiseaseTrait> optDiseaseTrait = getDiseaseTraitByTraitName(diseaseTrait.getTrait());
         if(!optDiseaseTrait.isPresent())
         return diseaseTraitRepository.insert(diseaseTrait);
@@ -77,6 +89,7 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         UploadReportWrapper uploadReportWrapper = new UploadReportWrapper();
         diseaseTraits.forEach(diseaseTrait -> {
             try {
+                diseaseTrait.setTrait(sanitizeTrait(diseaseTrait.getTrait()));
                 Optional<DiseaseTrait> optDiseaseTrait = getDiseaseTraitByTraitName(diseaseTrait.getTrait());
                 if(optDiseaseTrait.isPresent())
                     throw new CannotCreateTraitWithDuplicateNameException("Trait already exists with name"+optDiseaseTrait.get().getTrait());
@@ -94,6 +107,7 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
     }
 
     public DiseaseTrait updateDiseaseTrait(DiseaseTrait diseaseTrait) {
+        diseaseTrait.setTrait(sanitizeTrait(diseaseTrait.getTrait()));
         log.info("Inside updateDiseaseTrait()");
         DiseaseTrait diseaseTraitUpdated = diseaseTraitRepository.save(diseaseTrait);
         return diseaseTraitUpdated;
@@ -155,7 +169,7 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         Optional<DiseaseTrait> optDiseaseTrait = this.getDiseaseTrait(traitId);
         if (optDiseaseTrait.isPresent()) {
             DiseaseTrait diseaseTrait = optDiseaseTrait.get();
-            Optional.ofNullable(diseaseTraitDto.getTrait()).ifPresent(trait -> diseaseTrait.setTrait(diseaseTraitDto.getTrait()));
+            Optional.ofNullable(diseaseTraitDto.getTrait()).ifPresent(trait -> diseaseTrait.setTrait(sanitizeTrait(diseaseTraitDto.getTrait())));
 
             diseaseTrait.setUpdated(new Provenance(DateTime.now(), user.getId()));
             return diseaseTraitRepository.save(diseaseTrait);

@@ -22,6 +22,7 @@ import uk.ac.ebi.spot.gwas.deposition.dto.curation.UploadReportWrapper;
 import uk.ac.ebi.spot.gwas.deposition.exception.*;
 
 import javax.validation.ConstraintViolationException;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -45,8 +46,9 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         this.fileHandler = fileHandler;
     }
 
-    // Sanitize helper: strips non-ASCII and normalizes whitespace
+    // Sanitize helper: Normalises string and strips non-ASCII, i.e. é -> e
     private static String sanitizeTrait(String value) {
+        value = Normalizer.normalize(value, Normalizer.Form.NFD);
         if (value == null) {
             return null;
         }
