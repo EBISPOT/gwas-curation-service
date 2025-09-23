@@ -1,5 +1,10 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
+import com.mongodb.client.*;
+import static com.mongodb.client.model.Filters.*;
+
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.spot.gwas.curation.config.RestInteractionConfig;
@@ -16,7 +22,6 @@ import uk.ac.ebi.spot.gwas.curation.repository.SummaryStatsEntryRepository;
 import uk.ac.ebi.spot.gwas.curation.service.CuratorAuthService;
 import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
 import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
-import uk.ac.ebi.spot.gwas.deposition.constants.Status;
 import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
 import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 import uk.ac.ebi.spot.gwas.deposition.domain.User;
@@ -26,7 +31,6 @@ import uk.ac.ebi.spot.gwas.deposition.dto.ingest.BodyOfWorkDto;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 import uk.ac.ebi.spot.gwas.deposition.util.DepositionUtil;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 @Service
@@ -55,6 +59,8 @@ public class SubmissionServiceImpl implements SubmissionService {
     @Autowired
     RestInteractionConfig restInteractionConfig;
 
+    @Autowired
+    MongoTemplate mongoTemplate;
 
 
 
@@ -180,12 +186,34 @@ public class SubmissionServiceImpl implements SubmissionService {
             }
         }
 
-        log.info(" Submission status for {} is {}",submissionId, submissionDto.getSubmissionStatus());
+        log.info(" Submission status for {} is {}", submissionId, submissionDto.getSubmissionStatus());
 
-        Optional.ofNullable(submissionDto.getSubmissionStatus()).ifPresent(status -> submission.setOverallStatus(submissionDto.getSubmissionStatus()));
+        if (submissionDto.getSubmissionStatus() != null) {
+            if (isAllStudiesHaveTraits(submissionId)) {
+                submission.setOverallStatus(submissionDto.getSubmissionStatus());
+            }
+            else {
+                throw new RuntimeException("Submission has studies without traits.");
+            }
+        }
+
 
         return submissionRepository.save(submission);
 
+    }
+
+    private boolean isAllStudiesHaveTraits(String submissionId) {
+        MongoCollection<Document> studiesCollection = mongoTemplate.getCollection("studies");
+        Bson query = and(
+                eq("submissionId", submissionId),
+                or(
+                        eq("efoTraits", null),
+                        size("efoTraits", 0),
+                        eq("diseaseTrait", null),
+                        eq("diseaseTrait", "")
+                )
+        );
+        return studiesCollection.countDocuments(query) == 0;
     }
 
 
