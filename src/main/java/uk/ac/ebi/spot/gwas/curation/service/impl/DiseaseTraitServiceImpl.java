@@ -17,8 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.spot.gwas.curation.config.RestInteractionConfig;
 import uk.ac.ebi.spot.gwas.curation.constants.DepositionCurationConstants;
+import uk.ac.ebi.spot.gwas.curation.rabbitmq.DiseaseTraitMQProducer;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitRabbitMessageAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
@@ -60,6 +62,12 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
     @Autowired
     FileHandler fileHandler;
 
+    @Autowired
+    DiseaseTraitMQProducer diseaseTraitMQProducer;
+
+    @Autowired
+    DiseaseTraitRabbitMessageAssembler diseaseTraitRabbitMessageAssembler;
+
     public DiseaseTraitServiceImpl(DiseaseTraitRepository diseaseTraitRepository) {
         this.diseaseTraitRepository = diseaseTraitRepository;
     }
@@ -77,8 +85,11 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
     public DiseaseTrait createDiseaseTrait(DiseaseTrait diseaseTrait) {
         diseaseTrait.setTrait(sanitizeTrait(diseaseTrait.getTrait()));
         Optional<DiseaseTrait> optDiseaseTrait = getDiseaseTraitByTraitName(diseaseTrait.getTrait());
-        if(!optDiseaseTrait.isPresent())
-        return diseaseTraitRepository.insert(diseaseTrait);
+        if(!optDiseaseTrait.isPresent()) {
+            DiseaseTrait insertedDiseaseTrait = diseaseTraitRepository.insert(diseaseTrait);
+            sendMessage(insertedDiseaseTrait, "insert");
+            return insertedDiseaseTrait;
+        }
         else
         throw new CannotCreateTraitWithDuplicateNameException("Trait already exists with name"+optDiseaseTrait.get().getTrait());
     }
@@ -94,7 +105,8 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
                 if(optDiseaseTrait.isPresent())
                     throw new CannotCreateTraitWithDuplicateNameException("Trait already exists with name"+optDiseaseTrait.get().getTrait());
                 diseaseTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
-                diseaseTraitRepository.insert(diseaseTrait);
+                DiseaseTrait insertedDiseaseTrait =  diseaseTraitRepository.insert(diseaseTrait);
+                sendMessage(insertedDiseaseTrait, "insert");
                 report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait successfully Inserted : "+diseaseTrait.getTrait(),null));
             } catch(DataAccessException | CannotCreateTraitWithDuplicateNameException ex) {
                 uploadReportWrapper.setHasErrors(true);
@@ -110,6 +122,7 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         diseaseTrait.setTrait(sanitizeTrait(diseaseTrait.getTrait()));
         log.info("Inside updateDiseaseTrait()");
         DiseaseTrait diseaseTraitUpdated = diseaseTraitRepository.save(diseaseTrait);
+        sendMessage(diseaseTraitUpdated, "update");
         return diseaseTraitUpdated;
     }
 
@@ -124,8 +137,10 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
                 if(!checkForLinkedStudies(traitId)) {
                     String traitname = "";
                     Optional<DiseaseTrait> diseaseTraitOptional = getDiseaseTrait(traitId);
-                    if(diseaseTraitOptional.isPresent())
+                    if(diseaseTraitOptional.isPresent()) {
                         traitname = getDiseaseTrait(traitId).get().getTrait();
+                        sendMessage(diseaseTraitOptional.get(), "delete");
+                    }
                     diseaseTraitRepository.deleteById(traitId);
                 }
                 else
@@ -172,7 +187,9 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
             Optional.ofNullable(diseaseTraitDto.getTrait()).ifPresent(trait -> diseaseTrait.setTrait(sanitizeTrait(diseaseTraitDto.getTrait())));
 
             diseaseTrait.setUpdated(new Provenance(DateTime.now(), user.getId()));
-            return diseaseTraitRepository.save(diseaseTrait);
+            DiseaseTrait updatedDiseaseTrait = diseaseTraitRepository.save(diseaseTrait);
+            sendMessage(updatedDiseaseTrait, "update");
+            return updatedDiseaseTrait;
         } else {
             throw new EntityNotFoundException("Disease Trait Not found");
         }
@@ -230,4 +247,8 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
 
     }
 
+
+    private void sendMessage(DiseaseTrait diseaseTrait, String operation) {
+        diseaseTraitMQProducer.send(diseaseTraitRabbitMessageAssembler.assemble(diseaseTrait, operation));
+    }
 }

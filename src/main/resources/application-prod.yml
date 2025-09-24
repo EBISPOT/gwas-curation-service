@@ -85,6 +85,14 @@ rabbitmq:
     queue-name: publication
     exchange-name: publication-exchange
     routing-key: publication-route
+  efotrait:
+    queue-name: efotrait
+    exchange-name: efotrait-exchange
+    routing-key: efotrait-route
+  diseasetrait:
+    queue-name: diseasetrait
+    exchange-name: diseasetrait-exchange
+    routing-key: diseasetrait-route
 
 ftp:
   link:

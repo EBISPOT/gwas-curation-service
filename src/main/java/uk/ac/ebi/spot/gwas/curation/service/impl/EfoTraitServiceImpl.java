@@ -6,8 +6,10 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.spot.gwas.curation.rabbitmq.EFOTraitMQProducer;
 import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.EFOTraitRabbitMessageAssembler;
 import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
 import uk.ac.ebi.spot.gwas.curation.util.CurationUtil;
@@ -39,11 +41,19 @@ public class EfoTraitServiceImpl implements EfoTraitService {
 
     private final FileHandler fileHandler;
 
-    public EfoTraitServiceImpl(EfoTraitRepository efoTraitRepository, StudyRepository studyRepository, EfoTraitDtoAssembler efoTraitDtoAssembler, FileHandler fileHandler) {
+    EFOTraitMQProducer efoTraitMQProducer;
+
+    EFOTraitRabbitMessageAssembler efoTraitRabbitMessageAssembler;
+
+    public EfoTraitServiceImpl(EfoTraitRepository efoTraitRepository, StudyRepository studyRepository, EfoTraitDtoAssembler efoTraitDtoAssembler, FileHandler fileHandler,
+                               EFOTraitMQProducer efoTraitMQProducer,
+                               EFOTraitRabbitMessageAssembler efoTraitRabbitMessageAssembler) {
         this.efoTraitRepository = efoTraitRepository;
         this.studyRepository = studyRepository;
         this.efoTraitDtoAssembler = efoTraitDtoAssembler;
         this.fileHandler = fileHandler;
+        this.efoTraitMQProducer = efoTraitMQProducer;
+        this.efoTraitRabbitMessageAssembler = efoTraitRabbitMessageAssembler;
     }
 
     // Sanitize helper: Normalises string and strips non-ASCII, i.e. é -> e
@@ -67,6 +77,7 @@ public class EfoTraitServiceImpl implements EfoTraitService {
                 String uri = efoTrait.getUri();
                 efoTrait.setShortForm(uri.substring(uri.lastIndexOf('/') + 1));
                 efoTraitCreated = efoTraitRepository.insert(efoTrait);
+                sendMessageToQueue(efoTrait, "insert");
             }
         }
         catch (DuplicateKeyException e) {
@@ -155,7 +166,9 @@ public class EfoTraitServiceImpl implements EfoTraitService {
             updatedEfoTrait.setTrait(sanitizedTrait);
             try {
 
-                return efoTraitRepository.save(updatedEfoTrait);
+                EfoTrait savedEfoTrait = efoTraitRepository.save(updatedEfoTrait);
+                sendMessageToQueue(savedEfoTrait,"update");
+                return savedEfoTrait;
             }
             catch (DuplicateKeyException e) {
                 throw new CannotCreateTraitWithDuplicateUriException("Trait with same URI already exists.");
@@ -250,7 +263,10 @@ public class EfoTraitServiceImpl implements EfoTraitService {
                 assignedToStudyTraits.add(traitId);
             }
             else {
+                EfoTrait deletedTrait = efoTraitRepository.findById(traitId).orElse(null);
+                sendMessageToQueue(deletedTrait, "delete");
                 efoTraitRepository.deleteById(traitId);
+
             }
         }
         if (!notFoundTraits.isEmpty()) {
@@ -260,4 +276,10 @@ public class EfoTraitServiceImpl implements EfoTraitService {
             throw new CannotDeleteTraitException("Unable to delete EFO trait " + assignedToStudyTraits + " as they are linked to studies.");
         }
     }
+
+    private void sendMessageToQueue(EfoTrait efoTrait, String operation) {
+
+        efoTraitMQProducer.send(efoTraitRabbitMessageAssembler.assemble(efoTrait, operation));
+    }
+
 }
