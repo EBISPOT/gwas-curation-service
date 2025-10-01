@@ -29,7 +29,7 @@ public class MultiTraitStudyMappingDtoAssembler {
               .filter(Optional::isPresent)
               .map(Optional::get)
               .map(EfoTrait::getShortForm)
-              .collect(Collectors.joining("\\| ")) : "";
+              .collect(Collectors.joining("| ")) : "";
 
       String bgEfoShortForms = study.getBackgroundEfoTraits() != null ?
               study.getBackgroundEfoTraits()
@@ -38,7 +38,7 @@ public class MultiTraitStudyMappingDtoAssembler {
               .filter(Optional::isPresent)
               .map(Optional::get)
               .map(EfoTrait::getShortForm)
-              .collect(Collectors.joining("\\| ")) : "";
+              .collect(Collectors.joining("| ")) : "";
 
       String reportedTrait = Optional.ofNullable(study.getDiseaseTrait())
               .map(traitId -> diseaseTraitService.getDiseaseTrait(traitId))
