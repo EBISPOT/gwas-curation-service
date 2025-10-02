@@ -83,7 +83,7 @@ public class CurationUtil {
 
 
         // The CURIE should be formatted as: PREFIX_1234567 for OBO Foundry ontologies
-        String CURIE_REGEX = "^(([a-zA-Z])+_(\\d\\d\\d\\d\\d\\d\\d))$";
+        String CURIE_REGEX = "^(([a-zA-Z])+_([a-zA-Z]*)?(\\d+))$";
         Pattern curiePattern = Pattern.compile(CURIE_REGEX);
         Matcher curieMatch = curiePattern.matcher(curie);
 
