@@ -1,7 +1,6 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
 //import com.querydsl.core.types.Predicate;
-import com.mongodb.bulk.BulkWriteResult;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +13,11 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ebi.spot.gwas.curation.config.RestInteractionConfig;
 import uk.ac.ebi.spot.gwas.curation.rabbitmq.MetadataYmlUpdatePublisher;
 import uk.ac.ebi.spot.gwas.curation.rabbitmq.StudyIngestPublisher;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
@@ -86,6 +89,12 @@ public class StudiesServiceImpl implements StudiesService {
     @Autowired
     EfoTraitDtoAssembler efoTraitDtoAssembler;
 
+    @Autowired
+    RestTemplate restTemplate;
+
+    @Autowired
+    RestInteractionConfig restInteactionConfig;
+
     @Override
     public Study updateStudies(Study study) {
         log.info("Inside updateStudies");
@@ -96,6 +105,28 @@ public class StudiesServiceImpl implements StudiesService {
                 .task("sumstats_service.app.convert_metadata_to_yaml")
                 .id(UUID.randomUUID().toString()).build());
         return updatedStudy;
+    }
+
+    @Override
+    public ResponseEntity<String> updateFileType(FileTypeUpdateRequestDto request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<FileTypeUpdateRequestDto> entity = new HttpEntity<>(request, headers);
+
+        try {
+            return restTemplate.exchange(
+                    restInteactionConfig.getSumstatsServiceUrl() + restInteactionConfig.getSumstatsServiceFiletypesEndpoint(),
+                    HttpMethod.PATCH,
+                    entity,
+                    String.class
+            );
+        } catch (HttpStatusCodeException ex) {
+            return ResponseEntity
+                    .status(ex.getStatusCode())
+                    .headers(ex.getResponseHeaders())
+                    .body(ex.getResponseBodyAsString());
+        }
     }
 
     @Override

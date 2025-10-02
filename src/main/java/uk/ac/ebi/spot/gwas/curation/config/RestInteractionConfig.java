@@ -33,6 +33,12 @@ public class RestInteractionConfig {
     @Value("${audit.service.url}")
     private String auditServiceUri;
 
+    @Value("${gwas-sumstats-service.url}")
+    private String sumstatsServiceUrl;
+
+    @Value("${gwas-sumstats-service.endpoints.filetypes}")
+    private String sumstatsServiceFiletypesEndpoint;
+
     @Value("${audit.endpoints.publication}")
     private String  auditServicePublicationEndpoint;
 
@@ -78,4 +84,8 @@ public class RestInteractionConfig {
     public String getAuditServicePubAuditEntriesEndpoint() {
         return auditServicePubAuditEntriesEndpoint;
     }
+
+    public String getSumstatsServiceUrl() { return sumstatsServiceUrl; }
+
+    public String getSumstatsServiceFiletypesEndpoint() { return sumstatsServiceFiletypesEndpoint; }
 }
