@@ -28,6 +28,7 @@ public class BodyOfWorkDtoAssembler implements ResourceAssembler<BodyOfWork, Res
         }
 
         return new BodyOfWorkDto(bodyOfWork.getBowId(),
+                bodyOfWork.getBowType(),
                 bodyOfWork.getTitle(),
                 bodyOfWork.getDescription(),
                 AuthorDtoAssembler.assemble(bodyOfWork.getFirstAuthor()),
