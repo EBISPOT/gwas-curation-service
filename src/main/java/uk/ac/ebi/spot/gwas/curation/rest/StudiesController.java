@@ -238,8 +238,9 @@ public class StudiesController {
     }
 
     @PatchMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + "/file-type")
-    @PreAuthorize("hasRole('self.GWAS_Curator')")
-    public ResponseEntity<String> updateFileType(@RequestBody FileTypeUpdateRequestDto fileTypeUpdateRequestDto) {
+    public ResponseEntity<String> updateFileType(@RequestBody FileTypeUpdateRequestDto fileTypeUpdateRequestDto, HttpServletRequest request) {
+        String jwtToken = CurationUtil.parseJwt(request);
+        userService.findUser(jwtService.extractUser(jwtToken), false);
         ResponseEntity<String> response = studiesService.updateFileType(fileTypeUpdateRequestDto);
         return ResponseEntity
                 .status(response.getStatusCode())
