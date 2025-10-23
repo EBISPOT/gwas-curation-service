@@ -93,10 +93,15 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         UploadReportWrapper uploadReportWrapper = new UploadReportWrapper();
         efoTraits.forEach(efoTrait -> {
             try {
+                String originalTraitName = efoTrait.getTrait();
                 efoTrait.setTrait(sanitizeTrait(efoTrait.getTrait()));
                 if(validateEFOTraits(efoTrait)) {
                     createEfoTrait(efoTrait, user);
-                    report.add(new TraitUploadReport(efoTrait.getTrait(), "Trait successfully added : " + efoTrait.getTrait(), null));
+                    String message = "Trait successfully added : " + efoTrait.getTrait();
+                    if (originalTraitName != null && !originalTraitName.equals(efoTrait.getTrait())) {
+                        message = message + " | Sanitised trait name: \"" + originalTraitName + "\" -> \"" + efoTrait.getTrait() + "\"";
+                    }
+                    report.add(new TraitUploadReport(efoTrait.getTrait(), message, null));
                 }
             } catch(CannotCreateTraitWithDuplicateUriException ex) {
                 uploadReportWrapper.setHasErrors(true);
