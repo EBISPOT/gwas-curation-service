@@ -141,6 +141,14 @@ public class ExceptionHandlerAdvice {
         return new ResponseEntity<>(e.getMessage(), headers, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(CannotCreateTraitWithDuplicateShortFormException.class)
+    public ResponseEntity<String> handleCreateTraitWithDuplicateShortForm(CannotCreateTraitWithDuplicateShortFormException e) {
+        log.error("Exception -> " + e.getMessage(), e);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(e.getMessage(), headers, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex) {
         log.error("Exception :"+ex.getLocalizedMessage(),ex);

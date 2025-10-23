@@ -120,6 +120,9 @@ public class EfoTraitServiceImpl implements EfoTraitService {
             } catch(CannotCreateTraitWithDuplicateNameException ex){
                 uploadReportWrapper.setHasErrors(true);
                 report.add(new TraitUploadReport(efoTrait.getTrait(),"Trait cannot be added because the trait name already exists: " + efoTrait.getTrait(), null));
+            } catch(CannotCreateTraitWithDuplicateShortFormException ex) {
+                uploadReportWrapper.setHasErrors(true);
+                report.add(new TraitUploadReport(efoTrait.getShortForm() ,"Trait cannot be added because trait with same shortform already exists: " + efoTrait.getShortForm(), null));
             }
         });
         uploadReportWrapper.setUploadReport(fileHandler.serializePojoToTsv(report));
@@ -132,12 +135,14 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         Optional<EfoTrait> efoTraitOptional = efoTraitRepository.findById(traitId);
         if (efoTraitOptional.isPresent()) {
             EfoTrait existingTrait = efoTraitOptional.get();
+            String shortForm = efoTraitDto.getUri().substring(efoTraitDto.getUri().lastIndexOf('/') + 1);
+            Optional<EfoTrait> optionalEfoTraitWithShortForm =  efoTraitRepository.findByShortForm(shortForm);
             String sanitizedTrait = sanitizeTrait(efoTraitDto.getTrait());
 
             if(!existingTrait.getTrait().trim().equals(sanitizedTrait)) {
                 List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitIgnoreCase(sanitizedTrait);
                 if (existingEfoTraits != null && !existingEfoTraits.isEmpty()) {
-                    String existingEFOsMessage = "EFO Traits already exists for trait -> " + existingTrait.getTrait().trim();
+                    String existingEFOsMessage = "EFO Trait already exists for trait -> " + existingTrait.getTrait().trim();
                     throw new CannotCreateTraitWithDuplicateNameException(existingEFOsMessage);
                 }
             }
@@ -147,6 +152,10 @@ public class EfoTraitServiceImpl implements EfoTraitService {
                     String existingEFOUriMessage = "EFO trait already exists for " +
                             "the Uri ->" + existingTrait.getUri().trim();
                     throw new CannotCreateTraitWithDuplicateUriException(existingEFOUriMessage);
+                }
+                else if(optionalEfoTraitWithShortForm.isPresent()) {
+                    String existingShortFormMessage = String.format("EFO Trait already exists for shortform %s", shortForm);
+                    throw new CannotCreateTraitWithDuplicateShortFormException(existingShortFormMessage);
                 }
             }
             if(!CurationUtil.validateURLFormat(efoTraitDto.getUri().trim())) {
@@ -231,6 +240,8 @@ public class EfoTraitServiceImpl implements EfoTraitService {
 
         List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitIgnoreCase(sanitizedTrait);
         List<EfoTrait> existingEfoTraitsUri = efoTraitRepository.findByUri(efoTrait.getUri().trim());
+        String shortForm = efoTrait.getUri().substring(efoTrait.getUri().lastIndexOf('/') + 1);
+        Optional<EfoTrait> optionalEfoTrait =  efoTraitRepository.findByShortForm(shortForm);
         if(!CurationUtil.validateURLFormat(efoTrait.getUri().trim())) {
             String invalidURIMessage = "The URI value entered \"" + efoTrait.getUri() + "\" is not valid. " +
                     "The URI value should be formatted similar to: http://www.ebi.ac.uk/efo/EFO_1234567.";
@@ -243,13 +254,17 @@ public class EfoTraitServiceImpl implements EfoTraitService {
             throw new InvalidEFOUriException(invalidCurieMessage);
         }
         else if( existingEfoTraits != null && !existingEfoTraits.isEmpty()) {
-            String existingEFOsMessage = "EFO Traits already exists for trait -> "+efoTrait.getTrait().trim();
+            String existingEFOsMessage = "EFO Trait already exists for trait -> "+efoTrait.getTrait().trim();
             throw new CannotCreateTraitWithDuplicateNameException(existingEFOsMessage);
         }
         else if(existingEfoTraitsUri != null && !existingEfoTraitsUri.isEmpty()) {
-            String existingEFOUriMessage = "EFO trait already exists for " +
+            String existingEFOUriMessage = "EFO Trait already exists for " +
                     "the Uri ->"+efoTrait.getUri().trim();
             throw new CannotCreateTraitWithDuplicateUriException(existingEFOUriMessage);
+        }
+        else if(optionalEfoTrait.isPresent()) {
+            String existingShortFormMessage = String.format("EFO Trait already exists for shortform %s", shortForm);
+            throw new CannotCreateTraitWithDuplicateShortFormException(existingShortFormMessage);
         }
         return true;
     }
