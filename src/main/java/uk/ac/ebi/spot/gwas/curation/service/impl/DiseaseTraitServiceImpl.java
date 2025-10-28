@@ -100,6 +100,7 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
         UploadReportWrapper uploadReportWrapper = new UploadReportWrapper();
         diseaseTraits.forEach(diseaseTrait -> {
             try {
+                String originalTraitName = diseaseTrait.getTrait();
                 diseaseTrait.setTrait(sanitizeTrait(diseaseTrait.getTrait()));
                 Optional<DiseaseTrait> optDiseaseTrait = getDiseaseTraitByTraitName(diseaseTrait.getTrait());
                 if(optDiseaseTrait.isPresent())
@@ -107,7 +108,11 @@ public class DiseaseTraitServiceImpl implements DiseaseTraitService {
                 diseaseTrait.setCreated(new Provenance(DateTime.now(), user.getId()));
                 DiseaseTrait insertedDiseaseTrait =  diseaseTraitRepository.insert(diseaseTrait);
                 sendMessage(insertedDiseaseTrait, "insert");
-                report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait successfully Inserted : "+diseaseTrait.getTrait(),null));
+                String message = "Trait successfully added : " + diseaseTrait.getTrait();
+                if (originalTraitName != null && !originalTraitName.equals(diseaseTrait.getTrait())) {
+                    message = message + " | Sanitised trait name: \"" + originalTraitName + "\" -> \"" + diseaseTrait.getTrait() + "\"";
+                }
+                report.add(new TraitUploadReport(diseaseTrait.getTrait(), message,null));
             } catch(DataAccessException | CannotCreateTraitWithDuplicateNameException ex) {
                 uploadReportWrapper.setHasErrors(true);
                 report.add(new TraitUploadReport(diseaseTrait.getTrait(),"Trait Insertion failed as Trait already exists : "+diseaseTrait.getTrait(),null));
