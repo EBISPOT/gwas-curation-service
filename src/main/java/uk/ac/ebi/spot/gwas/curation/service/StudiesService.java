@@ -3,6 +3,7 @@ package uk.ac.ebi.spot.gwas.curation.service;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import uk.ac.ebi.spot.gwas.curation.solr.domain.StudySolr;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
@@ -14,6 +15,8 @@ import java.util.stream.Stream;
 
 public interface StudiesService {
 
+
+    ResponseEntity<String> updateFileType(FileTypeUpdateRequestDto request);
 
     Study getStudy(String studyId);
 

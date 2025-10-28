@@ -51,7 +51,7 @@ gwas-curation:
 
 quartz:
   scheduler:
-    active: true
+    active: false
     dbName: gwasdepo
     isClustered: false
   jobs:
@@ -125,4 +125,7 @@ rabbitmq:
     queue-name: diseasetrait-sandbox
     exchange-name: diseasetrait-exchange-sandbox
     routing-key: diseasetrait-route-sandbox
+
+gwas-sumstats-service:
+  url: http://localhost:8000
 

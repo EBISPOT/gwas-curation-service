@@ -340,12 +340,14 @@ public class PublicationServiceImpl implements PublicationService {
     public List<PublicationStatusReport>  createPublication(List<String> pmids, User user) {
         List<PublicationStatusReport> reports = new ArrayList<>();
         pmids.forEach( pmid -> {
+            log.info("Pmid to be imported {}", pmid);
             Publication publication = getPublicationDetailsByPmidOrPubId(pmid, true);
             if(publication != null) {
                 PublicationStatusReport statusReport = new PublicationStatusReport();
                 statusReport.setPmid(pmid);
                 statusReport.setPublicationDto(publicationDtoAssembler.assemble(publication, user));
                 statusReport.setStatus("PMID already exists");
+                log.info("PMID already exists {}", pmid);
                 reports.add(statusReport);
             } else {
 
@@ -361,16 +363,28 @@ public class PublicationServiceImpl implements PublicationService {
                     statusReport.setPmid(pmid);
                     statusReport.setPublicationDto(publicationDtoAssembler.assemble(publicationImported, user));
                     statusReport.setStatus("PMID saved");
+                    log.info("PMID saved {}", pmid);
                     reports.add(statusReport);
                 } catch (EuropePMCException ex){
                     PublicationStatusReport statusReport = new PublicationStatusReport();
                     statusReport.setPmid(pmid);
                     statusReport.setStatus("Couldn't contact EPMC API");
+                    log.error("EuropePMCException Couldn't contact EPMC API "+ex.getMessage(),ex);
+                    log.info("Couldn't contact EPMC API {}", pmid);
                     reports.add(statusReport);
                 }catch (PubmedLookupException ex) {
                     PublicationStatusReport statusReport = new PublicationStatusReport();
                     statusReport.setPmid(pmid);
                     statusReport.setStatus("PMID not found in EPMC");
+                    log.error("PubmedLookupException PMID not found in EPMC "+ex.getMessage(),ex);
+                    log.info("PMID not found in EPMC {}", pmid);
+                    reports.add(statusReport);
+                }catch(Exception ex) {
+                    PublicationStatusReport statusReport = new PublicationStatusReport();
+                    statusReport.setPmid(pmid);
+                    statusReport.setStatus("Unknown Error");
+                    log.error("Exception PMID Unknown Error "+ex.getMessage(),ex);
+                    log.info("Unknown Error {}", pmid);
                     reports.add(statusReport);
                 }
 

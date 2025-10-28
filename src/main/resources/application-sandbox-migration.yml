@@ -130,3 +130,6 @@ rabbitmq:
     queue-name: diseasetrait-sandbox
     exchange-name: diseasetrait-exchange-sandbox
     routing-key: diseasetrait-route-sandbox
+
+gwas-sumstats-service:
+  url: http://gwas-ss-service-dev:8000

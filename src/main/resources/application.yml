@@ -95,3 +95,8 @@ springdoc:
     path: /documentation
   api-docs:
     path: /curation-doc
+
+gwas-sumstats-service:
+  url: http://gwas-sumstats-service:8080
+  endpoints:
+    filetypes: /v1/file-type

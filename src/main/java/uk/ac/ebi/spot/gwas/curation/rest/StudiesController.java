@@ -16,6 +16,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ebi.spot.gwas.curation.config.DepositionCurationConfig;
@@ -34,6 +35,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.User;
 import uk.ac.ebi.spot.gwas.deposition.dto.StudyDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.DiseaseTraitDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.EfoTraitDto;
+import uk.ac.ebi.spot.gwas.deposition.dto.curation.FileTypeUpdateRequestDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.StudySampleDescPatchRequest;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
 
@@ -235,5 +237,15 @@ public class StudiesController {
 
     }
 
+    @PatchMapping(value = "/{submissionId}" + DepositionCurationConstants.API_STUDIES + "/file-type")
+    public ResponseEntity<String> updateFileType(@RequestBody FileTypeUpdateRequestDto fileTypeUpdateRequestDto, HttpServletRequest request) {
+        String jwtToken = CurationUtil.parseJwt(request);
+        userService.findUser(jwtService.extractUser(jwtToken), false);
+        ResponseEntity<String> response = studiesService.updateFileType(fileTypeUpdateRequestDto);
+        return ResponseEntity
+                .status(response.getStatusCode())
+                .headers(response.getHeaders())
+                .body(response.getBody());
+    }
 
 }

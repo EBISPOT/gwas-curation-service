@@ -25,3 +25,6 @@ gwas-curation-service:
   javers:
     endpoints:
       javers-submission: /v1/javers
+
+gwas-sumstats-service:
+  url: http://localhost:8000
