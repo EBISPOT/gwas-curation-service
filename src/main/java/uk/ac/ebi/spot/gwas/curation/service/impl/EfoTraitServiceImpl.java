@@ -142,7 +142,7 @@ public class EfoTraitServiceImpl implements EfoTraitService {
             if(!existingTrait.getTrait().trim().equals(sanitizedTrait)) {
                 List<EfoTrait> existingEfoTraits = efoTraitRepository.findByTraitIgnoreCase(sanitizedTrait);
                 if (existingEfoTraits != null && !existingEfoTraits.isEmpty()) {
-                    String existingEFOsMessage = "EFO Trait already exists for trait -> " + existingTrait.getTrait().trim();
+                    String existingEFOsMessage = "EFO Trait already exists for trait -> " + efoTraitDto.getTrait().trim();
                     throw new CannotCreateTraitWithDuplicateNameException(existingEFOsMessage);
                 }
             }
@@ -150,7 +150,7 @@ public class EfoTraitServiceImpl implements EfoTraitService {
                 List<EfoTrait> existingEfoTraitsUri = efoTraitRepository.findByUri(efoTraitDto.getUri().trim());
                 if (existingEfoTraitsUri != null && !existingEfoTraitsUri.isEmpty()) {
                     String existingEFOUriMessage = "EFO trait already exists for " +
-                            "the Uri ->" + existingTrait.getUri().trim();
+                            "the Uri ->" + efoTraitDto.getUri().trim();
                     throw new CannotCreateTraitWithDuplicateUriException(existingEFOUriMessage);
                 }
                 else if(optionalEfoTraitWithShortForm.isPresent()) {
