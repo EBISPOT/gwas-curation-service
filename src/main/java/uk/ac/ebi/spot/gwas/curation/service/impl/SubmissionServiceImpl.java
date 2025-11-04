@@ -189,7 +189,7 @@ public class SubmissionServiceImpl implements SubmissionService {
         log.info(" Submission status for {} is {}", submissionId, submissionDto.getSubmissionStatus());
 
         if (submissionDto.getSubmissionStatus() != null) {
-            if (isAllStudiesHaveTraits(submissionId)) {
+            if (submission.getType().equals(SubmissionType.SUM_STATS.name()) || isAllStudiesHaveTraits(submissionId)) {
                 submission.setOverallStatus(submissionDto.getSubmissionStatus());
             }
             else {
