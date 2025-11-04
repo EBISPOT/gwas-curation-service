@@ -189,7 +189,8 @@ public class SubmissionServiceImpl implements SubmissionService {
         log.info(" Submission status for {} is {}", submissionId, submissionDto.getSubmissionStatus());
 
         if (submissionDto.getSubmissionStatus() != null) {
-            if (SubmissionType.SUM_STATS.name().equals(submission.getType()) || isAllStudiesHaveTraits(submissionId)) {
+            if (uk.ac.ebi.spot.gwas.deposition.constants.SubmissionType.SUMMARY_STATS.name().equals(submission.getType()) ||
+                    isAllStudiesHaveTraits(submissionId)) {
                 submission.setOverallStatus(submissionDto.getSubmissionStatus());
             }
             else {
