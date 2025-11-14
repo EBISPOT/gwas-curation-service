@@ -16,22 +16,24 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import uk.ac.ebi.spot.gwas.curation.config.RestInteractionConfig;
+import uk.ac.ebi.spot.gwas.curation.oracle.repository.DiseaseTraitsRepository;
+import uk.ac.ebi.spot.gwas.curation.oracle.repository.EFOTraitRepository;
+import uk.ac.ebi.spot.gwas.curation.rabbitmq.SubmissionImportMQProducer;
 import uk.ac.ebi.spot.gwas.curation.repository.PublicationRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.SubmissionRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.SummaryStatsEntryRepository;
-import uk.ac.ebi.spot.gwas.curation.service.CuratorAuthService;
-import uk.ac.ebi.spot.gwas.curation.service.PublicationService;
-import uk.ac.ebi.spot.gwas.curation.service.SubmissionService;
-import uk.ac.ebi.spot.gwas.deposition.domain.Publication;
-import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
-import uk.ac.ebi.spot.gwas.deposition.domain.User;
+import uk.ac.ebi.spot.gwas.curation.service.*;
+import uk.ac.ebi.spot.gwas.deposition.domain.*;
 import uk.ac.ebi.spot.gwas.deposition.dto.SubmissionDto;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 import uk.ac.ebi.spot.gwas.deposition.dto.ingest.BodyOfWorkDto;
 import uk.ac.ebi.spot.gwas.deposition.exception.EntityNotFoundException;
+import uk.ac.ebi.spot.gwas.deposition.exception.StudiesWithoutTraitsException;
+import uk.ac.ebi.spot.gwas.deposition.exception.TraitsNotSyncedException;
 import uk.ac.ebi.spot.gwas.deposition.util.DepositionUtil;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SubmissionServiceImpl implements SubmissionService {
@@ -61,6 +63,28 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     @Autowired
     MongoTemplate mongoTemplate;
+
+    @Autowired
+    StudiesService studiesService;
+
+    @Autowired
+    EFOTraitRepository  efoTraitRepository;
+
+    @Autowired
+    EfoTraitService efoTraitService;
+
+    @Autowired
+    DiseaseTraitsRepository diseaseTraitRepository;
+
+    @Autowired
+    DiseaseTraitService diseaseTraitService;
+
+    @Autowired
+    SubmissionImportMQProducer submissionImportMQProducer;
+
+    @Autowired
+    CurationStatusService curationStatusService;
+
 
 
 
@@ -167,40 +191,50 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     @Override
     public Submission   patchSubmission(SubmissionDto submissionDto, String submissionId) {
-
         Optional<Submission> submissionOptional = submissionRepository.findById(submissionId);
         if (!submissionOptional.isPresent()) {
             log.error("Unable to find submission: {}", submissionId);
             throw new EntityNotFoundException("Unable to find submission: " + submissionId);
         }
         Submission submission = submissionOptional.get();
-
-        if(submission.getOverallStatus() != null && submission.getOverallStatus().equals("CURATION_COMPLETE")) {
-            if(submission.getPublicationId() != null) {
-                Publication publication = publicationService.getPublicationDetailsByPmidOrPubId(submission.getPublicationId(), false);
-                Optional.ofNullable(publication.getStatus()).filter((status) -> status.equals("PUBLISHED") || status.equals("PUBLISHED_WITH_SS"))
-                        .ifPresent(status -> {
-                            publication.setStatus("UNDER_SUBMISSION");
-                            publicationRepository.save(publication);
-                        });
-            }
+        Publication publication = null;
+        if(submission.getPublicationId() != null) {
+            publication = publicationService.getPublicationDetailsByPmidOrPubId(submission.getPublicationId(), false);
         }
-
         log.info(" Submission status for {} is {}", submissionId, submissionDto.getSubmissionStatus());
-
         if (submissionDto.getSubmissionStatus() != null) {
-            if (uk.ac.ebi.spot.gwas.deposition.constants.SubmissionType.SUMMARY_STATS.name().equals(submission.getType()) ||
-                    isAllStudiesHaveTraits(submissionId)) {
+            if (uk.ac.ebi.spot.gwas.deposition.constants.SubmissionType.SUMMARY_STATS.name().equals(submission.getType())) {
                 submission.setOverallStatus(submissionDto.getSubmissionStatus());
             }
-            else {
-                throw new RuntimeException("Submission has studies without traits.");
+            if(!isAllStudiesHaveTraits(submissionId)) {
+                throw new StudiesWithoutTraitsException("Some studies exist for submission without traits, Please assign traits to all studies");
             }
+            List<String> unsyncedEfos = isEfoTraitsSyncedToOracle(submissionId);
+            if(unsyncedEfos != null && !unsyncedEfos.isEmpty()) {
+                throw new TraitsNotSyncedException("Some EFO traits have not synced to Oracle -: " + String.join(",", unsyncedEfos));
+            }
+            List<String> unsyncedTraits = isDiseaseTraitSyncedToOracle(submissionId);
+            if(unsyncedTraits != null && !unsyncedTraits.isEmpty()) {
+                throw new TraitsNotSyncedException("Some disease traits have not synced to Oracle -: " + String.join(",", unsyncedTraits));
+            }
+            if(publication != null) {
+                if(submission.getOverallStatus() != null && submission.getOverallStatus().equals("CURATION_COMPLETE")) {
+                    if(publication.getStatus() != null && (publication.getStatus().equals("PUBLISHED") || publication.getStatus().equals("PUBLISHED_WITH_SS"))) {
+                        publication.setStatus("UNDER_SUBMISSION");
+                        publicationRepository.save(publication);
+                    }
+                }
+                publication.setCurationStatusId(curationStatusService.findCurationStatusByStatus("Import in Progress").getId());
+                publicationRepository.save(publication);
+            }
+            SubmissionRabbitMessage submissionRabbitMessage = SubmissionRabbitMessage.builder()
+                    .submissionId(submissionId)
+                    .submissionType(submission.getType())
+                    .build();
+            submissionImportMQProducer.send(submissionRabbitMessage);
+            submission.setOverallStatus(submissionDto.getSubmissionStatus());
         }
-
-
         return submissionRepository.save(submission);
-
     }
 
     private boolean isAllStudiesHaveTraits(String submissionId) {
@@ -215,6 +249,27 @@ public class SubmissionServiceImpl implements SubmissionService {
                 )
         );
         return studiesCollection.countDocuments(query) == 0;
+    }
+
+    private List<String> isEfoTraitsSyncedToOracle(String submissionId) {
+      Set<String> efoShortForms =  studiesService.getEfoTraitsForSubmission(submissionId);
+      return efoShortForms.stream()
+                .filter(shortform -> !efoTraitRepository.findByShortForm(shortform).isPresent())
+                .map(shortForm -> efoTraitService.getEFOtraitByShortForm(shortForm))
+                .map(EfoTrait::getShortForm)
+                .collect(Collectors.toList());
+
+    }
+
+    private List<String> isDiseaseTraitSyncedToOracle(String submissionId) {
+        Set<String> diseaseTraits = studiesService.getDiseaseTraitsForSubmission(submissionId);
+        return diseaseTraits.stream()
+                .filter(trait -> !diseaseTraitRepository.findByTrait(trait).isPresent())
+                .map(trait -> diseaseTraitService.getDiseaseTraitByTraitName(trait))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(DiseaseTrait::getTrait)
+                .collect(Collectors.toList());
     }
 
 

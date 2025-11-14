@@ -23,6 +23,11 @@ spring:
       uri: mongodb-hhvm-062.ebi.ac.uk:27017,mongodb-hxvm-063.ebi.ac.uk:27017/admin?replicaSet=gwasdepodevrs039
     solr:
       host: ${solr-server}
+  datasource:
+    url: jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=ora-spot-dev2-hl.ebi.ac.uk)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=SPOTDV2)))
+    username:
+    password:
+
   mail:
     host: hh-smtp.ebi.ac.uk
     port: 25
@@ -125,6 +130,10 @@ rabbitmq:
     queue-name: diseasetrait-sandbox
     exchange-name: diseasetrait-exchange-sandbox
     routing-key: diseasetrait-route-sandbox
+  submission-import:
+    queue-name: submission-import-sandbox
+    exchange-name: submission-import-exchange-sandbox
+    routing-key: submission-import-route-sandbox
 
 gwas-sumstats-service:
   url: http://localhost:8000

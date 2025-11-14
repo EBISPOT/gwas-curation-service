@@ -129,6 +129,10 @@ public class EfoTraitServiceImpl implements EfoTraitService {
         return uploadReportWrapper;
     }
 
+    public EfoTrait getEFOtraitByShortForm(String shortForm) {
+       return efoTraitRepository.findByShortForm(shortForm).orElse(null);
+    }
+
     @Override
     public EfoTrait fullyUpdateEfoTrait(String traitId, EfoTraitDto efoTraitDto, User user) {
 

@@ -11,6 +11,7 @@ import uk.ac.ebi.spot.gwas.deposition.domain.Submission;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface StudiesService {
@@ -43,6 +44,9 @@ public interface StudiesService {
 
     public byte[] uploadSampleDescriptions(List<StudySampleDescPatchRequest> studySampleDescPatchRequests, String submissionId);
 
+    Set<String> getEfoTraitsForSubmission(String submissionId);
+
+    Set<String> getDiseaseTraitsForSubmission(String submissionId);
 
     void sendMetaDataMessageToQueue(String submissionId);
 

@@ -149,6 +149,23 @@ public class ExceptionHandlerAdvice {
         return new ResponseEntity<>(e.getMessage(), headers, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(StudiesWithoutTraitsException.class)
+    public ResponseEntity<String> hanldeStudiesWithoutTraits(StudiesWithoutTraitsException e){
+        log.error("Exception -> " + e.getMessage(), e);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(e.getMessage(), headers, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(TraitsNotSyncedException.class)
+    public ResponseEntity<String> hanldeTraitsNotSynced(TraitsNotSyncedException e){
+        log.error("Exception -> " + e.getMessage(), e);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new ResponseEntity<>(e.getMessage(), headers, HttpStatus.BAD_REQUEST);
+    }
+
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex) {
         log.error("Exception :"+ex.getLocalizedMessage(),ex);
