@@ -32,5 +32,7 @@ public interface EfoTraitService {
 
     byte[] getEfoTraitsTsv(String trait);
 
+    EfoTrait getEFOtraitByShortForm(String shortForm);
+
     void deleteEfoTrait(String traitIds);
 }

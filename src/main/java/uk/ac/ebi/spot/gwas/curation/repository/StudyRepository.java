@@ -30,5 +30,7 @@ public interface StudyRepository extends MongoRepository<Study, String> {
 
     List<Study> findByDiseaseTrait(String traitId);
 
+
+
     Stream<Study> findByEfoTraitsContains(String traitId);
 }

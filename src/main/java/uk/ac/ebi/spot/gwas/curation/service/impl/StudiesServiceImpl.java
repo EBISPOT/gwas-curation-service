@@ -1,6 +1,7 @@
 package uk.ac.ebi.spot.gwas.curation.service.impl;
 
 //import com.querydsl.core.types.Predicate;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,10 @@ import uk.ac.ebi.spot.gwas.curation.rabbitmq.StudyIngestPublisher;
 import uk.ac.ebi.spot.gwas.curation.repository.DiseaseTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.EfoTraitRepository;
 import uk.ac.ebi.spot.gwas.curation.repository.StudyRepository;
-import uk.ac.ebi.spot.gwas.curation.rest.dto.*;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.DiseaseTraitDtoAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.EfoTraitDtoAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudyRabbitMessageAssembler;
+import uk.ac.ebi.spot.gwas.curation.rest.dto.StudySampleDescPatchRequestAssembler;
 import uk.ac.ebi.spot.gwas.curation.service.DiseaseTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.EfoTraitService;
 import uk.ac.ebi.spot.gwas.curation.service.StudiesService;
@@ -32,8 +36,6 @@ import uk.ac.ebi.spot.gwas.curation.solr.repository.StudySolrRepository;
 import uk.ac.ebi.spot.gwas.curation.util.FileHandler;
 import uk.ac.ebi.spot.gwas.deposition.domain.DiseaseTrait;
 import uk.ac.ebi.spot.gwas.deposition.domain.EfoTrait;
-//import uk.ac.ebi.spot.gwas.deposition.domain.QStudy;
-//import uk.ac.ebi.spot.gwas.deposition.domain.QStudy;
 import uk.ac.ebi.spot.gwas.deposition.domain.Study;
 import uk.ac.ebi.spot.gwas.deposition.dto.curation.*;
 
@@ -141,6 +143,46 @@ public class StudiesServiceImpl implements StudiesService {
         return null;
     }
 
+
+    public Set<String> getEfoTraitsForSubmission(String submissionId) {
+        Long cntStudies = studyRepository.findBySubmissionId(submissionId).count();
+        long bucket = cntStudies/100;
+        Set<String> efoTraits = new HashSet<>();
+        for (int i = 0; i <= bucket; i++ ) {
+            Pageable pageable = PageRequest.of(i, 100);
+            Page<Study> studyPage =  getStudies(submissionId, pageable);
+            Set<String> shortForms = studyPage.stream()
+                    .flatMap(study -> study.getEfoTraits().stream()
+                            .map(traitId -> efoTraitService.getEfoTrait(traitId))
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .map(EfoTrait::getShortForm)
+                            .collect(Collectors.toList()).stream())
+                    .collect(Collectors.toSet());
+            efoTraits.addAll(shortForms);
+        }
+        return efoTraits;
+    }
+
+
+    public Set<String> getDiseaseTraitsForSubmission(String submissionId) {
+        Long cntStudies = studyRepository.findBySubmissionId(submissionId).count();
+        long bucket = cntStudies/100;
+        Set<String> diseaseTraits = new HashSet<>();
+        for (int i = 0; i <= bucket; i++ ) {
+            Pageable pageable = PageRequest.of(i, 100);
+            Page<Study> studyPage = getStudies(submissionId, pageable);
+            Set<String> traits = studyPage.stream()
+                    .map(Study::getDiseaseTrait)
+                    .map(trait -> diseaseTraitService.getDiseaseTrait(trait))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(DiseaseTrait::getTrait)
+                    .collect(Collectors.toSet());
+            diseaseTraits.addAll(traits);
+        }
+        return diseaseTraits;
+    }
 
 
     @Override
